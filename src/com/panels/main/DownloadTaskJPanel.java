@@ -322,12 +322,21 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
     }
 
     public void setNewTaskType(int typeOfTask) {
+        infoDisplay.setText(language.getContentById("connecting"));
+        playButton.setVisible(false);
         if (typeOfTask == DOWNLOAD_TASK) {
             taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));
             taskLabel.setText(language.getContentById("downloadTitle"));
         } else if (typeOfTask == UPDATE_TASK) {
             taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png")));
             taskLabel.setText(language.getContentById("updateTitle"));
+        }
+    }
+
+    public void setNewExtractor(BasicCore extractor) {
+        this.extractor = extractor;
+        if (!this.extractor.isAlive()) {
+            this.extractor.start();
         }
     }
 

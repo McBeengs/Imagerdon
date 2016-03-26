@@ -56,6 +56,7 @@ public class FurAffinity extends BasicCore {
     private boolean isPaused = false;
     private boolean isTerminated = false;
     private boolean isDownloading = false;
+    private boolean convertedToUpdate = false;
     private int tagOcc;
     private int numOfImages;
     private int originalNumOfImages;
@@ -264,7 +265,13 @@ public class FurAffinity extends BasicCore {
 
             if (result == JOptionPane.YES_OPTION) {
                 taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
-                new UpdateFurAffinity(link, taskManager).start();
+                new Thread("Changed to Download to Update task") {
+                    @Override
+                    public void run() {
+                        taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
+                    }
+                }.start();
+                convertedToUpdate = true;
                 return false;
             } else {
                 originalNumOfImages = numOfImages;
@@ -371,7 +378,7 @@ public class FurAffinity extends BasicCore {
                     }
                 }
             });
-        } else {
+        } else if (!convertedToUpdate) {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
             taskManager.playButton.setVisible(true);
@@ -393,7 +400,11 @@ public class FurAffinity extends BasicCore {
     @Override
     public void terminate() {
         isTerminated = true;
-        executor.shutdownNow();
+        
+        if (executor != null) {
+            executor.shutdownNow();
+        }
+        
         try {
             artists.saveXml();
         } catch (IOException ex) {

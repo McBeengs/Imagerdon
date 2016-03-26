@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[516, 434]"/>
@@ -29,24 +33,24 @@
                       <Component id="mainLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="languageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="styleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="languageSelector" pref="48" max="32767" attributes="0"/>
                           <Component id="styleSelector" max="32767" attributes="0"/>
-                          <Component id="languageSelector" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="languageAlert" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="styleAlert" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace pref="188" max="32767" attributes="0"/>
+              <EmptySpace pref="299" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -57,7 +61,7 @@
               <Component id="mainLabel" min="-2" pref="38" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="topSeparator" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="languageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="languageSelector" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -69,7 +73,7 @@
                   <Component id="styleSelector" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="styleAlert" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="295" max="32767" attributes="0"/>
+              <EmptySpace pref="288" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -82,9 +86,11 @@
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;mainLabel&quot;, 0)" type="code"/>
+          <Connection code="language.getContentByName(&quot;mainLabel&quot;, 0) + &quot; &quot; + language.getContentById(&quot;options&quot;)" type="code"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="topSeparator">
     </Component>
     <Component class="javax.swing.JLabel" name="languageLabel">
       <Properties>
@@ -159,8 +165,6 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="styleAlert.setVisible(false);&#xa;styleAlert.setIcon(new ImageIcon(getClass().getResource(&quot;/com/style/icons/error.png&quot;)));"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.JSeparator" name="topSeparator">
     </Component>
   </SubComponents>
 </Form>

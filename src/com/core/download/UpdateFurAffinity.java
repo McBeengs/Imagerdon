@@ -39,6 +39,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -121,7 +123,7 @@ public class UpdateFurAffinity extends BasicCore {
             uncensoredLink = webClient.getPage(temp);
             return true;
 
-        } catch (java.net.UnknownHostException ex) {
+        } catch (java.net.UnknownHostException | com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
             JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
         } catch (IOException ex) {
             Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
@@ -201,7 +203,7 @@ public class UpdateFurAffinity extends BasicCore {
                                     int onDisk = Integer.parseInt(artists.getContentByName("imageCount", tagOcc + 1));
 
                                     if (onDisk == numOfImages) {
-                                        JOptionPane.showMessageDialog(null, "The artist \"" + thread + "\" is already up to date. No need of an download");
+                                        JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", thread));
                                         taskManager.progressBar.setValue(taskManager.progressBar.getMaximum());
                                         taskManager.progressBar.setStringPainted(true);
                                         taskManager.progressBar.setString("100%");
@@ -259,7 +261,7 @@ public class UpdateFurAffinity extends BasicCore {
                                                     if (isTerminated) {
                                                         break;
                                                     } else {
-                                                        executor.execute(new ImageExtractor(temp));
+                                                        executor.execute(new ImageExtractor(temp, onDisk + count));
                                                     }
                                                 }
                                                 count++;
@@ -316,17 +318,21 @@ public class UpdateFurAffinity extends BasicCore {
     private class ImageExtractor implements Runnable {
 
         String finalLink;
+        int downloadNumber;
 
-        public ImageExtractor(String finalLink) {
+        public ImageExtractor(String finalLink, int downloadNumber) {
             this.finalLink = finalLink;
+            this.downloadNumber = downloadNumber;
         }
 
         private boolean download() {
-            String imageName;
+            String imageName = null;
             if (!Boolean.parseBoolean(xml.getContentById("FAadvancedNaming"))) {
                 imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
-            } else {
-                imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
+            } else if (Integer.parseInt(xml.getContentById("FAnamingOption")) == 0) {
+                imageName = downloadNumber + finalLink.substring(finalLink.lastIndexOf("."));
+            } else if (Integer.parseInt(xml.getContentById("FAnamingOption")) == 1) {
+                imageName = getDate() + finalLink.substring(finalLink.lastIndexOf("."));
             }
 
             try {
@@ -359,7 +365,7 @@ public class UpdateFurAffinity extends BasicCore {
 
                 String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                 taskManager.progressBar.setString(show);
-                artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+                artists.setContentByName("imageCount", tagOcc, "" + downloadNumber);
 
                 if (show.equals("100%")) {
                     taskManager.stopButton.setVisible(false);
@@ -384,6 +390,44 @@ public class UpdateFurAffinity extends BasicCore {
             }
 
             return false;
+        }
+
+        private String getDate() {
+            Calendar date = Calendar.getInstance();
+            String gmt;
+            String hours;
+            String minutes;
+            String seconds;
+            String millis;
+
+            if (((date.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60)) % 24) < 10) {
+                gmt = "GMT -0" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
+            } else {
+                gmt = "GMT -" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
+            }
+
+            if (date.get(Calendar.HOUR_OF_DAY) < 10) {
+                hours = "0" + date.get(Calendar.HOUR_OF_DAY);
+            } else {
+                hours = "" + date.get(Calendar.HOUR_OF_DAY);
+            }
+
+            if (date.get(Calendar.MINUTE) < 10) {
+                minutes = "0" + date.get(Calendar.MINUTE);
+            } else {
+                minutes = "" + date.get(Calendar.MINUTE);
+            }
+
+            if (date.get(Calendar.SECOND) < 10) {
+                seconds = "0" + date.get(Calendar.SECOND);
+            } else {
+                seconds = "" + date.get(Calendar.SECOND);
+            }
+
+            millis = "" + date.get(Calendar.MILLISECOND);
+
+            return hours + "h, " + minutes + "min, " + seconds + "sec & " + millis + "mil (" + gmt + ")" + ", at "
+                    + date.getDisplayName(2, 2, Locale.US) + " " + date.get(5) + ", " + date.get(1);
         }
 
         @Override

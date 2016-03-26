@@ -1,11 +1,10 @@
 package com.panels.options;
 
+import com.util.crypto.PasswordManager;
 import com.util.xml.XmlManager;
-import java.io.IOException;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-import org.xml.sax.SAXException;
 
 public class Option1 extends javax.swing.JPanel {
 
@@ -17,7 +16,7 @@ public class Option1 extends javax.swing.JPanel {
     private final XmlManager xml;
     private final XmlManager language;
 
-    public Option1(XmlManager xml) throws IOException, SAXException {
+    public Option1(XmlManager xml) {
         this.xml = xml;
         xml.loadFile("config\\options.xml");
 
@@ -29,7 +28,7 @@ public class Option1 extends javax.swing.JPanel {
 
         languages = new String[]{"English"};
 
-        LookAndFeelInfo[] plafs = UIManager.getInstalledLookAndFeels();
+        UIManager.LookAndFeelInfo[] plafs = UIManager.getInstalledLookAndFeels();
         styles = new String[plafs.length];
 
         for (int i = 0; i < plafs.length; i++) {
@@ -52,20 +51,21 @@ public class Option1 extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         mainLabel = new javax.swing.JLabel();
+        topSeparator = new javax.swing.JSeparator();
         languageLabel = new javax.swing.JLabel();
         languageSelector = new javax.swing.JComboBox<>();
         languageAlert = new javax.swing.JLabel();
         styleLabel = new javax.swing.JLabel();
         styleSelector = new javax.swing.JComboBox<>();
         styleAlert = new javax.swing.JLabel();
-        topSeparator = new javax.swing.JSeparator();
 
         setMinimumSize(new java.awt.Dimension(516, 434));
 
         mainLabel.setFont(new java.awt.Font("Segoe UI Emoji", 0, 24)); // NOI18N
         mainLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        mainLabel.setText(language.getContentByName("mainLabel", 0));
+        mainLabel.setText(language.getContentByName("mainLabel", 0) + " " + language.getContentById("options"));
 
         languageLabel.setText(language.getContentById("language"));
 
@@ -110,19 +110,19 @@ public class Option1 extends javax.swing.JPanel {
                         .addContainerGap()
                         .addComponent(mainLabel))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
+                        .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(languageLabel)
                             .addComponent(styleLabel))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(styleSelector, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(languageSelector, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(38, 38, 38)
+                            .addComponent(languageSelector, 0, 48, Short.MAX_VALUE)
+                            .addComponent(styleSelector, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(languageAlert)
                             .addComponent(styleAlert, javax.swing.GroupLayout.Alignment.TRAILING))))
-                .addContainerGap(188, Short.MAX_VALUE))
+                .addContainerGap(299, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -131,7 +131,7 @@ public class Option1 extends javax.swing.JPanel {
                 .addComponent(mainLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(topSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(languageLabel)
                     .addComponent(languageSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -141,7 +141,7 @@ public class Option1 extends javax.swing.JPanel {
                     .addComponent(styleLabel)
                     .addComponent(styleSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(styleAlert))
-                .addContainerGap(295, Short.MAX_VALUE))
+                .addContainerGap(288, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -153,7 +153,7 @@ public class Option1 extends javax.swing.JPanel {
         }
 
         xml.setContentByName("language", 0, languageSelector.getItemAt(languageSelector.getSelectedIndex())
-                + ", " + languageSelector.getSelectedIndex());
+            + ", " + languageSelector.getSelectedIndex());
     }//GEN-LAST:event_languageSelectorActionPerformed
 
     private void styleSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_styleSelectorActionPerformed
@@ -164,11 +164,11 @@ public class Option1 extends javax.swing.JPanel {
         }
 
         xml.setContentByName("style", 0, styleSelector.getItemAt(styleSelector.getSelectedIndex())
-                + ", " + styleSelector.getSelectedIndex());
+            + ", " + styleSelector.getSelectedIndex());
     }//GEN-LAST:event_styleSelectorActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel languageAlert;
     private javax.swing.JLabel languageLabel;
     private javax.swing.JComboBox<String> languageSelector;

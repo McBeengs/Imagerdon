@@ -34,7 +34,7 @@
       <string id="FAuser">-127, -100, 76, -92, 66, -123, -63, 77, -97, 120, -4, -96, 101, 38, 13, 14</string>
       <string id="FApass">-48, 98, 126, 116, 87, 22, 95, -121, -17, -35, 19, 43, 101, -3, 68, -115</string>
       <directory id="FAoutput">C:\Users\Mc\Documents\Repository\FurAffinity</directory>
-      <boolean id="FAadvancedNaming">true</boolean>
+      <boolean id="FAadvancedNaming">false</boolean>
       <number id="FAnamingOption">0</number>
     </furAffinity>
     <e621>

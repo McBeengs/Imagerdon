@@ -155,6 +155,7 @@ public class MainJFrame extends javax.swing.JFrame {
 
         searchText.setText("Functions, artists, etc...");
         searchText.setBorder(null);
+        searchText.setOpaque(false);
         searchText.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 searchTextCaretUpdate(evt);
@@ -353,6 +354,7 @@ public class MainJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_searchButtonMouseClicked
 
     private void initSubComponents() {
+        this.setTitle("Alpha V3");
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.addWindowListener(new WindowAdapter() {
             @Override

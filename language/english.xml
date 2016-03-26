@@ -44,9 +44,20 @@
     Strings and buttons that can be found on the "Settings" option on the submenus
     -->
     <optionsPane>
+        <general>
+            <string id="changeLogin">Change login credentials</string>
+            <string id="tryLogin">Try Login</string>
+            <string id="connectionOk">Connection established</string>
+            <string id="connectionFailed">Connection unreacheable</string>
+            <string id="defaultFolder">Set default folder name</string>
+            <string id="advanceNaming1">Use advance naming options</string>
+            <string id="advanceNaming2">Doesn't auto name the files with the image name, instead...</string>
+            <string id="advanceNaming3">Name then by order of upload</string>
+            <string id="advanceNaming4">Name then by time of download</string>
+        </general>
         <gui>
             <node id="first">GUI Settings</node>
-            <mainLabel>GUI Options</mainLabel>
+            <mainLabel>GUI</mainLabel>
             <string id="language">Language</string>
             <string id="style">Set style</string>
             <alert>Alert: The program must be restarted</alert>
@@ -55,7 +66,7 @@
         </gui>
         <downloads>
             <node id="second">Sources Settings</node>
-            <mainLabel>Downloads Options</mainLabel>
+            <mainLabel>Downloads</mainLabel>
             <string id="simult">Number of simultaneous downloads</string>
             <alert>Higher numbers means a slower process (Performance < Quantity)</alert>
             <string id="output">Select the output of downloads</string>
@@ -76,7 +87,6 @@
         </galleryHentai>
         <furAffinity>
             <mainLabel>FurAffinity</mainLabel>
-            <string id="changeLoginFA">Change login credentials</string>
         </furAffinity>
         <e621>
             <mainLabel>e621</mainLabel>

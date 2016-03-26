@@ -34,6 +34,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
 
         language = new XmlManager();
         language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+        setTitle(language.getContentById("QTLabel"));
 
         initComponents();
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -120,6 +121,8 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         downloadUpload.add(downloadButton);
         downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png"))); // NOI18N
         downloadButton.setText(language.getContentById("downloadButton"));
+        downloadButton.setFocusPainted(false);
+        downloadButton.setFocusable(false);
         downloadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downloadButtonActionPerformed(evt);
@@ -129,6 +132,8 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         downloadUpload.add(updateButton);
         updateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png"))); // NOI18N
         updateButton.setText(language.getContentById("updateButton"));
+        updateButton.setFocusPainted(false);
+        updateButton.setFocusable(false);
         updateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 updateButtonActionPerformed(evt);
@@ -153,6 +158,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
 
         okButton.setText(language.getContentById("ok"));
         okButton.setEnabled(false);
+        okButton.setFocusable(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -183,9 +189,9 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(59, 59, 59)
-                                .addComponent(downloadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(downloadButton, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(updateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(updateButton, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
@@ -223,7 +229,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                                 .addComponent(e621Button))
                             .addComponent(jSeparator1)))
                     .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(downloadButton)
                             .addComponent(updateButton))
@@ -233,7 +239,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         .addComponent(inputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(okButton)))
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         DAButton.setFocusPainted(false);
@@ -418,40 +424,53 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         @SuppressWarnings("unchecked")
         private void initComponents() {
             XmlManager artists = new XmlManager();
-            File artistsXml = new File("");
+            File artistsXml;
 
-            switch (status) {
-                case 1:
-                    break;
-                case 2:
-                    break;
-                case 3:
-                    try {
+            try {
+                switch (status) {
+                    case 1:
+                        artistsXml = new File(xml.getContentById("DAoutput") + "\\artists-log.xml");
+                        if (!artistsXml.exists()) {
+                            artists.createFile(artistsXml.getAbsolutePath());
+                        } else {
+                            artists.loadFile(artistsXml);
+                        }
+                        break;
+                    case 2:
+                        artistsXml = new File(xml.getContentById("TUoutput") + "\\artists-log.xml");
+                        if (!artistsXml.exists()) {
+                            artists.createFile(artistsXml.getAbsolutePath());
+                        } else {
+                            artists.loadFile(artistsXml);
+                        }
+                        break;
+                    case 3:
                         artistsXml = new File(xml.getContentById("GHoutput") + "\\artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
                             artists.loadFile(artistsXml);
                         }
-                    } catch (java.io.IOException ex) {
-                    }
-                    break;
-                case 4:
-                    try {
+                        break;
+                    case 4:
                         artistsXml = new File(xml.getContentById("FAoutput") + "\\artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
                             artists.loadFile(artistsXml);
                         }
-                    } catch (java.io.IOException ex) {
-                    }
-                    break;
-                case 5:
-                    break;
+                        break;
+                    case 5:
+                        artistsXml = new File(xml.getContentById("E621output") + "\\artists-log.xml");
+                        if (!artistsXml.exists()) {
+                            artists.createFile(artistsXml.getAbsolutePath());
+                        } else {
+                            artists.loadFile(artistsXml);
+                        }
+                        break;
+                }
+            } catch (java.io.IOException ex) {
             }
-
-            artists.loadFile(artistsXml.getAbsolutePath());
 
             ArrayList<String> list = artists.getAllContentsByName("name");
             int size = list.size();
@@ -469,11 +488,12 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             artistsCombo.setModel(new javax.swing.DefaultComboBoxModel<>(comboFiller));
 
             artistsCombo.addActionListener((ActionEvent e) -> {
-                list.stream().forEach((_item) -> {
+                list.stream().forEach((String _item) -> {
                     if (!artistsCombo.getSelectedItem().toString().equals(lambda)) {
                         okButton.setEnabled(true);
                         switch (status) {
                             case 1:
+                                url = artistsCombo.getSelectedItem().toString().toLowerCase() + "deviantart.com/gallery/?catpath=/";
                                 break;
                             case 2:
                                 break;
@@ -483,6 +503,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                                 url = "http://www.furaffinity.net/gallery/" + artistsCombo.getSelectedItem().toString().toLowerCase() + "/";
                                 break;
                             case 5:
+                                url = "https://e621.net/post/index/" + artistsCombo.getSelectedItem().toString().toLowerCase() + "/";
                                 break;
                         }
                     } else {

@@ -162,6 +162,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
     }
 
     private void setTree() {
+        this.setTitle(language.getContentById("options"));
         //This creates the root of the tree on which all the others will be linked (not visible)
         hierarchy = new DefaultMutableTreeNode("root");
 

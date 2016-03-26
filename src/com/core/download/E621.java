@@ -341,7 +341,6 @@ public class E621 extends BasicCore {
         tagOcc = artists.getTagIndex("imageCount", "" + originalNumOfImages);
         int before = Integer.parseInt(artists.getContentByName("imageCount", tagOcc));
         artists.setContentByName("imageCount", tagOcc + 1, "" + (before - numOfImages));
-        
         try {
             artists.saveXml();
         } catch (IOException ex) {
