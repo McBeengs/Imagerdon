@@ -1,0 +1,133 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<root>
+    <!--
+    Generic strings that can be used on the whole project, independent of the place or function
+    -->
+    <generic>
+        <button id="cancel">Cancel</button>
+        <button id="ok">Ok</button>
+        <button id="save">Save</button>
+        <button id="exit">Exit</button>
+        <string id="start">Start</string>
+        <string id="stop">Stop</string>
+        <string id="done">Done</string>
+        <string id="options">Options</string>
+        <string id="username">Username</string>
+        <string id="password">Password</string>
+        <string id="cancelLabel">Exit</string>
+        <string id="saveLabel">Save</string>
+    </generic>
+    
+    <search>
+        <string id=""></string>
+    </search>
+    
+    <!--
+    Strings that will be displayed accondingly on the JOptionPane they're designed
+    -->
+    <jOptionPanes>
+        <string id="genericErrorTitle">Error</string>
+        <string id="genericInfoTitle">Info</string>
+        <string id="genericWarningTitle">Warning</string>
+        <string id="cancelConfirm">Are you sure you want to exit without save?</string>
+        <string id="saveConfirm">Are you sure you want to save these settings?</string>
+        <string id="internetDroppedOut">Connection with the Internet has dropped out.</string>
+        <string id="errorUrlNonExistent">The URL provided doesn't exist on the site's database</string>
+        <string id="loginFailedFA">Login failed. Check your account settings on "Options < Settings < FurAffinity"</string>
+        <string id="artistUp2Date">The artist "&string" is already up to date. No need of an download</string>
+        <string id="artistExists">Seems like the artist "&string" already exists on the application database.&br Would you like to just update his images ? He had posted &num new images.</string>
+        <string id="skipEnabled">The artist "&string" will be skipped accondingly to the configuration.&br If you want to change this, alter the setting on the "Options" section.</string>
+        <string id="cancelDownload">Are you sure you want do cancel the download?</string>
+    </jOptionPanes>
+    
+    <!--
+    Strings and buttons that can be found on the "Settings" option on the submenus
+    -->
+    <optionsPane>
+        <gui>
+            <node id="first">GUI Settings</node>
+            <mainLabel>GUI Options</mainLabel>
+            <string id="language">Language</string>
+            <string id="style">Set style</string>
+            <alert>Alert: The program must be restarted</alert>
+            <checkbox id="updates1">Check updates on the start</checkbox>
+            <checkbox id="updates2">Notify me before installing new ones</checkbox>
+        </gui>
+        <downloads>
+            <node id="second">Sources Settings</node>
+            <mainLabel>Downloads Options</mainLabel>
+            <string id="simult">Number of simultaneous downloads</string>
+            <alert>Higher numbers means a slower process (Performance < Quantity)</alert>
+            <string id="output">Select the output of downloads</string>
+            <string id="subfolder">Create sub folders as new artists show up</string>
+            <string id="existed">If an artist (and therefore his images) already exists: </string>
+            <string id="skipArtist">Skip</string>
+            <string id="downloadCopy">Download an Copy</string>
+            <string id="askUser">Ask the user</string>
+        </downloads>
+        <deviantArt>
+            <mainLabel>DeviantArt</mainLabel>
+        </deviantArt>
+        <tumblr>
+            <mainLabel>Tumblr</mainLabel>
+        </tumblr>
+        <galleryHentai>
+            <mainLabel>Gallery Hentai</mainLabel>
+        </galleryHentai>
+        <furAffinity>
+            <mainLabel>FurAffinity</mainLabel>
+            <string id="changeLoginFA">Change login credentials</string>
+        </furAffinity>
+        <e621>
+            <mainLabel>e621</mainLabel>
+        </e621>
+    </optionsPane>
+    
+    <!--
+    Strings and buttons that can be found when creating a new quick task
+    -->
+    <quickTask>
+        <string id="QTLabel">Quick Task</string>
+        <string id="infoText1">Select an server...</string>
+        <string id="infoText2">Ok, so what you want to do ?</string>
+        <string id="downloadButton">Download</string>
+        <string id="updateButton">Update</string>
+        <string id="selectArtist">Select an artist:</string>
+    </quickTask>
+    
+    <!--
+    Strings and buttons that can be found when a new task is created
+    -->
+    <task>
+        <download>
+            <string id="downloadTitle">Download Gallery</string>
+            <string id="updateTitle">Update Gallery</string>
+            <string id="idle">Awaiting start...</string>
+            <string id="connecting">Connecting...</string>
+            <string id="loginIn">Logging in...</string>
+            <string id="getImages">Obtaining the number of images...</string>
+            <string id="GHGalleryName">Obtaining info...</string>
+            <string id="wentOK">All went ok... Awaiting Start.</string>
+            <string id="taskError">Unreachable gallery. Download aborted.</string>
+            <string id="downloading">Downloading... &num images left</string>
+            <string id="pause">Download paused</string>
+            <string id="cancelled">Download cancelled, &num images left behind</string>
+            <string id="downloadFinished">Download finished</string>
+        </download>
+    </task>
+    
+    <!--
+    Strings and buttons that can be found when checking for favs integridy
+    -->
+    <downloadFAFavs>
+        <string id="artist">Artist</string>
+        <string id="integridyDetails">Status</string>
+        <string id="checkIntegridy">Check Integridy</string>
+        <string id="checkButton">Check</string>
+        <string id="checkMessage">First, check if an artist appears more than once</string>
+        <string id="getRepeted">Getting repeated artists...</string>
+        <string id="doneCheck1">Done checking...</string>
+        <string id="doneCheck2">artists removed. Awaiting start.</string>
+        <string id="sendingMessage">Sending requests to the main panel...</string>
+    </downloadFAFavs>
+</root>
