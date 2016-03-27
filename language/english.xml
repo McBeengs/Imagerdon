@@ -105,6 +105,28 @@
         <string id="selectArtist">Select an artist:</string>
     </quickTask>
     
+    <webBrowser>
+        <mainLabel id="welcomeLabel">Alpha V3 - Welcome</mainLabel>
+        <random>Lorem ipsun, dolor sit amet.</random>
+        <random>I’m not weird, I’m gifted.</random>
+        <random>Life called… You failed</random>
+        <random>Don’t worry, I was born this way.</random>
+        <random>Your hands are really hairy.</random>
+        <random>We are so skilled!</random>
+        <random>Come to the dark side. We have cookies :)</random>
+        <random>Get high, climb a tree.</random>
+        <random>Did my sarcasm hurt your feels? Get over it.</random>
+        <random>DO NOT DISTURB, evil genius at work.</random>
+        <random>Love your enemies, it makes them angry.</random>
+        <random>Don’t mess with me! I have a stick!</random>
+        <random>We’re all gonna die, but I have a helmet.</random>
+        <random>The decision is maybe and that’s final!</random>
+        <random>They say that hard work never hurt anyone but why take the risk?</random>
+        <random>Every day is a day to fap.</random>
+        <random>Tomorrow has been cancelled due to lack of interest.</random>
+        <random>Tomatoes are depressing</random>
+    </webBrowser>
+    
     <!--
     Strings and buttons that can be found when a new task is created
     -->

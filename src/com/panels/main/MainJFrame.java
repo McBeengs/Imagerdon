@@ -1,9 +1,11 @@
 package com.panels.main;
 
 import com.beengs.store.PersistentCookiesStore;
+import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
 import com.panels.tools.FADownloadFavs;
+import com.util.replacements.GetAttributes;
 import com.util.xml.XmlManager;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -26,6 +28,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.io.File;
 import static java.lang.Thread.sleep;
 import javax.swing.JTabbedPane;
 import java.util.logging.Level;
@@ -42,6 +45,7 @@ import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.MinimalBalloonStyle;
 import net.java.balloontip.utils.FadingUtils;
 import net.java.balloontip.utils.TimingUtils;
+import org.apache.commons.io.FileUtils;
 import org.xml.sax.SAXException;
 
 public class MainJFrame extends javax.swing.JFrame {
@@ -49,10 +53,19 @@ public class MainJFrame extends javax.swing.JFrame {
     private boolean isTasksPanelHidden = false;
     private int sizeToScroll;
     private int numOfThreads = 0;
+    private XmlManager language;
     public static RemoveTask REMOVE_TASK;
     public static AddTask ADD_TASK;
 
     public MainJFrame() {
+        XmlManager xml = new XmlManager();
+        xml.loadFile("config\\options.xml");
+        String selected = xml.getContentByName("language", 0);
+        selected = selected.substring(0, selected.indexOf(","));
+
+        language = new XmlManager();
+        language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+
         REMOVE_TASK = new RemoveTask();
         ADD_TASK = new AddTask();
         initComponents();
@@ -430,6 +443,20 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     public static void main(String args[]) {
+        File getConfig = new File("config");
+        if (!getConfig.exists()) {
+            getConfig.mkdir();
+        }
+        File getOptions = new File("config\\options.xml");
+        if (!getOptions.exists()) {
+            try {
+                getOptions.createNewFile();
+                FileUtils.writeStringToFile(getOptions, GetAttributes.getOptions());
+            } catch (IOException ex) {
+                Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         XmlManager style = new XmlManager();
         style.loadFile("config\\options.xml");
         String set = style.getContentByName("style", 0);
@@ -523,7 +550,7 @@ public class MainJFrame extends javax.swing.JFrame {
 
         public ClosableTabbedPane() {
             store = new PersistentCookiesStore("cookies");
-            super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new WebViewPage("https;//www.google.com.br", store));
+            super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
             super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel("aaa"));
             super.setFocusable(false);
         }
@@ -729,7 +756,7 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     private class PopupMenu extends JPopupMenu {
-        
+
         @SuppressWarnings("")
         public PopupMenu() {
             setVisible(true);
