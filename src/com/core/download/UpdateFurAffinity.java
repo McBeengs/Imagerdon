@@ -87,12 +87,12 @@ public class UpdateFurAffinity extends BasicCore {
         artists = new XmlManager();
         pass = new PasswordManager();
 
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
-        artists.loadFile(xml.getContentById("FAoutput") + "\\artists-log.xml");
+        artists.loadFile(xml.getContentById("FAoutput") + "/artists-log.xml");
     }
 
     private boolean submittingForm() {
@@ -216,7 +216,7 @@ public class UpdateFurAffinity extends BasicCore {
                                         int cut = numOfImages - ((numOfPages - 1) * 72);
                                         originalNumOfImages = numOfImages;
                                         numOfImages -= onDisk;
-                                        finalPath = xml.getContentById("FAoutput") + "\\" + thread;
+                                        finalPath = xml.getContentById("FAoutput") + "/" + thread;
 
                                         taskManager.progressBar.setIndeterminate(false);
                                         taskManager.progressBar.setMinimum(0);
@@ -338,7 +338,7 @@ public class UpdateFurAffinity extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "\\" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();

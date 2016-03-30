@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.io.FileUtils;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -256,8 +257,10 @@ public class XmlManager {
         }
 
         values = getAllContentsByName(tagName);
-        if (values.stream().anyMatch((value) -> (value.equals(tagContent)))) {
-            return true;
+        for (int i = 0; i < values.size(); i++) {
+            if (values.get(i).equals(tagContent)) {
+                return true;
+            }
         }
 
         values.clear();
@@ -302,7 +305,7 @@ public class XmlManager {
             temp = content;
             selectValues(tagName, temp);
         }
-        
+
         ArrayList<String> out = new ArrayList<>();
 
         for (int i = 0; i < values.size(); i++) {
@@ -539,23 +542,12 @@ public class XmlManager {
     public void saveXml() throws IOException {
         formatXml();
         File newXml = new File(filePath);
-        FileWriter fileWriter = new FileWriter(newXml);
-        try (BufferedWriter writer = new BufferedWriter(fileWriter)) {
-            StringReader readerTemp = new StringReader(content);
-            try (BufferedReader reader = new BufferedReader(readerTemp)) {
-                if (!newXml.exists()) {
-                    newXml.createNewFile();
-                } else {
-                    newXml.delete();
-                    newXml.createNewFile();
-                }
-
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    writer.write(line);
-                    writer.newLine();
-                }
-            }
+        if (newXml.exists()) {
+            newXml.delete();
         }
+        
+        newXml.createNewFile();
+        FileUtils.writeStringToFile(newXml, content);
     }
 
     public String getContent() {

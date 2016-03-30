@@ -94,13 +94,13 @@ public class DeviantArt extends BasicCore {
         artists = new XmlManager();
         pass = new PasswordManager();
 
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         try {
-            File artistsXml = new File(xml.getContentById("DAoutput") + "\\artists-log.xml");
+            File artistsXml = new File(xml.getContentById("DAoutput") + "/artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {
@@ -109,7 +109,7 @@ public class DeviantArt extends BasicCore {
 
             String artist = link.substring(7, link.indexOf("."));
             artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-            finalPath = xml.getContentById("DAoutput") + "\\" + artist;
+            finalPath = xml.getContentById("DAoutput") + "/" + artist;
             File file = new File(finalPath);
             if (!file.exists()) {
                 file.mkdirs();
@@ -170,7 +170,7 @@ public class DeviantArt extends BasicCore {
         String artist = link.substring(7, link.indexOf("."));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         if (artists.checkIfTagExists("name", artist)) {
-            File getImages = new File(xml.getContentById("DAoutput") + "\\" + artist);
+            File getImages = new File(xml.getContentById("DAoutput") + "/" + artist);
             int older = getImages.listFiles().length;
 
             if (older == numOfImages) {
@@ -380,7 +380,7 @@ public class DeviantArt extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "\\" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();

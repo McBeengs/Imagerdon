@@ -19,11 +19,5 @@ public class SimpleJFrame {
         panel.setScene(new Scene(pb));
         frame.add(panel);
         frame.setVisible(true);
-
-        PlatformImpl.runLater(() -> {
-            for (int i = 0; i < 80; i++) {
-                pb.setProgress(i);
-            }
-        });
     }
 }

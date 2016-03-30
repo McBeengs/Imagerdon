@@ -6,40 +6,40 @@
       <style>Windows, 3</style>
     </gui>
     <downloads>
-      <scroll id="simult">10</scroll>
+      <scroll id="simult">5</scroll>
       <directory id="mainOutput">C:\Users\Mc\Documents\Repository</directory>
       <boolean id="sub">true</boolean>
       <dropdown id="existed">2</dropdown>
     </downloads>
     <deviantArt>
-      <string id="DAuser">-40, 25, -126, 104, -29, 12, -65, -81, -76, -27, -43, 30, -39, -107, 8, -21</string>
-      <string id="DApass">16, 93, 93, -84, -91, 35, -28, -45, -108, 63, 82, -97, 45, 8, -64, -118, -98, -127, -13, 104, -57, -67, -37, 79</string>
+      <string id="DAuser">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
+      <string id="DApass">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
       <directory id="DAoutput">C:\Users\Mc\Documents\Repository\DeviantArt</directory>
-      <boolean id="DAadvancedNaming">true</boolean>
-      <number id="DAnamingOption">1</number>
+      <boolean id="DAadvancedNaming">false</boolean>
+      <number id="DAnamingOption">0</number>
     </deviantArt>
     <tumblr>
       <string id="TUuser">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
       <string id="TUpass">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
       <directory id="TUoutput">C:\Users\Mc\Documents\Repository\Tumblr</directory>
-      <boolean id="TUadvancedNaming">true</boolean>
-      <number id="TUnamingOption">1</number>
+      <boolean id="TUadvancedNaming">false</boolean>
+      <number id="TUnamingOption">0</number>
     </tumblr>
     <galleryHentai>
       <directory id="GHoutput">C:\Users\Mc\Documents\Repository\Gallery Hentai</directory>
-      <boolean id="GHadvancedNaming">true</boolean>
-      <number id="GHnamingOption">1</number>
+      <boolean id="GHadvancedNaming">false</boolean>
+      <number id="GHnamingOption">0</number>
     </galleryHentai>
     <furAffinity>
-      <string id="FAuser">-127, -100, 76, -92, 66, -123, -63, 77, -97, 120, -4, -96, 101, 38, 13, 14</string>
-      <string id="FApass">-48, 98, 126, 116, 87, 22, 95, -121, -17, -35, 19, 43, 101, -3, 68, -115</string>
+      <string id="FAuser">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
+      <string id="FApass">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>
       <directory id="FAoutput">C:\Users\Mc\Documents\Repository\FurAffinity</directory>
       <boolean id="FAadvancedNaming">false</boolean>
       <number id="FAnamingOption">0</number>
     </furAffinity>
     <e621>
       <directory id="E621output">C:\Users\Mc\Documents\Repository\e621</directory>
-      <boolean id="E621advancedNaming">true</boolean>
+      <boolean id="E621advancedNaming">false</boolean>
       <number id="E621namingOption">0</number>
     </e621>
   </optionsPane>

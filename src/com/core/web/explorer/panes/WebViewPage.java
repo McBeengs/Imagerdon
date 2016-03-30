@@ -17,14 +17,10 @@
 package com.core.web.explorer.panes;
 
 import com.sun.javafx.application.PlatformImpl;
-import com.beengs.store.PersistentCookiesStore;
 import java.awt.BorderLayout;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.DoubleProperty;
@@ -50,6 +46,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import java.awt.Font;
+import javafx.beans.value.ChangeListener;
+import javafx.event.EventHandler;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.scene.web.WebHistory.Entry;
@@ -67,29 +65,15 @@ public class WebViewPage extends JPanel implements Serializable {
     private List<Entry> backFields;
     private List<Entry> forwardFields;
     private ZoomingPane zoomingPane;
-    private final PersistentCookiesStore store;
     private JFXPanel jFXPanel;
     private WebView browser;
 
     public WebViewPage() {
         initComponents();
-        store = new PersistentCookiesStore("cookies");
     }
 
     public WebViewPage(String url) {
         initComponents();
-        store = new PersistentCookiesStore("cookies");
-        createScene(url);
-    }
-
-    public WebViewPage(PersistentCookiesStore store) {
-        initComponents();
-        this.store = store;
-    }
-
-    public WebViewPage(String url, PersistentCookiesStore store) {
-        initComponents();
-        this.store = store;
         createScene(url);
     }
 
@@ -111,94 +95,109 @@ public class WebViewPage extends JPanel implements Serializable {
         createScene(url);
     }
 
-    private void createScene(String url) {
-        CookieManager manager = new CookieManager(store, CookiePolicy.ACCEPT_ALL);
-        CookieHandler.setDefault(manager);
+    private void createScene(final String url) {
+        PlatformImpl.runLater(new Runnable() {
+            @Override
+            public void run() {
+                browser = new WebView();
+                zoomingPane = new ZoomingPane(browser);
+                currentUrl = new Text(url);
+                BorderPane bp = new BorderPane();
+                bp.setCenter(zoomingPane);
+                VBox layout = new VBox();
+                layout.getChildren().setAll(createProgressReport(), browser);
+                jFXPanel.setScene(new Scene(layout));
 
-        PlatformImpl.runLater(() -> {
-            browser = new WebView();
-            zoomingPane = new ZoomingPane(browser);
-            currentUrl = new Text(url);
-            BorderPane bp = new BorderPane();
-            bp.setCenter(zoomingPane);
-            VBox layout = new VBox();
-            layout.getChildren().setAll(createProgressReport(), browser);
-            jFXPanel.setScene(new Scene(layout));
+                final ObservableList<Entry> entries = browser.getEngine().getHistory().getEntries();
 
-            ObservableList<Entry> entries = browser.getEngine().getHistory().getEntries();
+                browser.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State t1) {
+                        if (entries.size() > 0) {
+                            setUrlText(entries.get(entries.size() - 1).getUrl());
+                        }
+                        loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
 
-            browser.getEngine().getLoadWorker().stateProperty().addListener((ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State t1) -> {
-                if (entries.size() > 0) {
-                    setUrlText(entries.get(entries.size() - 1).getUrl());
-                }
-                loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
-
-                if (t1.equals(Worker.State.SUCCEEDED)) {
-                    loadProgress.progressProperty().unbind();
-                    loadProgress.progressProperty().set(100);
-                }
-            });
-
-            backFields = new ArrayList<>();
-            forwardFields = new ArrayList<>();
-
-            browser.getEngine().getHistory().getEntries().addListener((ListChangeListener.Change<? extends Entry> change) -> {
-                boolean checkIfExists = false;
-                for (Entry entry : backFields) {
-                    if (entries.get(entries.size() - 1).getUrl().equals(entry.getUrl())) {
-                        checkIfExists = true;
-                    }
-                }
-
-                if (!checkIfExists) {
-                    backFields.add(entries.get(entries.size() - 1));
-                    forwardFields.clear();
-                    forward.setDisable(true);
-                }
-
-                if (backFields.size() > 1) {
-                    back.setDisable(false);
-                }
-            });
-
-            back.setOnAction((ActionEvent t) -> {
-                forward.setDisable(false);
-                if (backFields.size() > 0) {
-                    browser.getEngine().load(backFields.get(backFields.size() - 2).getUrl());
-
-                    boolean checkIfExists = false;
-                    for (Entry entry : forwardFields) {
-                        if (forwardFields.get(forwardFields.size() - 1).getUrl().equals(entry.getUrl())) {
-                            checkIfExists = true;
+                        if (t1.equals(Worker.State.SUCCEEDED)) {
+                            loadProgress.progressProperty().unbind();
+                            loadProgress.progressProperty().set(100);
                         }
                     }
+                });
 
-                    if (!checkIfExists) {
-                        forwardFields.add(backFields.get(backFields.size() - 1));
+                backFields = new ArrayList<>();
+                forwardFields = new ArrayList<>();
+
+                browser.getEngine().getHistory().getEntries().addListener(new ListChangeListener<Entry>() {
+                    @Override
+                    public void onChanged(ListChangeListener.Change<? extends Entry> change) {
+                        boolean checkIfExists = false;
+                        for (Entry entry : backFields) {
+                            if (entries.get(entries.size() - 1).getUrl().equals(entry.getUrl())) {
+                                checkIfExists = true;
+                            }
+                        }
+
+                        if (!checkIfExists) {
+                            backFields.add(entries.get(entries.size() - 1));
+                            forwardFields.clear();
+                            forward.setDisable(true);
+                        }
+
+                        if (backFields.size() > 1) {
+                            back.setDisable(false);
+                        }
                     }
+                });
 
-                    backFields.remove(backFields.size() - 1);
+                back.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        forward.setDisable(false);
+                        if (backFields.size() > 0) {
+                            browser.getEngine().load(backFields.get(backFields.size() - 2).getUrl());
 
-                    if (backFields.get(backFields.size() - 1).getUrl().equals(backFields.get(0).getUrl())) {
-                        back.setDisable(true);
+                            boolean checkIfExists = false;
+                            for (Entry entry : forwardFields) {
+                                if (forwardFields.get(forwardFields.size() - 1).getUrl().equals(entry.getUrl())) {
+                                    checkIfExists = true;
+                                }
+                            }
+
+                            if (!checkIfExists) {
+                                forwardFields.add(backFields.get(backFields.size() - 1));
+                            }
+
+                            backFields.remove(backFields.size() - 1);
+
+                            if (backFields.get(backFields.size() - 1).getUrl().equals(backFields.get(0).getUrl())) {
+                                back.setDisable(true);
+                            }
+                        }
                     }
-                }
-            });
+                });
 
-            forward.setOnAction((ActionEvent t) -> {
-                if (forwardFields.size() > 0) {
-                    browser.getEngine().load(forwardFields.get(forwardFields.size() - 1).getUrl());
-                    forwardFields.remove(forwardFields.size() - 1);
-                } else {
-                    forward.setDisable(true);
-                }
-            });
-            
-            refresh.setOnAction((ActionEvent t) -> {
-                browser.getEngine().reload();
-            });
+                forward.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        if (forwardFields.size() > 0) {
+                            browser.getEngine().load(forwardFields.get(forwardFields.size() - 1).getUrl());
+                            forwardFields.remove(forwardFields.size() - 1);
+                        } else {
+                            forward.setDisable(true);
+                        }
+                    }
+                });
 
-            browser.getEngine().load(url);
+                refresh.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        browser.getEngine().reload();
+                    }
+                });
+
+                browser.getEngine().load(url);
+            }
         });
     }
 
@@ -206,12 +205,12 @@ public class WebViewPage extends JPanel implements Serializable {
         AffineTransform affinetransform = new AffineTransform();
         FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
         Font font = new Font(currentUrl.getFont().getName(), Font.PLAIN, (int) currentUrl.getFont().getSize());
-        
+
         int textWidth = (int) font.getStringBounds(text, frc).getWidth();
         if (textWidth > loadProgress.getWidth()) {
             text = "..." + text.substring(textWidth / 13);
         }
-        
+
         currentUrl.setText(text);
     }
 
@@ -234,7 +233,7 @@ public class WebViewPage extends JPanel implements Serializable {
 
         currentUrl.setFill(Color.WHITE);
         currentUrl.setFont(new javafx.scene.text.Font(16));
-        
+
         refresh.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
         refresh.setStyle("-fx-background-radius: 90 90 90 90;");
 
@@ -260,10 +259,13 @@ public class WebViewPage extends JPanel implements Serializable {
             final Scale scale = new Scale(1, 1);
             content.getTransforms().add(scale);
 
-            zoomFactor.addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                scale.setX(newValue.doubleValue());
-                scale.setY(zoomFactory);
-                requestLayout();
+            zoomFactor.addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> ov, Number t, Number t1) {
+                    scale.setX(t1.doubleValue());
+                    scale.setY(zoomFactory);
+                    requestLayout();
+                }
             });
         }
 

@@ -18,13 +18,13 @@ public class Option1 extends javax.swing.JPanel {
 
     public Option1(XmlManager xml) {
         this.xml = xml;
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
 
         language = new XmlManager();
         String set = xml.getContentByName("language", 0);
         set = set.substring(0, set.indexOf(","));
 
-        language.loadFile("language\\" + set.toLowerCase() + ".xml");
+        language.loadFile("language/" + set.toLowerCase() + ".xml");
 
         languages = new String[]{"English"};
 

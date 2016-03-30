@@ -22,7 +22,7 @@ public class Option5 extends javax.swing.JPanel {
 
         String set = xml.getContentByName("language", 0);
         set = set.substring(0, set.indexOf(","));
-        language.loadFile("language\\" + set.toLowerCase() + ".xml");
+        language.loadFile("language/" + set.toLowerCase() + ".xml");
         initComponents();
     }
 

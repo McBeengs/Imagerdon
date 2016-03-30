@@ -31,12 +31,12 @@ public class OptionsJFrame extends javax.swing.JFrame {
 
     public OptionsJFrame() throws SAXException, IOException {
         xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
 
         language = new XmlManager();
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         originalContent = xml.getContent();
         initComponents();
@@ -45,13 +45,13 @@ public class OptionsJFrame extends javax.swing.JFrame {
         mainContainer.setLayout(new GridBagLayout());
         c = new GridBagConstraints();
 
-        Option1 o1 = new Option1(xml);
-        Option2 o2 = new Option2(xml);
-        Option3 o3 = new Option3(xml);
-        Option4 o4 = new Option4(xml);
-        Option5 o5 = new Option5(xml);
-        Option6 o6 = new Option6(xml);
-        Option7 o7 = new Option7(xml);
+        final Option1 o1 = new Option1(xml);
+        final Option2 o2 = new Option2(xml);
+        final Option3 o3 = new Option3(xml);
+        final Option4 o4 = new Option4(xml);
+        final Option5 o5 = new Option5(xml);
+        final Option6 o6 = new Option6(xml);
+        final Option7 o7 = new Option7(xml);
         o1.setVisible(true);
         o2.setVisible(false);
         o3.setVisible(false);
@@ -189,7 +189,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
         hierarchy.add(section2);
         String[] section2Ops = new String[5];
 
-        for (int i = 2; i < language.getAllContentsByName("mainLabel").size(); i++) {
+        for (int i = 2; i < language.getAllContentsByName("mainLabel").size() - 1; i++) {
             section2Ops[i - 2] = language.getContentByName("mainLabel", i);
         }
         for (String section2Op : section2Ops) {

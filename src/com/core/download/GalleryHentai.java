@@ -83,10 +83,10 @@ public class GalleryHentai extends BasicCore {
         artists = new XmlManager();
         pass = new PasswordManager();
 
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
     }
 
     private boolean getInformationAboutGallery() throws IOException {
@@ -153,7 +153,7 @@ public class GalleryHentai extends BasicCore {
         taskManager.author.setText(display + " | Gallery Hentai");
 
         try {
-            File artistsXml = new File(xml.getContentById("GHoutput") + "\\artists-log.xml");
+            File artistsXml = new File(xml.getContentById("GHoutput") + "/artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {
@@ -170,7 +170,7 @@ public class GalleryHentai extends BasicCore {
                 }
             }
 
-            finalPath = xml.getContentById("GHoutput") + "\\" + display;
+            finalPath = xml.getContentById("GHoutput") + "/" + display;
             File file = new File(finalPath);
             if (!file.exists()) {
                 file.mkdirs();
@@ -410,7 +410,7 @@ public class GalleryHentai extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "\\" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();

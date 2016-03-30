@@ -86,13 +86,13 @@ public class FurAffinity extends BasicCore {
         artists = new XmlManager();
         pass = new PasswordManager();
 
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         try {
-            File artistsXml = new File(xml.getContentById("FAoutput") + "\\artists-log.xml");
+            File artistsXml = new File(xml.getContentById("FAoutput") + "/artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {
@@ -102,7 +102,7 @@ public class FurAffinity extends BasicCore {
             String artist = url.substring(35, url.lastIndexOf("/"));
             artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
             if (Boolean.parseBoolean(xml.getContentById("sub"))) {
-                finalPath = xml.getContentById("FAoutput") + "\\" + artist;
+                finalPath = xml.getContentById("FAoutput") + "/" + artist;
                 File file = new File(finalPath);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -447,7 +447,7 @@ public class FurAffinity extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "\\" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();

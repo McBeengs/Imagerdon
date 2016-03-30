@@ -1,6 +1,5 @@
 package com.panels.main;
 
-import com.beengs.store.PersistentCookiesStore;
 import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
@@ -59,12 +58,12 @@ public class MainJFrame extends javax.swing.JFrame {
 
     public MainJFrame() {
         XmlManager xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String selected = xml.getContentByName("language", 0);
         selected = selected.substring(0, selected.indexOf(","));
 
         language = new XmlManager();
-        language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+        language.loadFile("language/" + selected.toLowerCase() + ".xml");
 
         REMOVE_TASK = new RemoveTask();
         ADD_TASK = new AddTask();
@@ -423,7 +422,7 @@ public class MainJFrame extends javax.swing.JFrame {
         }
     }
 
-    private void makeBalloon(JComponent component, String text, Color color) {
+    private void makeBalloon(final JComponent component, final String text, final Color color) {
         new Thread("Showing ballon \"" + text + "\"") {
             @Override
             public void run() {
@@ -443,39 +442,53 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     public static void main(String args[]) {
+        boolean checkOS = false;
+
         File getConfig = new File("config");
         if (!getConfig.exists()) {
             getConfig.mkdir();
         }
-        File getOptions = new File("config\\options.xml");
+
+        File getOptions = new File("config/options.xml");
         if (!getOptions.exists()) {
-            try {
-                getOptions.createNewFile();
-                FileUtils.writeStringToFile(getOptions, GetAttributes.getOptions());
-            } catch (IOException ex) {
-                Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+            String xml = GetAttributes.getOptions();
 
-        XmlManager style = new XmlManager();
-        style.loadFile("config\\options.xml");
-        String set = style.getContentByName("style", 0);
-        set = set.substring(0, set.indexOf(","));
-
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if (set.equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+            if (xml != null) {
+                try {
+                    getOptions.createNewFile();
+                    FileUtils.writeStringToFile(getOptions, xml);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } else {
+                checkOS = true;
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        java.awt.EventQueue.invokeLater(() -> {
-            new MainJFrame().setVisible(true);
-        });
+        if (!checkOS) {
+            XmlManager style = new XmlManager();
+            style.loadFile("config/options.xml");
+            String set = style.getContentByName("style", 0);
+            set = set.substring(0, set.indexOf(","));
+
+            try {
+                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                    if (set.equals(info.getName())) {
+                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+                java.util.logging.Logger.getLogger(MainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    new MainJFrame().setVisible(true);
+                }
+            });
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -546,10 +559,8 @@ public class MainJFrame extends javax.swing.JFrame {
 
         private int tabCount = 0;
         private TabCloseUI closeUI = new TabCloseUI(this);
-        private PersistentCookiesStore store;
 
         public ClosableTabbedPane() {
-            store = new PersistentCookiesStore("cookies");
             super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
             super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel("aaa"));
             super.setFocusable(false);
@@ -582,7 +593,7 @@ public class MainJFrame extends javax.swing.JFrame {
         @Override
         public void setSelectedIndex(int index) {
             if (index == this.getTabCount() - 1 && index != 0) {
-                WebViewPage page = new WebViewPage("http://furaffinity.net/", store);
+                WebViewPage page = new WebViewPage("http://furaffinity.net/");
                 this.addTab("New Tab     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
             } else {
                 super.setSelectedIndex(index);

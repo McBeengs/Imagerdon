@@ -80,12 +80,12 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         }
 
         XmlManager xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String selected = xml.getContentByName("language", 0);
         selected = selected.substring(0, selected.indexOf(","));
 
         language = new XmlManager();
-        language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+        language.loadFile("language/" + selected.toLowerCase() + ".xml");
 
         if (typeOfTask == DOWNLOAD_TASK) {
             taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));

@@ -5,12 +5,14 @@ import com.util.xml.XmlManager;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
 public class QuickTaskJFrame extends javax.swing.JFrame {
 
@@ -28,12 +30,12 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     @SuppressWarnings("")
     public QuickTaskJFrame() {
         xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String selected = xml.getContentByName("language", 0);
         selected = selected.substring(0, selected.indexOf(","));
 
         language = new XmlManager();
-        language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+        language.loadFile("language/" + selected.toLowerCase() + ".xml");
         setTitle(language.getContentById("QTLabel"));
 
         initComponents();
@@ -358,38 +360,41 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
 
         @SuppressWarnings("unchecked")
         private void initComponents() {
-            urlText.addCaretListener((CaretEvent e) -> {
-                switch (status) {
-                    case 1:
-                        if (urlText.getText().endsWith("/gallery/?catpath=/")) {
-                            okButton.setEnabled(true);
-                        } else {
-                            okButton.setEnabled(false);
-                        }
-                        break;
-                    case 2:
-                        break;
-                    case 3:
-                        if (urlText.getText().contains("http://g.e-hentai.org/g/")) {
-                            okButton.setEnabled(true);
-                        } else {
-                            okButton.setEnabled(false);
-                        }
-                        break;
-                    case 4:
-                        if (urlText.getText().contains("http://www.furaffinity.net/gallery/")) {
-                            okButton.setEnabled(true);
-                        } else {
-                            okButton.setEnabled(false);
-                        }
-                        break;
-                    case 5:
-                        if (urlText.getText().contains("https://e621.net/post/index/")) {
-                            okButton.setEnabled(true);
-                        } else {
-                            okButton.setEnabled(false);
-                        }
-                        break;
+            urlText.addCaretListener(new CaretListener() {
+                @Override
+                public void caretUpdate(CaretEvent e) {
+                    switch (status) {
+                        case 1:
+                            if (urlText.getText().endsWith("/gallery/?catpath=/")) {
+                                okButton.setEnabled(true);
+                            } else {
+                                okButton.setEnabled(false);
+                            }
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            if (urlText.getText().contains("http://g.e-hentai.org/g/")) {
+                                okButton.setEnabled(true);
+                            } else {
+                                okButton.setEnabled(false);
+                            }
+                            break;
+                        case 4:
+                            if (urlText.getText().contains("http://www.furaffinity.net/gallery/")) {
+                                okButton.setEnabled(true);
+                            } else {
+                                okButton.setEnabled(false);
+                            }
+                            break;
+                        case 5:
+                            if (urlText.getText().contains("https://e621.net/post/index/")) {
+                                okButton.setEnabled(true);
+                            } else {
+                                okButton.setEnabled(false);
+                            }
+                            break;
+                    }
                 }
             });
 
@@ -430,7 +435,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             try {
                 switch (status) {
                     case 1:
-                        artistsXml = new File(xml.getContentById("DAoutput") + "\\artists-log.xml");
+                        artistsXml = new File(xml.getContentById("DAoutput") + "/artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -438,7 +443,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 2:
-                        artistsXml = new File(xml.getContentById("TUoutput") + "\\artists-log.xml");
+                        artistsXml = new File(xml.getContentById("TUoutput") + "/artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -446,7 +451,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 3:
-                        artistsXml = new File(xml.getContentById("GHoutput") + "\\artists-log.xml");
+                        artistsXml = new File(xml.getContentById("GHoutput") + "/artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -454,7 +459,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 4:
-                        artistsXml = new File(xml.getContentById("FAoutput") + "\\artists-log.xml");
+                        artistsXml = new File(xml.getContentById("FAoutput") + "/artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -462,7 +467,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 5:
-                        artistsXml = new File(xml.getContentById("E621output") + "\\artists-log.xml");
+                        artistsXml = new File(xml.getContentById("E621output") + "/artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -473,7 +478,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             } catch (java.io.IOException ex) {
             }
 
-            ArrayList<String> list = artists.getAllContentsByName("name");
+            final ArrayList<String> list = artists.getAllContentsByName("name");
             int size = list.size();
 
             String[] comboFiller = new String[size + 1];
@@ -488,8 +493,9 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
 
             artistsCombo.setModel(new javax.swing.DefaultComboBoxModel<>(comboFiller));
 
-            artistsCombo.addActionListener((ActionEvent e) -> {
-                list.stream().forEach((String _item) -> {
+            artistsCombo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
                     if (!artistsCombo.getSelectedItem().toString().equals(lambda)) {
                         okButton.setEnabled(true);
                         switch (status) {
@@ -510,11 +516,13 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                     } else {
                         okButton.setEnabled(false);
                     }
-                });
+                }
             });
 
             javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+
             this.setLayout(layout);
+
             layout.setHorizontalGroup(
                     layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()

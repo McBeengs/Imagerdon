@@ -32,12 +32,12 @@ public class MainPane extends javax.swing.JPanel {
 
     public MainPane() {
         xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
         String selected = xml.getContentByName("language", 0);
         selected = selected.substring(0, selected.indexOf(","));
 
         language = new XmlManager();
-        language.loadFile("language\\" + selected.toLowerCase() + ".xml");
+        language.loadFile("language/" + selected.toLowerCase() + ".xml");
 
         initComponents();
         initSubComponents();

@@ -8,8 +8,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
-import com.panels.main.DownloadTaskJPanel;
-import com.panels.main.MainJFrame;
 import com.util.crypto.PasswordManager;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
@@ -42,12 +40,12 @@ public class FADownloadFavs extends javax.swing.JFrame {
 
     public FADownloadFavs() {
         xml = new XmlManager();
-        xml.loadFile("config\\options.xml");
+        xml.loadFile("config/options.xml");
 
         language = new XmlManager();
         String temp = xml.getContentByName("language", 0);
         temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language\\" + temp.toLowerCase() + ".xml");
+        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         pass = new PasswordManager();
 
@@ -242,7 +240,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
         removeRepeated(index);
     }
 
-    private void removeRepeated(int index) {
+    private void removeRepeated(final int index) {
         new Thread("Removing slot nº" + index) {
             @Override
             public void run() {
@@ -293,15 +291,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
         new Thread() {
             @Override
             public void run() {
-                artistsLinks.stream().map((artist) -> "http://www.furaffinity.net/gallery/" + artist.toString()).forEach((Object finalLink) -> {
-                    MainJFrame.AddTask add = MainJFrame.ADD_TASK;
-                    add.addTask(finalLink.toString(), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
-//                    try {
-//                        java.lang.Thread.sleep(10000);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-                });
+                System.out.println("TODO send artists without error 503");
             }
         }.start();
 

@@ -31,7 +31,7 @@ public class Option2 extends javax.swing.JPanel {
         String set = xml.getContentByName("language", 0);
         set = set.substring(0, set.indexOf(","));
 
-        language.loadFile("language\\" + set.toLowerCase() + ".xml");
+        language.loadFile("language/" + set.toLowerCase() + ".xml");
 
         duality = new String[3];
         duality[0] = language.getContentById("skipArtist");
