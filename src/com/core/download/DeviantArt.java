@@ -23,9 +23,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
-import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
-import java.applet.AudioClip;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedOutputStream;
@@ -49,10 +48,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import static java.lang.Thread.sleep;
 
 public class DeviantArt extends BasicCore {
 
-    private int buttonPressedResult;
     private int numOfImages;
     private int numOfPages = 0;
     private int originalNumOfImages;
@@ -62,15 +61,11 @@ public class DeviantArt extends BasicCore {
     private boolean isDownloading = false;
     private String finalPath;
     private String link;
-    private HtmlPage uncensoredLink;
     private WebClient webClient;
     private XmlManager xml;
     private XmlManager language;
     private XmlManager artists;
-    private PasswordManager pass;
     private ExecutorService executor;
-    private AudioClip sucess;
-    private AudioClip fail;
     private DownloadTaskJPanel taskManager;
     int helper = 0;
 
@@ -89,15 +84,9 @@ public class DeviantArt extends BasicCore {
         java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
         java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
 
-        xml = new XmlManager();
-        language = new XmlManager();
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
-        pass = new PasswordManager();
-
-        xml.loadFile("config/options.xml");
-        String temp = xml.getContentByName("language", 0);
-        temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         try {
             File artistsXml = new File(xml.getContentById("DAoutput") + "/artists-log.xml");

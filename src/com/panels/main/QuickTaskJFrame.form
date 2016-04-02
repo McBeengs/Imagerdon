@@ -35,18 +35,18 @@
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="GHButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="tumblrButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="DAButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="FAButton" alignment="0" max="32767" attributes="0"/>
-                          <Component id="e621Button" alignment="1" min="-2" pref="135" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="taskLabel" min="-2" pref="182" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="DAButton" max="32767" attributes="0"/>
+                          <Component id="tumblrButton" max="32767" attributes="0"/>
+                          <Component id="GHButton" alignment="0" pref="140" max="32767" attributes="0"/>
+                          <Component id="FAButton" alignment="0" max="32767" attributes="0"/>
+                          <Component id="e621Button" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -107,16 +107,16 @@
                       <Component id="okButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="DAButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="tumblrButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="GHButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="FAButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="e621Button" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="jSeparator1" min="-2" pref="239" max="-2" attributes="0"/>

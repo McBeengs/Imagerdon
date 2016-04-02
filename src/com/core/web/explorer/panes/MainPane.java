@@ -3,6 +3,7 @@ package com.core.web.explorer.panes;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Component;
@@ -31,13 +32,8 @@ public class MainPane extends javax.swing.JPanel {
     private final ArrayList<String> randoms;
 
     public MainPane() {
-        xml = new XmlManager();
-        xml.loadFile("config/options.xml");
-        String selected = xml.getContentByName("language", 0);
-        selected = selected.substring(0, selected.indexOf(","));
-
-        language = new XmlManager();
-        language.loadFile("language/" + selected.toLowerCase() + ".xml");
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         initComponents();
         initSubComponents();
@@ -165,11 +161,11 @@ public class MainPane extends javax.swing.JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                File daXml = new File(xml.getContentById("DAoutput") + "\\artists-log.xml");
-                File tuXml = new File(xml.getContentById("TUoutput") + "\\artists-log.xml");
-                File ghXml = new File(xml.getContentById("GHoutput") + "\\artists-log.xml");
-                File faXml = new File(xml.getContentById("FAoutput") + "\\artists-log.xml");
-                File e621Xml = new File(xml.getContentById("E621output") + "\\artists-log.xml");
+                File daXml = new File(xml.getContentById("DAoutput") + System.getProperty("user.dir") + "artists-log.xml");
+                File tuXml = new File(xml.getContentById("TUoutput") + System.getProperty("user.dir") + "artists-log.xml");
+                File ghXml = new File(xml.getContentById("GHoutput") + System.getProperty("user.dir") + "artists-log.xml");
+                File faXml = new File(xml.getContentById("FAoutput") + System.getProperty("user.dir") + "artists-log.xml");
+                File e621Xml = new File(xml.getContentById("E621output") + System.getProperty("user.dir") + "artists-log.xml");
                 File[] xmls = new File[]{daXml, tuXml, ghXml, faXml, e621Xml};
 
                 int totalImagesNumber = 0;

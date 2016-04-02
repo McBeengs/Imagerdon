@@ -21,7 +21,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
-import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -47,6 +47,7 @@ import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import static java.lang.Thread.sleep;
 
 public class GalleryHentai extends BasicCore {
 
@@ -66,7 +67,6 @@ public class GalleryHentai extends BasicCore {
     private final XmlManager language;
     private final XmlManager artists;
     private ExecutorService executor;
-    private final PasswordManager pass;
     private final DownloadTaskJPanel taskManager;
 
     public GalleryHentai(String url, DownloadTaskJPanel taskManager) {
@@ -78,15 +78,9 @@ public class GalleryHentai extends BasicCore {
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
 
-        xml = new XmlManager();
-        language = new XmlManager();
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
-        pass = new PasswordManager();
-
-        xml.loadFile("config/options.xml");
-        String temp = xml.getContentByName("language", 0);
-        temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language/" + temp.toLowerCase() + ".xml");
     }
 
     private boolean getInformationAboutGallery() throws IOException {
@@ -153,7 +147,7 @@ public class GalleryHentai extends BasicCore {
         taskManager.author.setText(display + " | Gallery Hentai");
 
         try {
-            File artistsXml = new File(xml.getContentById("GHoutput") + "/artists-log.xml");
+            File artistsXml = new File(xml.getContentById("GHoutput") + "/" + "artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {
@@ -170,7 +164,7 @@ public class GalleryHentai extends BasicCore {
                 }
             }
 
-            finalPath = xml.getContentById("GHoutput") + "/" + display;
+            finalPath = xml.getContentById("GHoutput") + System.getProperty("line.separator") + display;
             File file = new File(finalPath);
             if (!file.exists()) {
                 file.mkdirs();

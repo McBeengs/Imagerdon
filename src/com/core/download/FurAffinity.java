@@ -26,6 +26,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
 import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -81,18 +82,12 @@ public class FurAffinity extends BasicCore {
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
 
-        xml = new XmlManager();
-        language = new XmlManager();
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
-        pass = new PasswordManager();
-
-        xml.loadFile("config/options.xml");
-        String temp = xml.getContentByName("language", 0);
-        temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language/" + temp.toLowerCase() + ".xml");
 
         try {
-            File artistsXml = new File(xml.getContentById("FAoutput") + "/artists-log.xml");
+            File artistsXml = new File(xml.getContentById("FAoutput") + "/" + "artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {

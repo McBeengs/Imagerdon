@@ -1,5 +1,6 @@
 package com.panels.options;
 
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.io.IOException;
 import javax.swing.ImageIcon;
@@ -13,25 +14,16 @@ public class Option2 extends javax.swing.JPanel {
     private String userOutput;
     private final String[] duality;
     private final XmlManager xml;
-    private int scrollValue;
-    private String outputPath;
-    private String cb1;
-    private String cb2;
     private final XmlManager language;
 
     public Option2(XmlManager xml) throws SAXException, IOException {
         this.xml = xml;
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         userOutput = xml.getContentByName("directory", 0);
         directory = new JFileChooser(userOutput);
         directory.setDialogTitle("Select where save");
         directory.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-        language = new XmlManager();
-        String set = xml.getContentByName("language", 0);
-        set = set.substring(0, set.indexOf(","));
-
-        language.loadFile("language/" + set.toLowerCase() + ".xml");
 
         duality = new String[3];
         duality[0] = language.getContentById("skipArtist");

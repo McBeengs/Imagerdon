@@ -1,9 +1,8 @@
 package com.panels.options;
 
-import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
 public class Option1 extends javax.swing.JPanel {
@@ -18,13 +17,7 @@ public class Option1 extends javax.swing.JPanel {
 
     public Option1(XmlManager xml) {
         this.xml = xml;
-        xml.loadFile("config/options.xml");
-
-        language = new XmlManager();
-        String set = xml.getContentByName("language", 0);
-        set = set.substring(0, set.indexOf(","));
-
-        language.loadFile("language/" + set.toLowerCase() + ".xml");
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         languages = new String[]{"English"};
 

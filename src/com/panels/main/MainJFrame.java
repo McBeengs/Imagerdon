@@ -4,7 +4,7 @@ import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
 import com.panels.tools.FADownloadFavs;
-import com.util.replacements.GetAttributes;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -27,25 +28,28 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-import java.io.File;
 import static java.lang.Thread.sleep;
+import java.net.URISyntaxException;
 import javax.swing.JTabbedPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.MinimalBalloonStyle;
 import net.java.balloontip.utils.FadingUtils;
 import net.java.balloontip.utils.TimingUtils;
-import org.apache.commons.io.FileUtils;
 import org.xml.sax.SAXException;
+import static java.lang.Thread.sleep;
 
 public class MainJFrame extends javax.swing.JFrame {
 
@@ -57,13 +61,7 @@ public class MainJFrame extends javax.swing.JFrame {
     public static AddTask ADD_TASK;
 
     public MainJFrame() {
-        XmlManager xml = new XmlManager();
-        xml.loadFile("config/options.xml");
-        String selected = xml.getContentByName("language", 0);
-        selected = selected.substring(0, selected.indexOf(","));
-
-        language = new XmlManager();
-        language.loadFile("language/" + selected.toLowerCase() + ".xml");
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         REMOVE_TASK = new RemoveTask();
         ADD_TASK = new AddTask();
@@ -442,53 +440,27 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     public static void main(String args[]) {
-        boolean checkOS = false;
+        XmlManager style = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        String set = style.getContentByName("style", 0);
+        set = set.substring(0, set.indexOf(","));
 
-        File getConfig = new File("config");
-        if (!getConfig.exists()) {
-            getConfig.mkdir();
-        }
-
-        File getOptions = new File("config/options.xml");
-        if (!getOptions.exists()) {
-            String xml = GetAttributes.getOptions();
-
-            if (xml != null) {
-                try {
-                    getOptions.createNewFile();
-                    FileUtils.writeStringToFile(getOptions, xml);
-                } catch (IOException ex) {
-                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if (set.equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
                 }
-            } else {
-                checkOS = true;
             }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(MainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
-        if (!checkOS) {
-            XmlManager style = new XmlManager();
-            style.loadFile("config/options.xml");
-            String set = style.getContentByName("style", 0);
-            set = set.substring(0, set.indexOf(","));
-
-            try {
-                for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                    if (set.equals(info.getName())) {
-                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-                java.util.logging.Logger.getLogger(MainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MainJFrame().setVisible(true);
             }
-
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    new MainJFrame().setVisible(true);
-                }
-            });
-        }
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -593,8 +565,25 @@ public class MainJFrame extends javax.swing.JFrame {
         @Override
         public void setSelectedIndex(int index) {
             if (index == this.getTabCount() - 1 && index != 0) {
-                WebViewPage page = new WebViewPage("http://furaffinity.net/");
-                this.addTab("New Tab     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
+                boolean isJavaFxAvailable;
+
+                try {
+                    ClassLoader.getSystemClassLoader().loadClass("javafx.embed.swing.JFXPanel");
+                    isJavaFxAvailable = true;
+                } catch (ClassNotFoundException e) {
+                    isJavaFxAvailable = false;
+                }
+
+                if (isJavaFxAvailable) {
+                    WebViewPage page = new WebViewPage("http://furaffinity.net/");
+                    this.addTab("New Tab     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
+                } else {
+                    String[] texts = new String[] {"Your machine doesn't have the latest JavaFX Runtime. If you <br>"
+                            + "want to use the built-in browser, please install", "this"};
+                    
+                    UsefulMethods.makeHyperlinkOptionPane(texts, "https://java.com/en/download/",
+                            1, JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 super.setSelectedIndex(index);
             }

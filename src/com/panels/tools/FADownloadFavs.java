@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -39,14 +40,8 @@ public class FADownloadFavs extends javax.swing.JFrame {
     private int numOfPages = 1;
 
     public FADownloadFavs() {
-        xml = new XmlManager();
-        xml.loadFile("config/options.xml");
-
-        language = new XmlManager();
-        String temp = xml.getContentByName("language", 0);
-        temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language/" + temp.toLowerCase() + ".xml");
-
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         pass = new PasswordManager();
 
         artists = new ArrayList<>();

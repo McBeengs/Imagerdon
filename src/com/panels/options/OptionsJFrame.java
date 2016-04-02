@@ -1,5 +1,6 @@
 package com.panels.options;
 
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -30,13 +31,8 @@ public class OptionsJFrame extends javax.swing.JFrame {
     private final XmlManager language;
 
     public OptionsJFrame() throws SAXException, IOException {
-        xml = new XmlManager();
-        xml.loadFile("config/options.xml");
-
-        language = new XmlManager();
-        String temp = xml.getContentByName("language", 0);
-        temp = temp.substring(0, temp.indexOf(","));
-        language.loadFile("language/" + temp.toLowerCase() + ".xml");
+        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         originalContent = xml.getContent();
         initComponents();

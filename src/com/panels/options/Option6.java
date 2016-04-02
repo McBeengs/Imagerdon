@@ -9,6 +9,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -31,14 +32,12 @@ public class Option6 extends javax.swing.JPanel {
 
     public Option6(XmlManager xml) {
         this.xml = xml;
-        language = new XmlManager();
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         pass = new PasswordManager();
+        
         userOutput = xml.getContentById("FAoutput");
         directory = new JFileChooser(userOutput);
-
-        String set = xml.getContentByName("language", 0);
-        set = set.substring(0, set.indexOf(","));
-        language.loadFile("language/" + set.toLowerCase() + ".xml");
+        
         initComponents();
 
         if (Boolean.getBoolean(xml.getContentById("sub"))) {

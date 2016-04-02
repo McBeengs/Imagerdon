@@ -12,6 +12,7 @@ import com.core.download.FurAffinity;
 import com.core.download.GalleryHentai;
 import com.core.download.UpdateFurAffinity;
 import com.panels.main.MainJFrame.RemoveTask;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -22,6 +23,7 @@ import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import static java.lang.Thread.sleep;
 
 public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
@@ -79,13 +81,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             }
         }
 
-        XmlManager xml = new XmlManager();
-        xml.loadFile("config/options.xml");
-        String selected = xml.getContentByName("language", 0);
-        selected = selected.substring(0, selected.indexOf(","));
-
-        language = new XmlManager();
-        language.loadFile("language/" + selected.toLowerCase() + ".xml");
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
         if (typeOfTask == DOWNLOAD_TASK) {
             taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));

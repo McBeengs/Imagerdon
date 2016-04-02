@@ -17,14 +17,11 @@
 
 package com.util.xml;
 
-import java.io.File;
-import java.io.IOException;
+import com.util.UsefulMethods;
 
 public class NovoClass {
-    public static void main(String[] args) throws IOException {
-        XmlManager xml = new XmlManager();
-        File artistsXml = new File(System.getProperty("user.home") + "/Documents/Repository/FurAffinity/artists-log.xml");
-        xml.loadFile(artistsXml);
-        System.out.println(xml.getContentByName("server", 0));
+    public static void main(String[] args) {
+        XmlManager xml = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
+        System.out.println(xml.getContent());
     }
 }

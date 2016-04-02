@@ -1,0 +1,211 @@
+/* **********   GetOptions.java   **********
+ *
+ * This piece of garbage was brought to you by nothing less than the almighty lord
+ * of programming, the Java God and ruler of all the non living things, McBeengs, 
+ * A.K.A. myself. I don't mind anyone steal or using my codes at their own business,
+ * but at least, and I meant VERY least, give me the proper credit for it. I really
+ * don't know what the code below does at this point in time while I write this stuff, 
+ * but if you took all this time to sit, rip the .java files and read all this 
+ * unnecessary bullshit, you know for what you came, doesn't ?
+ * 
+ * Copyright(c) {YEAR!!!} Mc's brilliant mind. All Rights (kinda) Reserved.
+ */
+
+ /*
+ * {Insert class description here}
+ */
+package com.util;
+
+import com.util.xml.XmlManager;
+import java.awt.Desktop;
+import java.io.UnsupportedEncodingException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.apache.commons.io.FileUtils;
+
+public class UsefulMethods {
+
+    public static final int OPTIONS = 0;
+    public static final int LANGUAGE = 1;
+
+    public static String getOptions() {
+        //get OS
+        String os = System.getProperty("os.name").toLowerCase();
+        String path;
+
+        //get system path separator
+        String separator = System.getProperty("file.separator");
+
+        if (os.contains("win")) {
+            path = System.getProperty("user.home") + separator + "Documents" + separator + "Repository" + separator;
+        } else if (os.contains("uni") || os.contains("nux") || os.contains("aix")) {
+            path = System.getProperty("user.home") + separator + "Repository" + separator;
+        } else if (os.contains("sunos")) {
+            path = System.getProperty("user.home") + "";
+        } else if (os.contains("mac")) {
+            path = System.getProperty("user.home") + "";
+        } else {
+            JOptionPane.showMessageDialog(null, "Your OS doesn't support Java's JRE 7 or above.");
+            return null;
+        }
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<root>\n"
+                + "  <optionsPane>\n"
+                + "    <gui>\n"
+                + "      <language>English, 0</language>\n"
+                + "      <style>Metal, 0</style>\n"
+                + "    </gui>\n"
+                + "    <downloads>\n"
+                + "      <scroll id=\"simult\">5</scroll>\n"
+                + "      <directory id=\"mainOutput\">" + path + "</directory>\n"
+                + "      <boolean id=\"sub\">true</boolean>\n"
+                + "      <dropdown id=\"existed\">2</dropdown>\n"
+                + "    </downloads>\n"
+                + "    <deviantArt>\n"
+                + "      <string id=\"DAuser\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <string id=\"DApass\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <directory id=\"DAoutput\">" + path + "DeviantArt" + "</directory>\n"
+                + "      <boolean id=\"DAadvancedNaming\">false</boolean>\n"
+                + "      <number id=\"DAnamingOption\">0</number>\n"
+                + "    </deviantArt>\n"
+                + "    <tumblr>\n"
+                + "      <string id=\"TUuser\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <string id=\"TUpass\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <directory id=\"TUoutput\">" + path + "Tumblr" + "</directory>\n"
+                + "      <boolean id=\"TUadvancedNaming\">false</boolean>\n"
+                + "      <number id=\"TUnamingOption\">0</number>\n"
+                + "    </tumblr>\n"
+                + "    <galleryHentai>\n"
+                + "      <directory id=\"GHoutput\">" + path + "Gallery Hentai" + "</directory>\n"
+                + "      <boolean id=\"GHadvancedNaming\">false</boolean>\n"
+                + "      <number id=\"GHnamingOption\">0</number>\n"
+                + "    </galleryHentai>\n"
+                + "    <furAffinity>\n"
+                + "      <string id=\"FAuser\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <string id=\"FApass\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
+                + "      <directory id=\"FAoutput\">" + path + "FurAffinity" + "</directory>\n"
+                + "      <boolean id=\"FAadvancedNaming\">false</boolean>\n"
+                + "      <number id=\"FAnamingOption\">0</number>\n"
+                + "    </furAffinity>\n"
+                + "    <e621>\n"
+                + "      <directory id=\"E621output\">" + path + "e621" + "</directory>\n"
+                + "      <boolean id=\"E621advancedNaming\">false</boolean>\n"
+                + "      <number id=\"E621namingOption\">0</number>\n"
+                + "    </e621>\n"
+                + "  </optionsPane>\n"
+                + "</root>\n"
+                + "";
+    }
+
+    public static String getClassPath(Class<?> cls) {
+        try {
+            String path = cls.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String decodedPath = java.net.URLDecoder.decode(path, "UTF-8");
+            if (decodedPath.contains("/")) {
+                decodedPath = decodedPath.substring(0, decodedPath.lastIndexOf("/")) + "/";
+            } else {
+                decodedPath = decodedPath.substring(0, decodedPath.lastIndexOf("\\")) + "\\";
+            }
+
+            return decodedPath;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public static XmlManager loadManager(int manager) {
+        UsefulMethods get = new UsefulMethods();
+        XmlManager xml = new XmlManager();
+        String separator = System.getProperty("file.separator");
+        boolean checkOS = false;
+
+        File getConfig = new File(UsefulMethods.getClassPath(get.getClass()) + "/config");
+        if (!getConfig.exists()) {
+            getConfig.mkdir();
+        }
+
+        File getOptions = new File(UsefulMethods.getClassPath(get.getClass()) + "config/options.xml");
+        if (!getOptions.exists()) {
+            String content = UsefulMethods.getOptions();
+
+            if (content != null) {
+                try {
+                    getOptions.createNewFile();
+                    FileUtils.writeStringToFile(getOptions, content);
+                } catch (IOException ex) {
+                    Logger.getLogger(get.getClass().getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                checkOS = true;
+            }
+        }
+
+        xml.loadFile(UsefulMethods.getClassPath(get.getClass()) + "config/options.xml");
+        switch (manager) {
+            case OPTIONS:
+                return xml;
+            case LANGUAGE:
+                if (!checkOS) {
+                    XmlManager language = new XmlManager();
+                    String temp = xml.getContentByName("language", 0);
+                    temp = temp.substring(0, temp.indexOf(","));
+                    language.loadFile(UsefulMethods.getClassPath(get.getClass()) + separator + "language" + separator + temp.toLowerCase() + ".xml");
+
+                    return language;
+                }
+        }
+
+        return null;
+    }
+
+    public static void makeHyperlinkOptionPane(String[] message, String link, int linkIndex, int messageType) {
+        JOptionPane pane = new JOptionPane(null, messageType);
+
+        StringBuilder style = new StringBuilder("font-family:" + pane.getFont().getFamily() + ";");
+        style.append("font-weight:").append(pane.getFont().isBold() ? "bold" : "normal").append(";");
+        style.append("font-size:").append(pane.getFont().getSize()).append("pt;");
+        style.append("background-color: rgb(").append(pane.getBackground().getRed()).append(", ")
+                .append(pane.getBackground().getGreen()).append(", ").append(pane.getBackground().getBlue()).append(");");
+        style.append("user-select: none;");
+
+        JEditorPane ep = new JEditorPane();
+        ep.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
+        ep.setEditable(false);
+        ep.setBorder(null);
+        
+        String show = "";
+        for (int i = 0; i < message.length; i++) {
+            if (i != linkIndex) {
+                show += message[i];
+            } else {
+                show += " <a href=\"" + link + "\">" + message[i] + "</a>";
+            }
+        }
+        
+        ep.setText("<html><body style=\"" + style + "\">" + show + "</body></html>");
+
+        ep.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (IOException | URISyntaxException ex) {
+                        
+                    }
+                }
+            }
+        });
+        
+        JOptionPane.showMessageDialog(null, ep, "", messageType);
+    }
+}

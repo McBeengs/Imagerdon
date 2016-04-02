@@ -1,6 +1,7 @@
 package com.panels.options;
 
 import com.util.crypto.PasswordManager;
+import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import javax.swing.JFileChooser;
 
@@ -15,14 +16,12 @@ public class Option7 extends javax.swing.JPanel {
 
     public Option7(XmlManager xml) {
         this.xml = xml;
-        language = new XmlManager();
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         pass = new PasswordManager();
-        userOutput = xml.getContentById("FAoutput");
+        
+        userOutput = xml.getContentById("E621output");
         directory = new JFileChooser(userOutput);
-
-        String set = xml.getContentByName("language", 0);
-        set = set.substring(0, set.indexOf(","));
-        language.loadFile("language/" + set.toLowerCase() + ".xml");
+        
         initComponents();
 
         if (Boolean.getBoolean(xml.getContentById("sub"))) {
