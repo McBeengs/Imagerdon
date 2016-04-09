@@ -31,11 +31,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -68,7 +68,7 @@ public class UpdateFurAffinity extends BasicCore {
     private ExecutorService executor;
     private final XmlManager xml;
     private final XmlManager language;
-    private final XmlManager artists;
+    private XmlManager artists;
     private final PasswordManager pass;
     private final DownloadTaskJPanel taskManager;
 
@@ -88,6 +88,37 @@ public class UpdateFurAffinity extends BasicCore {
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
         pass = new PasswordManager();
+
+        try {
+            File artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
+            if (!artistsXml.exists()) {
+                artists.createFile(artistsXml.getAbsolutePath());
+            } else {
+                artists.loadFile(artistsXml);
+            }
+
+            String artist = url.substring(35, url.lastIndexOf("/"));
+            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+            if (Boolean.parseBoolean(xml.getContentById("sub"))) {
+                finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + artist;
+                File file = new File(finalPath);
+                if (!file.exists()) {
+                    file.mkdirs();
+                } else {
+                    //System.out.println("folder exists");
+                }
+            } else {
+                finalPath = xml.getContentById("FAoutput");
+                File file = new File(finalPath);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+            }
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.toString());
+        } catch (IOException ex) {
+            System.out.println(ex.toString());
+        }
     }
 
     private boolean submittingForm() {
@@ -197,7 +228,7 @@ public class UpdateFurAffinity extends BasicCore {
                                     tagOcc = artists.getTagIndex("name", thread);
                                     int onDisk = Integer.parseInt(artists.getContentByName("imageCount", tagOcc + 1));
 
-                                    if (onDisk == numOfImages) {
+                                    if (onDisk >= numOfImages) {
                                         JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", thread));
                                         taskManager.progressBar.setValue(taskManager.progressBar.getMaximum());
                                         taskManager.progressBar.setStringPainted(true);
@@ -211,7 +242,8 @@ public class UpdateFurAffinity extends BasicCore {
                                         int cut = numOfImages - ((numOfPages - 1) * 72);
                                         originalNumOfImages = numOfImages;
                                         numOfImages -= onDisk;
-                                        finalPath = xml.getContentById("FAoutput") + System.getProperty("line.separator") + thread;
+                                        finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + thread
+                                                + System.getProperty("file.separator");
 
                                         taskManager.progressBar.setIndeterminate(false);
                                         taskManager.progressBar.setMinimum(0);
@@ -256,7 +288,7 @@ public class UpdateFurAffinity extends BasicCore {
                                                     if (isTerminated) {
                                                         break;
                                                     } else {
-                                                        executor.execute(new ImageExtractor(temp, onDisk + count));
+                                                        executor.execute(new ImageExtractor(temp, count));
                                                     }
                                                 }
                                                 count++;
@@ -273,6 +305,11 @@ public class UpdateFurAffinity extends BasicCore {
                     }
                 }
             });
+        } else {
+            taskManager.progressBar.setIndeterminate(false);
+            taskManager.infoDisplay.setText(language.getContentById("taskError"));
+            taskManager.playButton.setVisible(true);
+            taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
         }
     }
 

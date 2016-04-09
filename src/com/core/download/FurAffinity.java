@@ -85,6 +85,7 @@ public class FurAffinity extends BasicCore {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
+        pass = new PasswordManager();
 
         try {
             File artistsXml = new File(xml.getContentById("FAoutput") + "/" + "artists-log.xml");

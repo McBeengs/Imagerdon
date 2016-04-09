@@ -161,11 +161,12 @@ public class MainPane extends javax.swing.JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                File daXml = new File(xml.getContentById("DAoutput") + System.getProperty("user.dir") + "artists-log.xml");
-                File tuXml = new File(xml.getContentById("TUoutput") + System.getProperty("user.dir") + "artists-log.xml");
-                File ghXml = new File(xml.getContentById("GHoutput") + System.getProperty("user.dir") + "artists-log.xml");
-                File faXml = new File(xml.getContentById("FAoutput") + System.getProperty("user.dir") + "artists-log.xml");
-                File e621Xml = new File(xml.getContentById("E621output") + System.getProperty("user.dir") + "artists-log.xml");
+                String s = System.getProperty("file.separator");
+                File daXml = new File(xml.getContentById("DAoutput") + s + "artists-log.xml");
+                File tuXml = new File(xml.getContentById("TUoutput") + s + "artists-log.xml");
+                File ghXml = new File(xml.getContentById("GHoutput") + s + "artists-log.xml");
+                File faXml = new File(xml.getContentById("FAoutput") + s + "artists-log.xml");
+                File e621Xml = new File(xml.getContentById("E621output") + s + "artists-log.xml");
                 File[] xmls = new File[]{daXml, tuXml, ghXml, faXml, e621Xml};
 
                 int totalImagesNumber = 0;

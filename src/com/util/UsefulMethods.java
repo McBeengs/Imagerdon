@@ -17,6 +17,7 @@
 package com.util;
 
 import com.util.xml.XmlManager;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.io.UnsupportedEncodingException;
 import java.io.File;
@@ -24,10 +25,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.styles.MinimalBalloonStyle;
+import net.java.balloontip.utils.FadingUtils;
+import net.java.balloontip.utils.TimingUtils;
 import org.apache.commons.io.FileUtils;
 
 public class UsefulMethods {
@@ -128,12 +135,12 @@ public class UsefulMethods {
         String separator = System.getProperty("file.separator");
         boolean checkOS = false;
 
-        File getConfig = new File(UsefulMethods.getClassPath(get.getClass()) + "/config");
+        File getConfig = new File(UsefulMethods.getClassPath(get.getClass()) + separator + "config");
         if (!getConfig.exists()) {
             getConfig.mkdir();
         }
 
-        File getOptions = new File(UsefulMethods.getClassPath(get.getClass()) + "config/options.xml");
+        File getOptions = new File(UsefulMethods.getClassPath(get.getClass()) + "config" + separator + "options.xml");
         if (!getOptions.exists()) {
             String content = UsefulMethods.getOptions();
 
@@ -149,7 +156,7 @@ public class UsefulMethods {
             }
         }
 
-        xml.loadFile(UsefulMethods.getClassPath(get.getClass()) + "config/options.xml");
+        xml.loadFile(UsefulMethods.getClassPath(get.getClass()) + "config" + separator + "options.xml");
         switch (manager) {
             case OPTIONS:
                 return xml;
@@ -207,5 +214,24 @@ public class UsefulMethods {
         });
         
         JOptionPane.showMessageDialog(null, ep, "", messageType);
+    }
+    
+    public static void makeBalloon(final JComponent component, final String text, final Color color) {
+        new Thread("Showing ballon \"" + text + "\"") {
+            @Override
+            public void run() {
+                BalloonTip balloonTip = new BalloonTip(component, new JLabel(text), new MinimalBalloonStyle(color, 10),
+                        BalloonTip.Orientation.LEFT_BELOW, BalloonTip.AttachLocation.SOUTH, 25, 10, false);
+
+                FadingUtils.fadeInBalloon(balloonTip, null, 200, 24);
+                try {
+                    java.lang.Thread.sleep(4000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                FadingUtils.fadeOutBalloon(balloonTip, null, 200, 24);
+                TimingUtils.showTimedBalloon(balloonTip, 200);
+            }
+        }.start();
     }
 }

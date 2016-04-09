@@ -1,6 +1,6 @@
 package com.panels.main;
 
-import com.panels.main.MainJFrame.AddTask;
+import com.panels.main.StylizedMainJFrame.AddTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.GridBagConstraints;
@@ -301,10 +301,10 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             @Override
             public void run() {
                 if (isDownload) {
-                    AddTask add = MainJFrame.ADD_TASK;
+                    AddTask add = StylizedMainJFrame.ADD_TASK;
                     add.addTask(urlText.getText(), status - 1, DownloadTaskJPanel.DOWNLOAD_TASK);
                 } else {
-                    AddTask add = MainJFrame.ADD_TASK;
+                    StylizedMainJFrame.AddTask add = StylizedMainJFrame.ADD_TASK;
                     add.addTask(url, status - 1, DownloadTaskJPanel.UPDATE_TASK);
                 }
             }

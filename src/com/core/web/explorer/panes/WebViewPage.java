@@ -18,8 +18,6 @@ package com.core.web.explorer.panes;
 
 import com.sun.javafx.application.PlatformImpl;
 import java.awt.BorderLayout;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,11 +42,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import java.awt.Font;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
-import javafx.scene.text.Text;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Border;
 import javafx.scene.transform.Scale;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.WebView;
@@ -60,7 +57,8 @@ public class WebViewPage extends JPanel implements Serializable {
     private Button back;
     private Button forward;
     private ProgressBar loadProgress;
-    private Text currentUrl;
+    private TextField currentUrl;
+    private Button go;
     private Button refresh;
     private List<Entry> backFields;
     private List<Entry> forwardFields;
@@ -101,7 +99,7 @@ public class WebViewPage extends JPanel implements Serializable {
             public void run() {
                 browser = new WebView();
                 zoomingPane = new ZoomingPane(browser);
-                currentUrl = new Text(url);
+                currentUrl = new TextField(url);
                 BorderPane bp = new BorderPane();
                 bp.setCenter(zoomingPane);
                 VBox layout = new VBox();
@@ -114,13 +112,15 @@ public class WebViewPage extends JPanel implements Serializable {
                     @Override
                     public void changed(ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State t1) {
                         if (entries.size() > 0) {
-                            setUrlText(entries.get(entries.size() - 1).getUrl());
+                            currentUrl.setText(entries.get(entries.size() - 1).getUrl());
                         }
                         loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
 
                         if (t1.equals(Worker.State.SUCCEEDED)) {
                             loadProgress.progressProperty().unbind();
                             loadProgress.progressProperty().set(100);
+                        } else if (t1.equals(Worker.State.FAILED)) {
+                            System.out.println("deu ruim na pagina");
                         }
                     }
                 });
@@ -189,6 +189,30 @@ public class WebViewPage extends JPanel implements Serializable {
                     }
                 });
 
+                currentUrl.setOnKeyPressed(new EventHandler<javafx.scene.input.KeyEvent>() {
+                    @Override
+                    public void handle(javafx.scene.input.KeyEvent t) {
+                        if (t.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                            String url = currentUrl.getText();
+                            
+                            if (url.startsWith("www.")) {
+                                url = "http://" + url;
+                            } else {
+                                url = "http://www." + url;
+                            }
+                            
+                            browser.getEngine().load(url);
+                        }
+                    }
+                });
+
+                go.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        browser.getEngine().load(currentUrl.getText());
+                    }
+                });
+
                 refresh.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
@@ -201,23 +225,11 @@ public class WebViewPage extends JPanel implements Serializable {
         });
     }
 
-    private void setUrlText(String text) {
-        AffineTransform affinetransform = new AffineTransform();
-        FontRenderContext frc = new FontRenderContext(affinetransform, true, true);
-        Font font = new Font(currentUrl.getFont().getName(), Font.PLAIN, (int) currentUrl.getFont().getSize());
-
-        int textWidth = (int) font.getStringBounds(text, frc).getWidth();
-        if (textWidth > loadProgress.getWidth()) {
-            text = "..." + text.substring(textWidth / 13);
-        }
-
-        currentUrl.setText(text);
-    }
-
     private HBox createProgressReport() {
         loadProgress = new ProgressBar();
         back = new Button();
         forward = new Button();
+        go = new Button();
         refresh = new Button();
 
         back.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/back.png"))));
@@ -231,14 +243,22 @@ public class WebViewPage extends JPanel implements Serializable {
         loadProgress.setMinHeight(40);
         loadProgress.setMinWidth(400);
 
-        currentUrl.setFill(Color.WHITE);
+        currentUrl.setBorder(Border.EMPTY);
+        currentUrl.setStyle("-fx-background-color: transparent;"
+                + "-fx-text-fill: white;");
         currentUrl.setFont(new javafx.scene.text.Font(16));
+        currentUrl.setAlignment(Pos.CENTER);
+
+        go.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
+        go.setStyle("-fx-background-radius: 0 90 90 0;");
 
         refresh.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
         refresh.setStyle("-fx-background-radius: 90 90 90 90;");
+        refresh.setMaxWidth(Double.MAX_VALUE);
+        refresh.setPrefSize(Double.MAX_VALUE, 0);
 
         HBox progressReport = new HBox();
-        progressReport.getChildren().setAll(back, forward, new ProgressIndicatorBar().setProgressBar(), refresh);
+        progressReport.getChildren().setAll(back, forward, new ProgressIndicatorBar().setProgressBar(), go, refresh);
         progressReport.setPadding(new Insets(10));
         progressReport.setAlignment(Pos.CENTER_LEFT);
 

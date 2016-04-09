@@ -11,7 +11,7 @@ import com.core.download.E621;
 import com.core.download.FurAffinity;
 import com.core.download.GalleryHentai;
 import com.core.download.UpdateFurAffinity;
-import com.panels.main.MainJFrame.RemoveTask;
+import com.panels.main.StylizedMainJFrame.RemoveTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Color;
@@ -19,7 +19,6 @@ import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -193,7 +192,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 if (isTerminated) {
-                    RemoveTask remove = MainJFrame.REMOVE_TASK;
+                    RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
                     remove.removeTask(numOfTask - 1);
                 } else if (!firstClick) {
                     stopButton.setVisible(true);
@@ -262,7 +261,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         return new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
-                RemoveTask remove = MainJFrame.REMOVE_TASK;
+                RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
                 remove.removeTask(numOfTask - 1);
             }
 
@@ -298,7 +297,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                RemoveTask remove = MainJFrame.REMOVE_TASK;
+                RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
                 remove.removeTask(numOfTask - 1);
             }
         };

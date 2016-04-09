@@ -1,23 +1,42 @@
+/* **********   StylizedMainJFrame.java   **********
+ *
+ * This piece of garbage was brought to you by nothing less than the almighty lord
+ * of programming, the Java God and ruler of all the non living things, McBeengs, 
+ * A.K.A. myself. I don't mind anyone steal or using my codes at their own business,
+ * but at least, and I meant VERY least, give me the proper credit for it. I really
+ * don't know what the code below does at this point in time while I write this stuff, 
+ * but if you took all this time to sit, rip the .java files and read all this 
+ * unnecessary bullshit, you know for what you came, doesn't ?
+ * 
+ * Copyright(c) {YEAR!!!} Mc's brilliant mind. All Rights (kinda) Reserved.
+ */
+
+ /*
+ * {Insert class description here}
+ */
 package com.panels.main;
 
+import aurelienribon.slidinglayout.SLAnimator;
+import aurelienribon.slidinglayout.SLConfig;
+import aurelienribon.slidinglayout.SLKeyframe;
+import aurelienribon.slidinglayout.SLPanel;
+import aurelienribon.slidinglayout.SLSide;
 import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
 import com.panels.tools.FADownloadFavs;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -25,34 +44,68 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.io.IOException;
 import static java.lang.Thread.sleep;
-import java.net.URISyntaxException;
-import javax.swing.JTabbedPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
+import javax.swing.JPopupMenu.Separator;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.MinimalBalloonStyle;
 import net.java.balloontip.utils.FadingUtils;
 import net.java.balloontip.utils.TimingUtils;
 import org.xml.sax.SAXException;
-import static java.lang.Thread.sleep;
 
-public class MainJFrame extends javax.swing.JFrame {
+public class StylizedMainJFrame extends javax.swing.JFrame {
 
+    //Swing variables
+    private SLPanel mainPanel;
+    private SLPanel tasksPanel;
+    private SLPanel scrollPane;
+    private SLPanel blankCanvas;
+    private SLConfig showCfg;
+    private SLConfig hideCfg;
+    private SLConfig notificationCfg;
+    private JPanel mainButtonsPanel;
+    private JPanel searchPane;
+    private JLabel hideTasksButton;
+    private JLabel searchButton;
+    private JButton quickTaskButton;
+    private JButton artistsTasksButton;
+    private JMenuBar menuBar;
+    private JMenu fileOption;
+    private JMenu toolsOption;
+    private JMenu optionsOption;
+    private JMenuItem downloadFAFavs;
+    private JMenu furAffinityTools;
+    private JMenuItem settingsOptions;
+    private JTabbedPane explorerPane;
+    private Separator jSeparator1;
+    private Separator jSeparator2;
+    private JSeparator jSeparator3;
+    private JTextField searchText;
+    private JScrollPane tasksCanvas;
+    //General variables
     private boolean isTasksPanelHidden = false;
     private int sizeToScroll;
     private int numOfThreads = 0;
@@ -60,42 +113,41 @@ public class MainJFrame extends javax.swing.JFrame {
     public static RemoveTask REMOVE_TASK;
     public static AddTask ADD_TASK;
 
-    public MainJFrame() {
-        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
-
-        REMOVE_TASK = new RemoveTask();
+    public StylizedMainJFrame() {
         ADD_TASK = new AddTask();
+        REMOVE_TASK = new RemoveTask();
         initComponents();
-        initSubComponents();
     }
 
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        mainPanel = new SLPanel();
+        tasksCanvas = new JScrollPane();
+        scrollPane = new SLPanel();
+        tasksPanel = new SLPanel();
+        blankCanvas = new SLPanel();
+        hideTasksButton = new JLabel();
+        quickTaskButton = new JButton();
+        artistsTasksButton = new JButton();
+        mainButtonsPanel = new JPanel();
+        searchPane = new JPanel();
+        jSeparator3 = new JSeparator();
+        searchButton = new JLabel();
+        searchText = new JTextField();
+        menuBar = new JMenuBar();
+        fileOption = new JMenu();
+        toolsOption = new JMenu();
+        furAffinityTools = new JMenu();
+        downloadFAFavs = new JMenuItem();
+        optionsOption = new JMenu();
+        settingsOptions = new JMenuItem();
 
-        tasksCanvas = new javax.swing.JScrollPane();
-        scrollPane = new javax.swing.JPanel();
-        blankCanvas = new javax.swing.JPanel();
-        hideTasksButton = new javax.swing.JLabel();
-        quickTaskButton = new javax.swing.JButton();
-        artistsTasksButton = new javax.swing.JButton();
-        searchPane = new javax.swing.JPanel();
-        jSeparator3 = new javax.swing.JSeparator();
-        searchButton = new javax.swing.JLabel();
-        searchText = new javax.swing.JTextField();
-        explorerPane = new ClosableTabbedPane();
-        menuBar = new javax.swing.JMenuBar();
-        fileOption = new javax.swing.JMenu();
-        toolsOption = new javax.swing.JMenu();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        furAffinityTools = new javax.swing.JMenu();
-        downloadFAFavs = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        optionsOption = new javax.swing.JMenu();
-        settingsOptions = new javax.swing.JMenuItem();
+        this.setTitle("Alpha V3 - Fancy");
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setMinimumSize(new Dimension(500, 590));
+        setPreferredSize(new Dimension(1142, 530));
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(500, 590));
+        mainPanel.setTweenManager(SLAnimator.createTweenManager());
+        SLAnimator.start();
 
         tasksCanvas.setBorder(null);
         tasksCanvas.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -103,43 +155,118 @@ public class MainJFrame extends javax.swing.JFrame {
         tasksCanvas.setHorizontalScrollBar(null);
 
         scrollPane.setBackground(new java.awt.Color(225, 225, 225));
+        scrollPane.setOpaque(true);
         scrollPane.setMinimumSize(new java.awt.Dimension(510, 105));
         scrollPane.setPreferredSize(new java.awt.Dimension(510, 120));
-
         javax.swing.GroupLayout scrollPaneLayout = new javax.swing.GroupLayout(scrollPane);
         scrollPane.setLayout(scrollPaneLayout);
         scrollPaneLayout.setHorizontalGroup(
-            scrollPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 510, Short.MAX_VALUE)
+                scrollPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 510, Short.MAX_VALUE)
         );
         scrollPaneLayout.setVerticalGroup(
-            scrollPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 509, Short.MAX_VALUE)
+                scrollPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 509, Short.MAX_VALUE)
         );
 
         tasksCanvas.setViewportView(scrollPane);
+        javax.swing.GroupLayout tasksPanelLayout = new javax.swing.GroupLayout(tasksPanel);
+        tasksPanel.setLayout(tasksPanelLayout);
+        tasksPanelLayout.setHorizontalGroup(
+                tasksPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(tasksPanelLayout.createSequentialGroup()
+                        .addComponent(tasksCanvas, javax.swing.GroupLayout.PREFERRED_SIZE, 527, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 20, Short.MAX_VALUE))
+        );
+        tasksPanelLayout.setVerticalGroup(
+                tasksPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(tasksCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+        );
+
+        blankCanvas.setLayout(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+
+        gc.gridx = 1;
+        gc.gridy = 1;
+        gc.gridheight = 1;
+        gc.gridwidth = 1;
+        gc.weightx = 50;
+        gc.weighty = 100;
+        gc.insets = new Insets(12, 25, 10, 10);
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.anchor = GridBagConstraints.NORTH;
+
+        blankCanvas.add(mainButtonsPanel, gc);
+
+        gc.insets = new Insets(60, 25, 10, 10);
+        gc.fill = GridBagConstraints.BOTH;
+        gc.anchor = GridBagConstraints.CENTER;
+        blankCanvas.add(new ClosableTabbedPane(), gc);
+
+        showCfg = new SLConfig(mainPanel)
+                .row(1f).col(530).col(1f)
+                .beginGrid(0, 0)
+                .row(1f).col(1f)
+                .place(0, 0, tasksPanel)
+                .endGrid()
+                .beginGrid(0, 1)
+                .row(1f).col(1f)
+                .place(0, 0, blankCanvas)
+                .endGrid();
+
+        hideCfg = new SLConfig(mainPanel)
+                .row(1f).col(1f)
+                .beginGrid(0, 0)
+                .row(1f).col(1f)
+                .place(0, 0, blankCanvas)
+                .endGrid();
+        
+        notificationCfg = new SLConfig(mainPanel)
+                .row(1f).col(530).col(1f)
+                .beginGrid(0, 0)
+                .row(1f).col(1f)
+                .place(0, 0, tasksPanel)
+                .endGrid()
+                .beginGrid(0, 1)
+                .row(1f).col(1f)
+                .place(0, 0, blankCanvas)
+                .endGrid();
+
+        mainPanel.initialize(notificationCfg);
+        add(mainPanel);
+
+        fileOption.setText("File");
+        menuBar.add(fileOption);
+
+        toolsOption.setText("Tools");
+        //Add DeviantArt tools here
+        toolsOption.add(new Separator());
+        //Add Tumblr tools here
+        toolsOption.add(new Separator());
+        //Add GalleryHentai tools here
+        toolsOption.add(new Separator());
+        furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
+        furAffinityTools.setText("FurAffinity");
+        downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
+        downloadFAFavs.setText("Download All Favs");
+        furAffinityTools.add(downloadFAFavs);
+        toolsOption.add(furAffinityTools);
+        toolsOption.add(new Separator());
+        //Add E621 tools here
+        menuBar.add(toolsOption);
+
+        optionsOption.setText("Options");
+        settingsOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/settings.png"))); // NOI18N
+        settingsOptions.setText("Settings");
+        optionsOption.add(settingsOptions);
+        menuBar.add(optionsOption);
+
+        setJMenuBar(menuBar);
 
         hideTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png"))); // NOI18N
-        hideTasksButton.setToolTipText("Hide tasks panel");
-        hideTasksButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                hideTasksButtonMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                hideTasksButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                hideTasksButtonMouseExited(evt);
-            }
-        });
 
         quickTaskButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/lightning.png"))); // NOI18N
         quickTaskButton.setText("Add Quick Task");
-        quickTaskButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                quickTaskButtonActionPerformed(evt);
-            }
-        });
 
         artistsTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/list.png"))); // NOI18N
         artistsTasksButton.setText("Artists Tasks");
@@ -151,221 +278,161 @@ public class MainJFrame extends javax.swing.JFrame {
 
         searchButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/search.png"))); // NOI18N
         searchButton.setToolTipText("");
-        searchButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                searchButtonMouseClicked(evt);
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                searchButtonMouseEntered(evt);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                searchButtonMouseExited(evt);
-            }
-        });
 
         searchText.setText("Functions, artists, etc...");
         searchText.setBorder(null);
+        searchText.setFocusable(false);
         searchText.setOpaque(false);
-        searchText.addCaretListener(new javax.swing.event.CaretListener() {
-            public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                searchTextCaretUpdate(evt);
-            }
-        });
-        searchText.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                searchTextMouseClicked(evt);
-            }
-        });
 
         javax.swing.GroupLayout searchPaneLayout = new javax.swing.GroupLayout(searchPane);
         searchPane.setLayout(searchPaneLayout);
         searchPaneLayout.setHorizontalGroup(
-            searchPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPaneLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(searchText, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(searchButton)
-                .addGap(5, 5, 5))
+                searchPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPaneLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(searchText, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchButton)
+                        .addGap(5, 5, 5))
         );
         searchPaneLayout.setVerticalGroup(
-            searchPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSeparator3)
-            .addComponent(searchButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(searchText)
+                searchPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jSeparator3)
+                .addComponent(searchButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(searchText)
         );
 
-        explorerPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-        explorerPane.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        explorerPane.setName(""); // NOI18N
-
-        javax.swing.GroupLayout blankCanvasLayout = new javax.swing.GroupLayout(blankCanvas);
-        blankCanvas.setLayout(blankCanvasLayout);
-        blankCanvasLayout.setHorizontalGroup(
-            blankCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(blankCanvasLayout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addComponent(hideTasksButton, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(quickTaskButton, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(artistsTasksButton, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(searchPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(explorerPane)
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(mainButtonsPanel);
+        mainButtonsPanel.setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                        .addComponent(hideTasksButton, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(quickTaskButton, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(artistsTasksButton, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(searchPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        blankCanvasLayout.setVerticalGroup(
-            blankCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(blankCanvasLayout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addGroup(blankCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(blankCanvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(quickTaskButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(artistsTasksButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(hideTasksButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(searchPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(explorerPane, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE))
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(quickTaskButton)
+                        .addComponent(artistsTasksButton))
+                .addComponent(hideTasksButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(searchPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         quickTaskButton.setFocusPainted(false);
-        explorerPane.getAccessibleContext().setAccessibleName("");
-
-        fileOption.setText("File");
-        menuBar.add(fileOption);
-
-        toolsOption.setText("Tools");
-        toolsOption.add(jSeparator1);
-
-        furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png"))); // NOI18N
-        furAffinityTools.setText("FurAffinity");
-
-        downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png"))); // NOI18N
-        downloadFAFavs.setText("Download All Favs");
-        downloadFAFavs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downloadFAFavsActionPerformed(evt);
-            }
-        });
-        furAffinityTools.add(downloadFAFavs);
-
-        toolsOption.add(furAffinityTools);
-        toolsOption.add(jSeparator2);
-
-        menuBar.add(toolsOption);
-
-        optionsOption.setText("Options");
-
-        settingsOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/settings.png"))); // NOI18N
-        settingsOptions.setText("Settings");
-        settingsOptions.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                settingsOptionsActionPerformed(evt);
-            }
-        });
-        optionsOption.add(settingsOptions);
-
-        menuBar.add(optionsOption);
-
-        setJMenuBar(menuBar);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(tasksCanvas, javax.swing.GroupLayout.PREFERRED_SIZE, 527, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(blankCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tasksCanvas)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(blankCanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        artistsTasksButton.setFocusPainted(false);
+        addListeners();
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void settingsOptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_settingsOptionsActionPerformed
-        new Thread("Opening OptionsJFrame") {
+    private void addListeners() {
+        hideTasksButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void run() {
-                try {
-                    new OptionsJFrame().setVisible(true);
-                } catch (SAXException | IOException ex) {
-                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                adjustHiddenObjects();
+            }
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                if (isTasksPanelHidden) {
+                    hideTasksButton.setToolTipText("Show tasks panel");
+                } else {
+                    hideTasksButton.setToolTipText("Hide tasks panel");
                 }
             }
-        }.start();
-    }//GEN-LAST:event_settingsOptionsActionPerformed
 
-    private void downloadFAFavsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadFAFavsActionPerformed
-        FADownloadFavs favs = new FADownloadFavs();
-        favs.setVisible(true);
-    }//GEN-LAST:event_downloadFAFavsActionPerformed
-
-    private void hideTasksButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideTasksButtonMouseClicked
-        adjustHiddenObjects();
-    }//GEN-LAST:event_hideTasksButtonMouseClicked
-
-    private void hideTasksButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideTasksButtonMouseEntered
-        setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_hideTasksButtonMouseEntered
-
-    private void hideTasksButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_hideTasksButtonMouseExited
-        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_hideTasksButtonMouseExited
-
-    private void quickTaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quickTaskButtonActionPerformed
-        new Thread() {
             @Override
-            public void run() {
-                new QuickTaskJFrame().setVisible(true);
-            }
-        }.start();
-    }//GEN-LAST:event_quickTaskButtonActionPerformed
-
-    private void searchTextMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_searchTextMouseClicked
-        searchText.setText("");
-    }//GEN-LAST:event_searchTextMouseClicked
-
-    private void searchTextCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_searchTextCaretUpdate
-
-    }//GEN-LAST:event_searchTextCaretUpdate
-
-    private void searchButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_searchButtonMouseEntered
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_searchButtonMouseEntered
-
-    private void searchButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_searchButtonMouseExited
-        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }//GEN-LAST:event_searchButtonMouseExited
-
-    private void searchButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_searchButtonMouseClicked
-        PopupMenu popup = new PopupMenu();
-
-        String text = "Search \"" + searchText.getText() + "\" on multiple servers";
-        popup.addItem(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png")), text, new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                System.out.println("yes");
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         });
+        //end of hideTasksButton
 
-        int maxSize = popup.getComponent().getGraphics().getFontMetrics().stringWidth(text);
-        popup.show(searchPane, searchPane.getWidth() - maxSize - 70, searchPane.getHeight() - 1);
-    }//GEN-LAST:event_searchButtonMouseClicked
+        quickTaskButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        new QuickTaskJFrame().setVisible(true);
+                    }
+                }.start();
+            }
+        });
+        //end of quickTaskButton
 
-    private void initSubComponents() {
-        this.setTitle("Alpha V3");
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        searchButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                PopupMenu popup = new PopupMenu();
+
+                String text = "Search \"" + searchText.getText() + "\" on multiple servers";
+                popup.addItem(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png")), text, new MouseAdapter() {
+                    @Override
+                    public void mousePressed(MouseEvent evt) {
+                        System.out.println("yes");
+                    }
+                });
+
+                int maxSize = popup.getComponent().getGraphics().getFontMetrics().stringWidth(text);
+                popup.show(searchPane, searchPane.getWidth() - maxSize - 70, searchPane.getHeight() - 1);
+            }
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+        //end of searchButton
+
+        searchText.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                searchText.setText("");
+            }
+        });
+        //end of searchText
+
+        downloadFAFavs.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FADownloadFavs favs = new FADownloadFavs();
+                favs.setVisible(true);
+            }
+        });
+        //end of downloadFAFavs
+
+        settingsOptions.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new Thread("Opening OptionsJFrame") {
+                    @Override
+                    public void run() {
+                        try {
+                            new OptionsJFrame().setVisible(true);
+                        } catch (SAXException | IOException ex) {
+                            Logger.getLogger(StylizedMainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }.start();
+            }
+        });
+        //end of settingsOptions
+
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -405,18 +472,13 @@ public class MainJFrame extends javax.swing.JFrame {
 
     private void adjustHiddenObjects() {
         if (!isTasksPanelHidden) {
-            tasksCanvas.setVisible(false);
-            blankCanvas.setBounds(12, 11, this.getWidth(), this.getHeight());
+            mainPanel.createTransition().push(new SLKeyframe(hideCfg, 1f).setEndSideForOldCmps(SLSide.LEFT)).play();
             hideTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/visible.png")));
             isTasksPanelHidden = true;
-            this.revalidate();
         } else {
-            tasksCanvas.setVisible(true);
-            blankCanvas.setSize(this.getWidth() - tasksCanvas.getWidth(), this.getHeight());
-            blankCanvas.setLocation(tasksCanvas.getWidth() + 12, 11);
+            mainPanel.createTransition().push(new SLKeyframe(showCfg, 1f).setStartSideForNewCmps(SLSide.LEFT)).play();
             hideTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png")));
             isTasksPanelHidden = false;
-            this.revalidate();
         }
     }
 
@@ -431,7 +493,7 @@ public class MainJFrame extends javax.swing.JFrame {
                 try {
                     java.lang.Thread.sleep(4000);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(StylizedMainJFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 FadingUtils.fadeOutBalloon(balloonTip, null, 200, 24);
                 TimingUtils.showTimedBalloon(balloonTip, 200);
@@ -452,42 +514,18 @@ public class MainJFrame extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(StylizedMainJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new MainJFrame().setVisible(true);
+                new StylizedMainJFrame().setVisible(true);
             }
         });
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton artistsTasksButton;
-    private javax.swing.JPanel blankCanvas;
-    private javax.swing.JMenuItem downloadFAFavs;
-    private javax.swing.JTabbedPane explorerPane;
-    private javax.swing.JMenu fileOption;
-    private javax.swing.JMenu furAffinityTools;
-    private javax.swing.JLabel hideTasksButton;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenu optionsOption;
-    private javax.swing.JButton quickTaskButton;
-    private javax.swing.JPanel scrollPane;
-    private javax.swing.JLabel searchButton;
-    private javax.swing.JPanel searchPane;
-    private javax.swing.JTextField searchText;
-    private javax.swing.JMenuItem settingsOptions;
-    private javax.swing.JScrollPane tasksCanvas;
-    private javax.swing.JMenu toolsOption;
-    // End of variables declaration//GEN-END:variables
-
     public class AddTask {
-
         public void addTask(String url, int server, int type) {
             numOfThreads++;
             scrollPane.add(new DownloadTaskJPanel(url, numOfThreads, server, type));
@@ -500,7 +538,6 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     public class RemoveTask {
-
         public void removeTask(int numOfTask) {
             scrollPane.remove(numOfTask);
             numOfThreads--;
@@ -578,9 +615,9 @@ public class MainJFrame extends javax.swing.JFrame {
                     WebViewPage page = new WebViewPage("http://furaffinity.net/");
                     this.addTab("New Tab     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
                 } else {
-                    String[] texts = new String[] {"Your machine doesn't have the latest JavaFX Runtime. If you <br>"
-                            + "want to use the built-in browser, please install", "this"};
-                    
+                    String[] texts = new String[]{"Your machine doesn't have the latest JavaFX Runtime. If you <br>"
+                        + "want to use the built-in browser, please install", "this"};
+
                     UsefulMethods.makeHyperlinkOptionPane(texts, "https://java.com/en/download/",
                             1, JOptionPane.ERROR_MESSAGE);
                 }
@@ -723,7 +760,6 @@ public class MainJFrame extends javax.swing.JFrame {
     }
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
-
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
