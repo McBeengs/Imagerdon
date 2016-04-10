@@ -432,7 +432,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             try {
                 switch (status) {
                     case 1:
-                        artistsXml = new File(xml.getContentById("DAoutput") + "/artists-log.xml");
+                        artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -440,7 +440,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 2:
-                        artistsXml = new File(xml.getContentById("TUoutput") + "/artists-log.xml");
+                        artistsXml = new File(xml.getContentById("TUoutput") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -448,7 +448,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 3:
-                        artistsXml = new File(xml.getContentById("GHoutput") + "/artists-log.xml");
+                        artistsXml = new File(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -456,7 +456,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 4:
-                        artistsXml = new File(xml.getContentById("FAoutput") + "/artists-log.xml");
+                        artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -464,7 +464,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 5:
-                        artistsXml = new File(xml.getContentById("E621output") + "/artists-log.xml");
+                        artistsXml = new File(xml.getContentById("E621output") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
                         } else {
@@ -502,6 +502,12 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                             case 2:
                                 break;
                             case 3:
+                                XmlManager gh = new XmlManager();
+                                gh.loadFile(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
+                                
+                                String nameTag = artistsCombo.getSelectedItem().toString();
+                                int tagOcc = gh.getTagIndex("name", nameTag) + 1;
+                                url = gh.getContentByName("galleryUrl", tagOcc);
                                 break;
                             case 4:
                                 url = "http://www.furaffinity.net/gallery/" + artistsCombo.getSelectedItem().toString().toLowerCase() + "/";

@@ -1,4 +1,4 @@
-/* **********   GalleryHentai.java   **********
+/* **********   UpdateGalleryHentai.java   **********
  *
  * This piece of garbage was brought to you by nothing less than the almighty lord
  * of programming, the Java God and ruler of all the non living things, McBeengs, 
@@ -17,7 +17,6 @@
 package com.core.download;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
@@ -25,6 +24,7 @@ import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,7 +37,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -49,7 +48,7 @@ import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
 import java.util.concurrent.TimeUnit;
 
-public class GalleryHentai extends BasicCore {
+public class UpdateGalleryHentai extends BasicCore {
 
     private int numOfImages;
     private int numOfPages = 0;
@@ -62,24 +61,24 @@ public class GalleryHentai extends BasicCore {
     private boolean isPaused = false;
     private boolean isTerminated = false;
     private boolean isDownloading = false;
-    private boolean convertedToUpdate = false;
-    private WebClient webClient;
+    private final WebClient webClient;
     private final XmlManager xml;
     private final XmlManager language;
     private final XmlManager artists;
     private ExecutorService executor;
     private final DownloadTaskJPanel taskManager;
 
-    public GalleryHentai(String url, DownloadTaskJPanel taskManager) {
+    public UpdateGalleryHentai(String url, DownloadTaskJPanel taskManager) {
         link = url;
         this.taskManager = taskManager;
+
+        this.taskManager.playButton.setVisible(false);
+        this.taskManager.progressBar.setIndeterminate(true);
 
         webClient = new WebClient(BrowserVersion.CHROME);
         webClient.getOptions().setCssEnabled(false);
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
-
-        webClient = UsefulMethods.shutUpHtmlUnit(webClient);
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
@@ -157,6 +156,7 @@ public class GalleryHentai extends BasicCore {
                 artists.loadFile(artistsXml);
             }
 
+            display = this.galleryName;
             String[] illegal = {"/", "\\", "*", "<", ">", "?", ":", "\"", "|"};
             String[] legal = {"[bar]", "[bar]", "[star]", "[less]", "[more]", "[question]", "[colon]", "[quotation]", "[bar]"};
 
@@ -180,98 +180,18 @@ public class GalleryHentai extends BasicCore {
         }
     }
 
-    private boolean checkArtistExistance() throws IOException {
-        if (Integer.parseInt(xml.getContentById("existed")) == 1) {
-            if (finalPath.contains(display)) {
-                File[] getImages = new File(finalPath).listFiles();
-                for (File image : getImages) {
-                    if (image.isFile()) {
-                        image.delete();
-                    }
-                }
-            }
-
-            if (artists.checkIfTagExists("name", galleryName)) {
-                originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", galleryName);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
-            } else {
-                createArtistTag();
-            }
-
-            return true;
-        }
-
-        if (artists.checkIfTagExists("name", galleryName)) {
-            if (Integer.parseInt(xml.getContentById("existed")) == 0) {
-                String[] texts = language.getContentById("skipEnabled").replace("&string", display).split("&br");
-                JOptionPane.showMessageDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"), JOptionPane.INFORMATION_MESSAGE);
-                return false;
-            }
-
-            if (!finalPath.contains(display)) {
-                originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", galleryName);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
-                return true;
-            }
-
-            File getImages = new File(finalPath);
-            int older = getImages.listFiles().length;
-
-            if (older >= numOfImages) {
-                JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", display));
-                return false;
-            }
-
-            String[] texts = language.getContentById("artistExists").replace("&string", display)
-                    .replace("&num", "" + (numOfImages - older)).split("&br");
-            int result = JOptionPane.showConfirmDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
-            if (result == JOptionPane.YES_OPTION) {
-                taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
-                new Thread("Changed to Download to Update task") {
-                    @Override
-                    public void run() {
-                        taskManager.setNewExtractor(new UpdateGalleryHentai(link, taskManager));
-                    }
-                }.start();
-                convertedToUpdate = true;
-                return false;
-            } else {
-                originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", galleryName);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
-                return true;
-            }
-        } else {
-            createArtistTag();
-            return true;
-        }
-    }
-
-    private void createArtistTag() throws IOException {
-        originalNumOfImages = numOfImages;
-        artists.addSubordinatedTag("artist", "root", 0);
-        tagOcc = artists.getAllContentsByName("artist").size() - 1;
-        artists.addSubordinatedTag("name", "artist", tagOcc);
-        artists.setContentByName("name", tagOcc, galleryName);
-        artists.addSubordinatedTag("imageCount", "artist", tagOcc);
-        artists.setContentByName("imageCount", tagOcc, "0");
-        artists.addSubordinatedTag("galleryUrl", "artist", tagOcc);
-        artists.setContentByName("galleryUrl", tagOcc, link);
-        artists.saveXml();
-    }
-
-    private void download() throws IOException, InterruptedException, ExecutionException {
+    private void download() throws IOException {
         taskManager.author.setText(language.getContentById("GHGalleryName"));
-
-        if (getInformationAboutGallery() && checkArtistExistance()) {
+        
+        if (getInformationAboutGallery()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
+
+            java.awt.event.MouseListener[] teste = this.taskManager.playButton.getMouseListeners();
+            for (MouseListener teste1 : teste) {
+                taskManager.playButton.removeMouseListener(teste1);
+            }
+
+            taskManager.playButton.addMouseListener(taskManager.playButtonNormalBehavior());
             taskManager.playButton.setVisible(true);
             taskManager.progressBar.setIndeterminate(false);
 
@@ -279,91 +199,104 @@ public class GalleryHentai extends BasicCore {
                 @Override
                 public void mouseClicked(MouseEvent evt) {
                     if (!isDownloading) {
+                        isDownloading = true;
                         new Thread() {
                             @Override
                             public void run() {
                                 try {
-                                    taskManager.progressBar.setIndeterminate(false);
-                                    taskManager.progressBar.setMinimum(0);
-                                    taskManager.progressBar.setMaximum(numOfImages);
-                                    taskManager.progressBar.setStringPainted(true);
-                                    taskManager.progressBar.setString("0%");
-                                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                    isDownloading = true;
-
-                                    int cut = numOfImages - ((numOfPages - 1) * 40);
                                     int count = 0;
-                                    executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
-                                    executor.awaitTermination(0L, TimeUnit.SECONDS);
+                                    tagOcc = artists.getTagIndex("name", display);
+                                    int onDisk = Integer.parseInt(artists.getContentByName("imageCount", tagOcc + 2));
 
-                                    for (int c = 0; c < numOfPages; c++) {
-                                        if (isTerminated) {
-                                            break;
-                                        }
+                                    if (onDisk >= numOfImages) {
+                                        JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", display));
+                                        taskManager.progressBar.setValue(taskManager.progressBar.getMaximum());
+                                        taskManager.progressBar.setStringPainted(true);
+                                        taskManager.progressBar.setString("100%");
+                                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+                                        taskManager.stopButton.setVisible(false);
+                                        taskManager.playButton.setVisible(true);
+                                        taskManager.playButton.removeMouseListener(taskManager.playButton.getMouseListeners()[0]);
+                                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+                                    } else {
+                                        int cut = numOfImages - ((numOfPages - 1) * 40);
+                                        originalNumOfImages = numOfImages;
+                                        numOfImages -= onDisk;
+                                        finalPath = xml.getContentById("GHoutput") + System.getProperty("file.separator") + display
+                                                + System.getProperty("file.separator");
 
-                                        HtmlPage conn = webClient.getPage(link);
-                                        Document check = Jsoup.parse(conn.asXml());
+                                        taskManager.progressBar.setIndeterminate(false);
+                                        taskManager.progressBar.setMinimum(0);
+                                        taskManager.progressBar.setMaximum(numOfImages);
+                                        taskManager.progressBar.setStringPainted(true);
+                                        taskManager.progressBar.setString("0%");
+                                        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
 
-                                        if (check.toString().contains("This gallery has been flagged as")) {
-                                            link += "?nw=always";
-                                            webClient.getPage(link);
-                                        }
+                                        executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+                                        executor.awaitTermination(0L, TimeUnit.SECONDS);
 
-                                        conn = webClient.getPage(link + "?p=" + c);
-                                        Document docLinks = Jsoup.parse(conn.asXml());
-                                        Elements getLinks = docLinks.select("div .gdtm a");
-
-                                        for (int i = 0; i < 40; i++) {
-                                            while (isPaused) {
-                                                sleep(2);
-                                            }
-
-                                            if (c == numOfPages) {
-                                                if (i == cut) {
-                                                    break;
-                                                }
-                                            }
-
-                                            String temp = getLinks.get(i).toString();
-                                            temp = temp.substring(9);
-                                            temp = temp.substring(0, temp.indexOf("\""));
-                                            Document docImages = Jsoup.connect(temp).get();
-                                            Elements getImages = docImages.select("#img");
-
-                                            temp = getImages.get(0).toString();
-                                            temp = temp.substring(19);
-                                            temp = temp.substring(0, temp.indexOf("\""));
-                                            count++;
-
+                                        for (int c = 0; c < numOfPages; c++) {
                                             if (isTerminated) {
                                                 break;
-                                            } else {
-                                                executor.execute(new ImageExtractor(temp, count));
+                                            }
+
+                                            HtmlPage conn = webClient.getPage(link);
+                                            Document check = Jsoup.parse(conn.asXml());
+
+                                            if (check.toString().contains("This gallery has been flagged as")) {
+                                                link += "?nw=always";
+                                                webClient.getPage(link);
+                                            }
+
+                                            conn = webClient.getPage(link + "?p=" + c);
+                                            Document docLinks = Jsoup.parse(conn.asXml());
+                                            Elements getLinks = docLinks.select("div .gdtm a");
+
+                                            for (int i = 0; i < 40; i++) {
+                                                while (isPaused) {
+                                                    sleep(2);
+                                                }
+
+                                                if (c == numOfPages) {
+                                                    if (i == cut) {
+                                                        break;
+                                                    }
+                                                }
+
+                                                if (count <= (originalNumOfImages - onDisk)) {
+                                                    String temp = getLinks.get(i).toString();
+                                                    temp = temp.substring(9);
+                                                    temp = temp.substring(0, temp.indexOf("\""));
+                                                    Document docImages = Jsoup.connect(temp).get();
+                                                    Elements getImages = docImages.select("#img");
+
+                                                    temp = getImages.get(0).toString();
+                                                    temp = temp.substring(19);
+                                                    temp = temp.substring(0, temp.indexOf("\""));
+
+                                                    if (isTerminated) {
+                                                        break;
+                                                    } else {
+                                                        executor.execute(new ImageExtractor(temp, count));
+                                                    }
+                                                }
+                                                count++;
                                             }
                                         }
                                     }
-
-                                } catch (java.net.SocketTimeoutException | java.lang.IndexOutOfBoundsException ex) {
-                                    failed.add(link);
-                                    System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                                            + " failed downloads.");
-
-                                } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
-                                    JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                                } catch (IOException | InterruptedException ex) {
+                                } catch (IOException ex) {
+                                } catch (InterruptedException ex) {
+                                    Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
                         }.start();
                     }
                 }
             });
-        } else if (!convertedToUpdate) {
+        } else {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
             taskManager.playButton.setVisible(true);
-            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                taskManager.playButton.removeMouseListener(listener);
-            }
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
         }
     }
@@ -390,7 +323,7 @@ public class GalleryHentai extends BasicCore {
         try {
             artists.saveXml();
         } catch (IOException ex) {
-            Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -398,8 +331,9 @@ public class GalleryHentai extends BasicCore {
     public void run() {
         try {
             download();
-        } catch (IOException | InterruptedException | ExecutionException ex) {
-            Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+            artists.saveXml();
+        } catch (Exception ex) {
+            Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -459,7 +393,7 @@ public class GalleryHentai extends BasicCore {
 
                     String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                     taskManager.progressBar.setString(show);
-                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+                    artists.setContentByName("imageCount", tagOcc + 1, "" + (originalNumOfImages - numOfImages));
 
                     if (show.equals("100%")) {
                         taskManager.stopButton.setVisible(false);
@@ -477,7 +411,7 @@ public class GalleryHentai extends BasicCore {
                     files.delete();
 
                     files = new File(finalPath);
-                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
+                    artists.setContentByName("imageCount", tagOcc + 2, "" + files.list().length);
                     artists.saveXml();
                 }
             } catch (java.net.ConnectException ex) {
@@ -485,9 +419,9 @@ public class GalleryHentai extends BasicCore {
                 System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
                         + " failed downloads.");
             } catch (MalformedURLException ex) {
-                Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             return false;

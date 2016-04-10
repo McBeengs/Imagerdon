@@ -4,23 +4,22 @@
     Generic strings that can be used on the whole project, independent of the place or function
     -->
     <generic>
-        <button id="cancel">Cancel</button>
-        <button id="ok">Ok</button>
-        <button id="save">Save</button>
-        <button id="exit">Exit</button>
+        <string id="appName">Alpha V3</string>
+        <string id="cancel">Cancel</string>
+        <string id="ok">Ok</string>
+        <string id="save">Save</string>
+        <string id="exit">Exit</string>
         <string id="start">Start</string>
         <string id="stop">Stop</string>
         <string id="done">Done</string>
+        <string id="thisCaps">This</string>
+        <string id="close">Close</string>
+        <string id="file">File</string>
+        <string id="tools">Tools</string>
         <string id="options">Options</string>
         <string id="username">Username</string>
         <string id="password">Password</string>
-        <string id="cancelLabel">Exit</string>
-        <string id="saveLabel">Save</string>
     </generic>
-    
-    <search>
-        <string id=""></string>
-    </search>
     
     <!--
     Strings that will be displayed accondingly on the JOptionPane they're designed
@@ -41,7 +40,15 @@
     </jOptionPanes>
     
     <!--
-    Strings and buttons that can be found on the "Settings" option on the submenus
+    Strings and buttons that can be found on the menu bar at the top of the app
+    -->
+    <menuBar>
+        <string id="downloadFavs">Download All Favs</string>
+        <string id="settings">Settings</string>
+    </menuBar>
+    
+    <!--
+    Strings and buttons that can be found on the "Settings" option on the menu bar
     -->
     <optionsPane>
         <general>
@@ -94,6 +101,20 @@
     </optionsPane>
     
     <!--
+    Strings and buttons that can be found on the main panel
+    -->
+    <mainPanel>
+        <string id="addTaskButton">Add Quick Task</string>
+        <string id="artistsTasks">Artists Tasks</string>
+        <string id="searchPlaceholder">Functions, artists, etc...</string>
+        <string id="hidingTip">Show tasks panel</string>
+        <string id="showingTip">Hide tasks panel</string>
+        <string id="serchOnServers">Search "&string" on multiple servers</string>
+        <string id="confirmExit">There are downloads currently going on.&br Are you sure you want to exit?</string>
+        <string id="newTaskBalloon">Added an Quick Task</string>
+    </mainPanel>
+    
+    <!--
     Strings and buttons that can be found when creating a new quick task
     -->
     <quickTask>
@@ -107,6 +128,13 @@
     
     <webBrowser>
         <mainLabel id="welcomeLabel">Alpha V3 - Welcome</mainLabel>
+        <string id="missingJavaFX">Your machine doesn't have the latest JavaFX Runtime. If you&br want to use the built-in browser, please install</string>
+        <string id="thisNormal">this</string>
+        <string id="newTab">New Tab</string>
+        <string id="imagesOnDisk">Number of images on disk:</string>
+        <string id="artistsOnDisk">Number of artists on disk:</string>
+        <string id="imagesOnDisk">Images per artist:</string>
+        <string id="checkInternet">Internet connection:</string>
         <random>Lorem ipsun, dolor sit amet.</random>
         <random>I’m not weird, I’m gifted.</random>
         <random>Life called… You failed</random>
@@ -143,7 +171,7 @@
             <string id="taskError">Unreachable gallery. Download aborted.</string>
             <string id="downloading">Downloading... &num images left</string>
             <string id="pause">Download paused</string>
-            <string id="cancelled">Download cancelled, &num images left behind</string>
+            <string id="downloadCancelled">Download cancelled, &num images left behind</string>
             <string id="downloadFinished">Download finished</string>
         </download>
     </task>

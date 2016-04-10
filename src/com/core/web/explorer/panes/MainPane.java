@@ -41,7 +41,7 @@ public class MainPane extends javax.swing.JPanel {
         randoms = language.getAllContentsByName("random");
 
         Random random = new Random();
-        niceMessage.setText(randoms.get(random.nextInt(17)));
+        niceMessage.setText(randoms.get(random.nextInt(randoms.size() - 1)));
     }
 
     @SuppressWarnings("unchecked")
@@ -61,28 +61,28 @@ public class MainPane extends javax.swing.JPanel {
         internetConnection = new javax.swing.JLabel();
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
-        taskLabel.setText("Alpha V3 - Welcome");
+        taskLabel.setText(language.getContentById("welcomeLabel"));
 
         niceMessage.setFont(new java.awt.Font("Verdana", 2, 14)); // NOI18N
         niceMessage.setText("Lorem ipsun, dolor sit amet.");
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
-        jLabel1.setText("Number of images on disk:");
+        jLabel1.setText(language.getContentById("imagesOnDisk"));
 
         imagesOnDisk.setText("jLabel2");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
-        jLabel3.setText("Number of artists on disk:");
+        jLabel3.setText(language.getContentById("artistsOnDisk"));
 
         artistsOnDisk.setText("jLabel2");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
-        jLabel5.setText("Images per artist:");
+        jLabel5.setText(language.getContentById("imagesOnDisk"));
 
         imagesPerArtist.setText("jLabel2");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
-        jLabel2.setText("Internet connection:");
+        jLabel2.setText(language.getContentById("checkInternet"));
 
         internetConnection.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         internetConnection.setForeground(new java.awt.Color(51, 109, 243));
@@ -99,21 +99,24 @@ public class MainPane extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(imagesOnDisk))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(artistsOnDisk))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 188, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(5, 5, 5)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(imagesPerArtist)
-                                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(imagesOnDisk))
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(5, 5, 5)
+                                        .addComponent(artistsOnDisk)))))
                         .addGap(0, 75, Short.MAX_VALUE))))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -215,7 +218,7 @@ public class MainPane extends javax.swing.JPanel {
             @Override
             public void componentHidden(ComponentEvent e) {
                 Random random = new Random();
-                niceMessage.setText(randoms.get(random.nextInt(17)));
+                niceMessage.setText(randoms.get(random.nextInt(randoms.size() - 1)));
             }
         });
     }
@@ -261,7 +264,6 @@ public class MainPane extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
-
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();

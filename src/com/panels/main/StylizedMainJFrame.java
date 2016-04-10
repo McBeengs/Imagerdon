@@ -50,7 +50,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -83,6 +84,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private SLPanel tasksPanel;
     private SLPanel scrollPane;
     private SLPanel blankCanvas;
+    private SLPanel overtaskNotifier;
+    private SLPanel overtaskNotifierPanel;
     private SLConfig showCfg;
     private SLConfig hideCfg;
     private SLConfig notificationCfg;
@@ -99,9 +102,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private JMenuItem downloadFAFavs;
     private JMenu furAffinityTools;
     private JMenuItem settingsOptions;
-    private JTabbedPane explorerPane;
-    private Separator jSeparator1;
-    private Separator jSeparator2;
     private JSeparator jSeparator3;
     private JTextField searchText;
     private JScrollPane tasksCanvas;
@@ -110,12 +110,19 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private int sizeToScroll;
     private int numOfThreads = 0;
     private XmlManager language;
+    private ArrayList<Object> stack;
     public static RemoveTask REMOVE_TASK;
     public static AddTask ADD_TASK;
+    public static TasksStack GET_STACK;
 
     public StylizedMainJFrame() {
         ADD_TASK = new AddTask();
         REMOVE_TASK = new RemoveTask();
+        GET_STACK = new TasksStack();
+
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
+        stack = new ArrayList<>();
+
         initComponents();
     }
 
@@ -125,6 +132,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         scrollPane = new SLPanel();
         tasksPanel = new SLPanel();
         blankCanvas = new SLPanel();
+        overtaskNotifierPanel = new SLPanel();
         hideTasksButton = new JLabel();
         quickTaskButton = new JButton();
         artistsTasksButton = new JButton();
@@ -141,7 +149,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         optionsOption = new JMenu();
         settingsOptions = new JMenuItem();
 
-        this.setTitle("Alpha V3 - Fancy");
+        this.setTitle(language.getContentById("appName"));
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new Dimension(500, 590));
         setPreferredSize(new Dimension(1142, 530));
@@ -150,7 +158,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         SLAnimator.start();
 
         tasksCanvas.setBorder(null);
-        tasksCanvas.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         tasksCanvas.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         tasksCanvas.setHorizontalScrollBar(null);
 
@@ -220,25 +227,30 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 .row(1f).col(1f)
                 .place(0, 0, blankCanvas)
                 .endGrid();
-        
+
+        overtaskNotifier = new OvertaskNotifierJPanel("", "");
+        overtaskNotifierPanel.setLayout(new GridBagLayout());
+        overtaskNotifierPanel.add(overtaskNotifier);
+
         notificationCfg = new SLConfig(mainPanel)
                 .row(1f).col(530).col(1f)
                 .beginGrid(0, 0)
-                .row(1f).col(1f)
+                .row(1f).row(60).col(1f)
                 .place(0, 0, tasksPanel)
+                .place(1, 0, overtaskNotifierPanel)
                 .endGrid()
                 .beginGrid(0, 1)
                 .row(1f).col(1f)
                 .place(0, 0, blankCanvas)
                 .endGrid();
 
-        mainPanel.initialize(notificationCfg);
+        mainPanel.initialize(showCfg);
         add(mainPanel);
 
-        fileOption.setText("File");
+        fileOption.setText(language.getContentById("file"));
         menuBar.add(fileOption);
 
-        toolsOption.setText("Tools");
+        toolsOption.setText(language.getContentById("tools"));
         //Add DeviantArt tools here
         toolsOption.add(new Separator());
         //Add Tumblr tools here
@@ -246,18 +258,18 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         //Add GalleryHentai tools here
         toolsOption.add(new Separator());
         furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
-        furAffinityTools.setText("FurAffinity");
+        furAffinityTools.setText(language.getContentByName("mainLabel", 5));
         downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
-        downloadFAFavs.setText("Download All Favs");
+        downloadFAFavs.setText(language.getContentById("downloadFavs"));
         furAffinityTools.add(downloadFAFavs);
         toolsOption.add(furAffinityTools);
         toolsOption.add(new Separator());
         //Add E621 tools here
         menuBar.add(toolsOption);
 
-        optionsOption.setText("Options");
+        optionsOption.setText(language.getContentById("options"));
         settingsOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/settings.png"))); // NOI18N
-        settingsOptions.setText("Settings");
+        settingsOptions.setText(language.getContentById("settings"));
         optionsOption.add(settingsOptions);
         menuBar.add(optionsOption);
 
@@ -266,10 +278,10 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         hideTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png"))); // NOI18N
 
         quickTaskButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/lightning.png"))); // NOI18N
-        quickTaskButton.setText("Add Quick Task");
+        quickTaskButton.setText(language.getContentById("addTaskButton"));
 
         artistsTasksButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/list.png"))); // NOI18N
-        artistsTasksButton.setText("Artists Tasks");
+        artistsTasksButton.setText(language.getContentById("artistsTasks"));
 
         searchPane.setBackground(new java.awt.Color(255, 255, 255));
         searchPane.setBorder(new RoundedCornerBorder());
@@ -279,7 +291,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         searchButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/search.png"))); // NOI18N
         searchButton.setToolTipText("");
 
-        searchText.setText("Functions, artists, etc...");
+        searchText.setText(language.getContentById("searchPlaceholder"));
         searchText.setBorder(null);
         searchText.setFocusable(false);
         searchText.setOpaque(false);
@@ -344,9 +356,9 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                 if (isTasksPanelHidden) {
-                    hideTasksButton.setToolTipText("Show tasks panel");
+                    hideTasksButton.setToolTipText(language.getContentById("hidingTip"));
                 } else {
-                    hideTasksButton.setToolTipText("Hide tasks panel");
+                    hideTasksButton.setToolTipText(language.getContentById("showingTip"));
                 }
             }
 
@@ -375,7 +387,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 PopupMenu popup = new PopupMenu();
 
-                String text = "Search \"" + searchText.getText() + "\" on multiple servers";
+                String text = language.getContentById("searchOnServers").replace("&string", searchText.getText());
                 popup.addItem(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png")), text, new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent evt) {
@@ -437,7 +449,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 if (numOfThreads > 0 && checkIfTerminated() == false) {
-                    int result = JOptionPane.showConfirmDialog(null, "There are downloads currently going on.\nAre you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION,
+                    String[] get = language.getContentById("confirmExit").split("&br");
+                    int result = JOptionPane.showConfirmDialog(null, get[0] + "\n" + get[1], language.getContentById("exit"), JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
 
                     if (result == JOptionPane.YES_OPTION) {
@@ -466,7 +479,9 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         scrollPane.setPreferredSize(new Dimension(510, sizeToScroll + 5));
 
         for (int i = 0; i < numOfThreads; i++) {
-            scrollPane.getComponent(i).setLocation(5, (105 * i) + 5);
+            DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
+            task.setLocation(5, (105 * i) + 5);
+            task.setNewTaskNumber(i + 1);
         }
     }
 
@@ -526,41 +541,117 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     }
 
     public class AddTask {
-        public void addTask(String url, int server, int type) {
-            numOfThreads++;
-            scrollPane.add(new DownloadTaskJPanel(url, numOfThreads, server, type));
-            adjustTasks();
 
-            if (isTasksPanelHidden) {
-                makeBalloon(hideTasksButton, "Added an Quick Task", new Color(0, 0, (float) 1.0, (float) 0.3));
+        public void addTask(String url, int server, int type) {
+            int c = 0;
+            if (scrollPane.getComponentCount() > 0) {
+                for (int i = 0; i < numOfThreads; i++) {
+                    DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
+                    task.setNewTaskNumber(i + 1);
+
+                    if (!task.isTerminated()) {
+                        c++;
+                    }
+                    if (c == 10) { // number of simult tasks
+                        c = -1;
+                        break;
+                    }
+                }
+            }
+
+            if (c >= 0) {
+                numOfThreads++;
+                scrollPane.add(new DownloadTaskJPanel(url, numOfThreads, server, type));
+                adjustTasks();
+
+                if (isTasksPanelHidden) {
+                    makeBalloon(hideTasksButton, language.getContentById("newTaskBalloon"), new Color(0, 0, 200));
+                }
+            } else {
+                Object[] store = new Object[]{url, server, type};
+                stack.add(Arrays.asList(store));
+
+                if (!isTasksPanelHidden) {
+                    String artist = url.substring(35, url.lastIndexOf("/"));
+                    artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+
+                    if (artist.length() > 15) {
+                        artist = artist.substring(0, 12) + "...";
+                    }
+
+                    overtaskNotifier = new OvertaskNotifierJPanel("Added task \"" + artist + "\" to waiting stack",
+                            (stack.size() - 1) + " others are also awaiting");
+                    overtaskNotifier.setOpaque(true);
+                    overtaskNotifierPanel.removeAll();
+                    overtaskNotifierPanel.add(overtaskNotifier);
+
+                    mainPanel.createTransition().push(new SLKeyframe(notificationCfg, 0.3f)
+                            .setStartSideForNewCmps(SLSide.BOTTOM).setCallback(new SLKeyframe.Callback() {
+                        @Override
+                        public void done() {
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        sleep(5000);
+                                        mainPanel.createTransition().push(new SLKeyframe(showCfg, 0.3f).setEndSideForOldCmps(SLSide.BOTTOM)).play();
+                                    } catch (InterruptedException ex) {
+                                        Logger.getLogger(StylizedMainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            }.start();
+                        }
+                    })).play();
+                }
             }
         }
     }
 
     public class RemoveTask {
+
         public void removeTask(int numOfTask) {
-            scrollPane.remove(numOfTask);
-            numOfThreads--;
-            sizeToScroll -= 105;
-            scrollPane.setPreferredSize(new Dimension(510, sizeToScroll + 5));
+            if (scrollPane.getComponentCount() > numOfTask) {
+                scrollPane.remove(numOfTask);
+                numOfThreads--;
+                sizeToScroll -= 105;
+                scrollPane.setPreferredSize(new Dimension(510, sizeToScroll + 5));
 
-            if (numOfThreads > 0) {
-                for (int i = 0; i < numOfThreads; i++) {
-                    scrollPane.getComponent(i).setLocation(5, (105 * i) + 5);
-                    DownloadTaskJPanel temp = (DownloadTaskJPanel) scrollPane.getComponent(i);
-                    Color bg;
-                    if (i % 2 == 0) {
-                        bg = new Color(240, 240, 240); //Lighter
-                    } else {
-                        bg = new Color(205, 205, 205); // Darker
+                if (numOfThreads > 0) {
+                    for (int i = 0; i < numOfThreads; i++) {
+                        DownloadTaskJPanel temp = (DownloadTaskJPanel) scrollPane.getComponent(i);
+                        Color bg;
+                        if (i % 2 == 0) {
+                            bg = new Color(240, 240, 240); //Lighter
+                        } else {
+                            bg = new Color(205, 205, 205); // Darker
+                        }
+
+                        temp.setLocation(5, (105 * i) + 5);
+                        temp.setBackground(bg);
+                        temp.setNewTaskNumber(i + 1);
                     }
-                    temp.setBackground(bg);
-
-                    temp.setNewTaskNumber(i + 1);
                 }
-            }
 
-            scrollPane.repaint();
+                scrollPane.repaint();
+            }
+        }
+    }
+
+    public class TasksStack {
+
+        public void notifyStack() {
+            if (stack.size() > 0) {
+                String array = (String) stack.get(0).toString();
+                int comma;
+
+                comma = array.indexOf(",");
+                String url = array.substring(1, comma);
+                int server = Integer.parseInt(array.substring(comma + 2, array.indexOf(",", comma + 2)));
+                comma = array.indexOf(",", comma + 1) + 2;
+                int type = Integer.parseInt(array.substring(comma, array.indexOf("]")));
+
+                ADD_TASK.addTask(url, server, type);
+            }
         }
     }
 
@@ -573,6 +664,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
             super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel("aaa"));
             super.setFocusable(false);
+            super.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         }
 
         public boolean tabAboutToClose(int tabIndex) {
@@ -613,13 +705,12 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
 
                 if (isJavaFxAvailable) {
                     WebViewPage page = new WebViewPage("http://furaffinity.net/");
-                    this.addTab("New Tab     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
+                    this.addTab(language.getContentById("newTab") + "     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
                 } else {
-                    String[] texts = new String[]{"Your machine doesn't have the latest JavaFX Runtime. If you <br>"
-                        + "want to use the built-in browser, please install", "this"};
+                    String[] texts = new String[]{language.getContentById("missingJavaFX").replace("&br", "<br>"), language.getContentById("thisNormal")};
 
                     UsefulMethods.makeHyperlinkOptionPane(texts, "https://java.com/en/download/",
-                            1, JOptionPane.ERROR_MESSAGE);
+                            1, JOptionPane.ERROR_MESSAGE, language.getContentById("genericErrorTitle"));
                 }
             } else {
                 super.setSelectedIndex(index);
@@ -693,7 +784,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                         this.tabbedPane.setCursor(new Cursor(12));
                         if (this.selectedTab > -1) {
                             String tabName = this.tabbedPane.getTitleAt(this.selectedTab);
-                            this.tabbedPane.setToolTipTextAt(this.selectedTab, "Close " + tabName.substring(0, tabName.length() - 5));
+                            this.tabbedPane.setToolTipTextAt(this.selectedTab, language.getContentById("close") + " "
+                                    + tabName.substring(0, tabName.length() - 5));
                         }
                     } else {
                         this.tabbedPane.setCursor(new Cursor(0));
@@ -760,6 +852,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     }
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
+
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -803,58 +896,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             item.setIcon(icon);
             item.addMouseListener(evt);
             add(item);
-        }
-
-        private String carrousel(String text, int decoy) {
-            try {
-                char[] array = new char[text.length()];
-
-                for (int i = 0; i < text.length(); i++) {
-                    array[i] = text.charAt(i);
-                }
-
-                int pos = 0;
-                String display = "";
-                boolean isReverse = false;
-
-                while (getComponent().isEnabled() && getComponent().isVisible()) {
-                    if (pos == 0) {
-                        for (int i = 0; i < decoy; i++) {
-                            display += array[i];
-                        }
-                        //item.setText(display);
-                        sleep(3000);
-                        pos++;
-                    } else {
-                        //item.setText(display);
-                        sleep(100);
-                    }
-
-                    if (!isReverse) {
-                        pos++;
-                        if (pos == text.length() - decoy + 2) {
-                            sleep(1000);
-                            isReverse = true;
-                        } else {
-                            display = display.substring(1);
-                            display += array[decoy - 2 + pos];
-                        }
-
-                    } else {
-                        pos--;
-                        if (pos == 1) {
-                            sleep(1000);
-                            isReverse = false;
-                        } else {
-                            display = array[pos - 2] + display;
-                            display = display.substring(0, display.length() - 1);
-                        }
-                    }
-                }
-            } catch (java.lang.InterruptedException ex) {
-            }
-
-            return null;
         }
     }
 }

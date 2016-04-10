@@ -51,6 +51,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
+import java.util.concurrent.TimeUnit;
 
 public class UpdateFurAffinity extends BasicCore {
 
@@ -253,6 +254,7 @@ public class UpdateFurAffinity extends BasicCore {
                                         taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
 
                                         executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+                                        executor.awaitTermination(0L, TimeUnit.SECONDS);
 
                                         for (int c = 1; c <= numOfPages; c++) {
                                             if (isTerminated) {
@@ -274,7 +276,7 @@ public class UpdateFurAffinity extends BasicCore {
                                                     }
                                                 }
 
-                                                if (count <= onDisk) {
+                                                if (count < (originalNumOfImages - onDisk)) {
                                                     String temp = getPages.get(i).toString();
                                                     int end = temp.indexOf("/", 15);
                                                     temp = "http://www.furaffinity.net" + temp.substring(9, end);
@@ -296,7 +298,6 @@ public class UpdateFurAffinity extends BasicCore {
                                         }
                                     }
                                 } catch (IOException ex) {
-
                                 } catch (InterruptedException ex) {
                                     Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -327,7 +328,11 @@ public class UpdateFurAffinity extends BasicCore {
     @Override
     public void terminate() {
         isTerminated = true;
-        executor.shutdownNow();
+
+        if (executor != null) {
+            executor.shutdownNow();
+        }
+
         try {
             artists.saveXml();
         } catch (IOException ex) {
@@ -370,7 +375,7 @@ public class UpdateFurAffinity extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + System.getProperty("file.separator") + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();
@@ -382,7 +387,12 @@ public class UpdateFurAffinity extends BasicCore {
                     while (isPaused) {
                         sleep(2);
                     }
-                    writeImg.write(bytes);
+
+                    if (isTerminated) {
+                        break;
+                    } else {
+                        writeImg.write(bytes);
+                    }
                 }
 
                 writeImg.close();
@@ -392,25 +402,31 @@ public class UpdateFurAffinity extends BasicCore {
                 numOfImages--;
                 if (!isTerminated) {
                     taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                }
-                taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
 
-                String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                taskManager.progressBar.setString(show);
-                artists.setContentByName("imageCount", tagOcc, "" + downloadNumber);
+                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                    taskManager.progressBar.setString(show);
+                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
 
-                if (show.equals("100%")) {
-                    taskManager.stopButton.setVisible(false);
-                    taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+                    if (show.equals("100%")) {
+                        taskManager.stopButton.setVisible(false);
+                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
 
-                    for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                        taskManager.playButton.removeMouseListener(listener);
+                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                            taskManager.playButton.removeMouseListener(listener);
+                        }
+
+                        artists.saveXml();
+                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                     }
+                } else {
+                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
+                    files.delete();
 
+                    files = new File(finalPath);
+                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
                     artists.saveXml();
-                    taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                 }
-
             } catch (java.net.ConnectException ex) {
                 failed.add(link);
                 System.out.println("An error has happen while download the gallery. The task returned " + failed.size()

@@ -8,6 +8,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import com.panels.main.DownloadTaskJPanel;
+import com.panels.main.StylizedMainJFrame;
+import com.panels.main.StylizedMainJFrame.AddTask;
 import com.util.crypto.PasswordManager;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -35,7 +38,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
     private final DefaultTableModel model;
     private HtmlPage uncensoredLink;
     private final ArrayList artists;
-    private final ArrayList artistsLinks;
+    private final ArrayList<String> artistsLinks;
     private String user;
     private int numOfPages = 1;
 
@@ -125,6 +128,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
         jScrollPane1.setViewportView(table);
 
         button.setText(language.getContentById("checkButton"));
+        button.setFocusable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -213,7 +217,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
                 if (!temp.equals("~" + user.trim()) && !temp.equals("User Page") && !temp.equals("")) {
                     if (!artists.contains(temp)) {
                         artists.add(temp);
-                        artistsLinks.add(ex.substring(ex.indexOf("/", 11) + 1, ex.lastIndexOf("\"")));
+                        artistsLinks.add("http://www.furaffinity.net/gallery/" + ex.substring(ex.indexOf("/", 11) + 1, ex.lastIndexOf("\"")));
                     } else {
                         addRow(temp, d + 1);
                     }
@@ -286,7 +290,16 @@ public class FADownloadFavs extends javax.swing.JFrame {
         new Thread() {
             @Override
             public void run() {
-                System.out.println("TODO send artists without error 503");
+                for (int i = 0; i < artistsLinks.size(); i++) {
+                    AddTask add = StylizedMainJFrame.ADD_TASK;
+                    add.addTask(artistsLinks.get(0), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
+                    artistsLinks.remove(0);
+                    try {
+                        sleep(20000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }.start();
 
@@ -308,7 +321,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
         });
 
         Object[] teste = {leave, remove};
-        JOptionPane.showOptionDialog(this, "The tasks will be added once every 10 seconds. You can either close this window\n"
+        JOptionPane.showOptionDialog(this, "The tasks will be added once every 20 seconds. You can either close this window\n"
                 + " now or choose to remove all favs from the server before leaving", "Info", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.INFORMATION_MESSAGE, null, teste, JOptionPane.CLOSED_OPTION);
     }
@@ -367,7 +380,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 
-    private class CloneWebClient extends WebClient {
+    private class CloneWebClient {
 
         private final WebClient web;
 

@@ -16,13 +16,21 @@
  */
 package com.util;
 
+import com.gargoylesoftware.htmlunit.IncorrectnessListener;
+import com.gargoylesoftware.htmlunit.InteractivePage;
+import com.gargoylesoftware.htmlunit.ScriptException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
+import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
 import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.io.UnsupportedEncodingException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -36,6 +44,10 @@ import net.java.balloontip.styles.MinimalBalloonStyle;
 import net.java.balloontip.utils.FadingUtils;
 import net.java.balloontip.utils.TimingUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.LogFactory;
+import org.w3c.css.sac.CSSException;
+import org.w3c.css.sac.CSSParseException;
+import org.w3c.css.sac.ErrorHandler;
 
 public class UsefulMethods {
 
@@ -174,7 +186,7 @@ public class UsefulMethods {
         return null;
     }
 
-    public static void makeHyperlinkOptionPane(String[] message, String link, int linkIndex, int messageType) {
+    public static void makeHyperlinkOptionPane(String[] message, String link, int linkIndex, int messageType, String messageTitle) {
         JOptionPane pane = new JOptionPane(null, messageType);
 
         StringBuilder style = new StringBuilder("font-family:" + pane.getFont().getFamily() + ";");
@@ -182,13 +194,12 @@ public class UsefulMethods {
         style.append("font-size:").append(pane.getFont().getSize()).append("pt;");
         style.append("background-color: rgb(").append(pane.getBackground().getRed()).append(", ")
                 .append(pane.getBackground().getGreen()).append(", ").append(pane.getBackground().getBlue()).append(");");
-        style.append("user-select: none;");
 
         JEditorPane ep = new JEditorPane();
         ep.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
         ep.setEditable(false);
         ep.setBorder(null);
-        
+
         String show = "";
         for (int i = 0; i < message.length; i++) {
             if (i != linkIndex) {
@@ -197,7 +208,7 @@ public class UsefulMethods {
                 show += " <a href=\"" + link + "\">" + message[i] + "</a>";
             }
         }
-        
+
         ep.setText("<html><body style=\"" + style + "\">" + show + "</body></html>");
 
         ep.addHyperlinkListener(new HyperlinkListener() {
@@ -207,15 +218,15 @@ public class UsefulMethods {
                     try {
                         Desktop.getDesktop().browse(e.getURL().toURI());
                     } catch (IOException | URISyntaxException ex) {
-                        
+
                     }
                 }
             }
         });
-        
-        JOptionPane.showMessageDialog(null, ep, "", messageType);
+
+        JOptionPane.showMessageDialog(null, ep, messageTitle, messageType);
     }
-    
+
     public static void makeBalloon(final JComponent component, final String text, final Color color) {
         new Thread("Showing ballon \"" + text + "\"") {
             @Override
@@ -233,5 +244,59 @@ public class UsefulMethods {
                 TimingUtils.showTimedBalloon(balloonTip, 200);
             }
         }.start();
+    }
+
+    public static WebClient shutUpHtmlUnit(WebClient webClient) {
+        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
+
+        java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);
+        java.util.logging.Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.OFF);
+
+        webClient.setIncorrectnessListener(new IncorrectnessListener() {
+            @Override
+            public void notify(String arg0, Object arg1) {
+            }
+        });
+        webClient.setCssErrorHandler(new ErrorHandler() {
+            @Override
+            public void warning(CSSParseException csspe) throws CSSException {
+            }
+
+            @Override
+            public void error(CSSParseException csspe) throws CSSException {
+            }
+
+            @Override
+            public void fatalError(CSSParseException csspe) throws CSSException {
+            }
+        });
+        webClient.setJavaScriptErrorListener(new JavaScriptErrorListener() {
+            @Override
+            public void scriptException(InteractivePage ip, ScriptException se) {
+            }
+
+            @Override
+            public void timeoutError(InteractivePage ip, long l, long l1) {
+            }
+
+            @Override
+            public void malformedScriptURL(InteractivePage ip, String string, MalformedURLException murle) {
+            }
+
+            @Override
+            public void loadScriptError(InteractivePage ip, URL url, Exception excptn) {
+            }
+        });
+        webClient.setHTMLParserListener(new HTMLParserListener() {
+            @Override
+            public void error(String string, URL url, String string1, int i, int i1, String string2) {
+            }
+
+            @Override
+            public void warning(String string, URL url, String string1, int i, int i1, String string2) {
+            }
+        });
+
+        return webClient;
     }
 }

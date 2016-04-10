@@ -11,6 +11,7 @@ import com.core.download.E621;
 import com.core.download.FurAffinity;
 import com.core.download.GalleryHentai;
 import com.core.download.UpdateFurAffinity;
+import com.core.download.UpdateGalleryHentai;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -69,7 +70,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 case TUMBLR:
                     break;
                 case GALLERY_HENTAI:
-                    //extractor = new GalleryHentai(url, this);
+                    extractor = new UpdateGalleryHentai(url, this);
                     break;
                 case FUR_AFFINITY:
                     extractor = new UpdateFurAffinity(url, this);
@@ -150,7 +151,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
         playButton.addMouseListener(playButtonNormalBehavior());
         stopButton.addMouseListener(stopButtonNormalBehavior());
-        infoDisplay.setText("Preparing download...");
+        infoDisplay.setText(language.getContentById("connecting"));
         progressBar.setIndeterminate(true);
         playButton.setVisible(false);
         stopButton.setVisible(false);
@@ -191,10 +192,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                if (isTerminated) {
-                    RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
-                    remove.removeTask(numOfTask - 1);
-                } else if (!firstClick) {
+                if (!firstClick) {
                     stopButton.setVisible(true);
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/pauseButtonStandard.png")));
@@ -240,16 +238,19 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
                     try {
                         extractor.terminate();
-                        sleep(500);
+                        sleep(1000);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(DownloadTaskJPanel.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
                     int missed = Integer.parseInt(infoDisplay.getText().replaceAll("[^0-9]", ""));
-                    infoDisplay.setText(language.getContentById("cancelled").replace("&num", "" + missed));
+                    infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "" + missed));
                     stopButton.setVisible(false);
-                    playButton.removeMouseListener(playButton.getMouseListeners()[1]);
-                    playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deleteButtonStandard.png")));
+
+                    for (MouseListener listener : playButton.getMouseListeners()) {
+                        playButton.removeMouseListener(listener);
+                    }
+                    playButton.addMouseListener(playButtonErrorBehavior());
                 }
             }
         };
@@ -263,6 +264,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent evt) {
                 RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
                 remove.removeTask(numOfTask - 1);
+                StylizedMainJFrame.GET_STACK.notifyStack();
             }
 
             @Override
@@ -282,6 +284,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
     public MouseListener playButtonDownloadFinishedBehavior() {
         playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/finishedButtonStandard.png")));
         isTerminated = true;
+
         return new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent evt) {
@@ -299,6 +302,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent evt) {
                 RemoveTask remove = StylizedMainJFrame.REMOVE_TASK;
                 remove.removeTask(numOfTask - 1);
+                StylizedMainJFrame.GET_STACK.notifyStack();
             }
         };
     }

@@ -291,7 +291,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         int option = JOptionPane.showConfirmDialog(this, language.getContentById("saveConfirm"),
-                language.getContentById("saveLabel"), 0);
+                language.getContentById("save"), 0);
 
         if (option == JOptionPane.OK_OPTION) {
             try {

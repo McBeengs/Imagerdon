@@ -45,6 +45,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -82,13 +83,15 @@ public class FurAffinity extends BasicCore {
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
 
+        webClient = UsefulMethods.shutUpHtmlUnit(webClient);
+
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
         pass = new PasswordManager();
 
         try {
-            File artistsXml = new File(xml.getContentById("FAoutput") + "/" + "artists-log.xml");
+            File artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
             if (!artistsXml.exists()) {
                 artists.createFile(artistsXml.getAbsolutePath());
             } else {
@@ -152,15 +155,7 @@ public class FurAffinity extends BasicCore {
         } catch (IOException ex) {
             Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
         } catch (FailingHttpStatusCodeException ex) {
-            try {
-                download();
-            } catch (InterruptedException ex1) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex1);
-            } catch (ExecutionException ex1) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex1);
-            } catch (Exception ex1) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex1);
-            }
+            System.err.println("Deu ruim na task nº" + taskManager.getTaskNumber());
         }
 
         return false;
@@ -324,6 +319,7 @@ public class FurAffinity extends BasicCore {
                                     int cut = numOfImages - ((numOfPages - 1) * 72);
                                     int count = 0;
                                     executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+                                    executor.awaitTermination(0L, TimeUnit.SECONDS);
 
                                     for (int c = 1; c <= numOfPages; c++) {
                                         if (isTerminated) {
@@ -378,6 +374,9 @@ public class FurAffinity extends BasicCore {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
             taskManager.playButton.setVisible(true);
+            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                taskManager.playButton.removeMouseListener(listener);
+            }
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
         }
     }
@@ -396,15 +395,9 @@ public class FurAffinity extends BasicCore {
     @Override
     public void terminate() {
         isTerminated = true;
-        
+
         if (executor != null) {
             executor.shutdownNow();
-        }
-        
-        try {
-            artists.saveXml();
-        } catch (IOException ex) {
-            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -443,7 +436,7 @@ public class FurAffinity extends BasicCore {
             try {
                 URL imageURL = new URL(finalLink);
                 InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
+                OutputStream imageFile = new FileOutputStream(finalPath + System.getProperty("file.separator") + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
                 NumberFormat nf = NumberFormat.getNumberInstance();
@@ -455,7 +448,12 @@ public class FurAffinity extends BasicCore {
                     while (isPaused) {
                         sleep(2);
                     }
-                    writeImg.write(bytes);
+
+                    if (isTerminated) {
+                        break;
+                    } else {
+                        writeImg.write(bytes);
+                    }
                 }
 
                 writeImg.close();
@@ -465,25 +463,31 @@ public class FurAffinity extends BasicCore {
                 numOfImages--;
                 if (!isTerminated) {
                     taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                }
-                taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
 
-                String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                taskManager.progressBar.setString(show);
-                artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                    taskManager.progressBar.setString(show);
+                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
 
-                if (show.equals("100%")) {
-                    taskManager.stopButton.setVisible(false);
-                    taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+                    if (show.equals("100%")) {
+                        taskManager.stopButton.setVisible(false);
+                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
 
-                    for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                        taskManager.playButton.removeMouseListener(listener);
+                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                            taskManager.playButton.removeMouseListener(listener);
+                        }
+
+                        artists.saveXml();
+                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                     }
+                } else {
+                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
+                    files.delete();
 
+                    files = new File(finalPath);
+                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
                     artists.saveXml();
-                    taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                 }
-
             } catch (java.net.ConnectException ex) {
                 failed.add(link);
                 System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
