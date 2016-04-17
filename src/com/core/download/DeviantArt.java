@@ -33,11 +33,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -348,8 +346,6 @@ public class DeviantArt extends BasicCore {
         }
     }
 
-    public ArrayList<String> failed = new ArrayList<>();
-
     private class ImageExtractor implements Runnable {
 
         String finalLink;
@@ -411,9 +407,7 @@ public class DeviantArt extends BasicCore {
                 }
 
             } catch (java.net.ConnectException ex) {
-                failed.add(link);
-                System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                        + " failed downloads.");
+                
             } catch (MalformedURLException ex) {
                 Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException | InterruptedException ex) {

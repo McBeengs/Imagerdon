@@ -17,10 +17,22 @@
 package com.core.web.explorer.panes;
 
 import com.sun.javafx.application.PlatformImpl;
-import java.awt.BorderLayout;
-import java.io.Serializable;
+import com.util.serialize.CookiesPersistance;
+import java.awt.GridLayout;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
@@ -46,14 +58,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Border;
+import javafx.scene.layout.Priority;
 import javafx.scene.transform.Scale;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.WebView;
 import javax.swing.JPanel;
 
-public class WebViewPage extends JPanel implements Serializable {
+public class WebViewPage extends JPanel {
 
     private boolean isCookiesEnabled = true;
+    private CookiesPersistance cookieManager;
     private Button back;
     private Button forward;
     private ProgressBar loadProgress;
@@ -76,9 +90,10 @@ public class WebViewPage extends JPanel implements Serializable {
     }
 
     private void initComponents() {
+        Platform.setImplicitExit(false);
         jFXPanel = new JFXPanel();
-        setLayout(new BorderLayout());
-        add(jFXPanel, BorderLayout.CENTER);
+        setLayout(new GridLayout());
+        add(jFXPanel);
     }
 
     public void setCookies(boolean bln) {
@@ -98,6 +113,35 @@ public class WebViewPage extends JPanel implements Serializable {
             @Override
             public void run() {
                 browser = new WebView();
+
+                if (isCookiesEnabled) {
+                    File get = new File("cookies.obj");
+                    if (get.exists()) {
+                        FileInputStream fileOut;
+                        ObjectInputStream out;
+                        try {
+                            fileOut = new FileInputStream(get);
+                            out = new ObjectInputStream(fileOut);
+                            cookieManager = (CookiesPersistance) out.readObject();
+                            out.close();
+                            fileOut.close();
+
+                            cookieManager = new CookiesPersistance(cookieManager.getCookies());
+                        } catch (FileNotFoundException ex) {
+                            Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException | ClassNotFoundException ex) {
+                            Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else {
+                        cookieManager = new CookiesPersistance();
+                        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+                    }
+                    
+                    CookieManager.setDefault(cookieManager);
+                } else {
+                    CookieManager.setDefault(new CookieManager());
+                }
+
                 zoomingPane = new ZoomingPane(browser);
                 currentUrl = new TextField(url);
                 BorderPane bp = new BorderPane();
@@ -194,13 +238,13 @@ public class WebViewPage extends JPanel implements Serializable {
                     public void handle(javafx.scene.input.KeyEvent t) {
                         if (t.getCode() == javafx.scene.input.KeyCode.ENTER) {
                             String url = currentUrl.getText();
-                            
+
                             if (url.startsWith("www.")) {
                                 url = "http://" + url;
                             } else {
                                 url = "http://www." + url;
                             }
-                            
+
                             browser.getEngine().load(url);
                         }
                     }
@@ -217,12 +261,19 @@ public class WebViewPage extends JPanel implements Serializable {
                     @Override
                     public void handle(ActionEvent t) {
                         browser.getEngine().reload();
+
+                        try {
+                            destroy();
+                        } catch (IOException ex) {
+                            Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 });
 
                 browser.getEngine().load(url);
             }
-        });
+        }
+        );
     }
 
     private HBox createProgressReport() {
@@ -241,33 +292,51 @@ public class WebViewPage extends JPanel implements Serializable {
         forward.setDisable(true);
 
         loadProgress.setMinHeight(40);
-        loadProgress.setMinWidth(400);
+        loadProgress.setMinWidth(330);
+        loadProgress.setMaxWidth(Double.MAX_VALUE);
 
         currentUrl.setBorder(Border.EMPTY);
         currentUrl.setStyle("-fx-background-color: transparent;"
                 + "-fx-text-fill: white;");
         currentUrl.setFont(new javafx.scene.text.Font(16));
-        currentUrl.setAlignment(Pos.CENTER);
 
         go.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
         go.setStyle("-fx-background-radius: 0 90 90 0;");
 
         refresh.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
         refresh.setStyle("-fx-background-radius: 90 90 90 90;");
-        refresh.setMaxWidth(Double.MAX_VALUE);
-        refresh.setPrefSize(Double.MAX_VALUE, 0);
+        refresh.setAlignment(Pos.CENTER_RIGHT);
 
         HBox progressReport = new HBox();
-        progressReport.getChildren().setAll(back, forward, new ProgressIndicatorBar().setProgressBar(), go, refresh);
+        progressReport.setPrefWidth(Double.MAX_VALUE);
+
+        HBox backFor = new HBox();
+        backFor.setPadding(new Insets(5, 5, 0, 0));
+        backFor.getChildren().addAll(back, forward);
+
+        HBox goRef = new HBox();
+        goRef.setPadding(new Insets(5, 5, 5, 5));
+        goRef.getChildren().addAll(go, refresh);
+
+        StackPane pb = new ProgressIndicatorBar().setProgressBar();
+        progressReport.getChildren().setAll(backFor, pb, go, goRef);
+        HBox.setHgrow(pb, Priority.ALWAYS);
         progressReport.setPadding(new Insets(10));
         progressReport.setAlignment(Pos.CENTER_LEFT);
 
         return progressReport;
     }
 
+    public synchronized void destroy() throws FileNotFoundException, IOException {
+        FileOutputStream fileOut = new FileOutputStream("cookies.obj");
+        ObjectOutputStream out = new ObjectOutputStream(fileOut);
+        out.writeObject(cookieManager);
+        out.close();
+        fileOut.close();
+    }
+
     // http://stackoverflow.com/questions/22796742/fit-javafx-webview-browser-content-to-window
-    // obs.: Praise lord Mike
-    private class ZoomingPane extends Pane implements Serializable {
+    private class ZoomingPane extends Pane {
 
         Node content;
         private final DoubleProperty zoomFactor = new SimpleDoubleProperty(1);

@@ -57,7 +57,6 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -71,10 +70,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import net.java.balloontip.BalloonTip;
-import net.java.balloontip.styles.MinimalBalloonStyle;
-import net.java.balloontip.utils.FadingUtils;
-import net.java.balloontip.utils.TimingUtils;
 import org.xml.sax.SAXException;
 
 public class StylizedMainJFrame extends javax.swing.JFrame {
@@ -497,25 +492,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         }
     }
 
-    private void makeBalloon(final JComponent component, final String text, final Color color) {
-        new Thread("Showing ballon \"" + text + "\"") {
-            @Override
-            public void run() {
-                BalloonTip balloonTip = new BalloonTip(component, new JLabel(text), new MinimalBalloonStyle(color, 10),
-                        BalloonTip.Orientation.LEFT_BELOW, BalloonTip.AttachLocation.SOUTH, 25, 10, false);
-
-                FadingUtils.fadeInBalloon(balloonTip, null, 200, 24);
-                try {
-                    java.lang.Thread.sleep(4000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(StylizedMainJFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                FadingUtils.fadeOutBalloon(balloonTip, null, 200, 24);
-                TimingUtils.showTimedBalloon(balloonTip, 200);
-            }
-        }.start();
-    }
-
     public static void main(String args[]) {
         XmlManager style = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         String set = style.getContentByName("style", 0);
@@ -565,7 +541,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 adjustTasks();
 
                 if (isTasksPanelHidden) {
-                    makeBalloon(hideTasksButton, language.getContentById("newTaskBalloon"), new Color(0, 0, 200));
+                    UsefulMethods.makeBalloon(hideTasksButton, language.getContentById("newTaskBalloon"), new Color(0, 0, 200));
                 }
             } else {
                 Object[] store = new Object[]{url, server, type};
@@ -691,22 +667,24 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             super.setSelectedIndex(tabCount);
         }
 
+        private int isJavaFxAvailable = 0;
+
         @Override
         public void setSelectedIndex(int index) {
             if (index == this.getTabCount() - 1 && index != 0) {
-                boolean isJavaFxAvailable;
-
-                try {
-                    ClassLoader.getSystemClassLoader().loadClass("javafx.embed.swing.JFXPanel");
-                    isJavaFxAvailable = true;
-                } catch (ClassNotFoundException e) {
-                    isJavaFxAvailable = false;
+                if (isJavaFxAvailable == 0) {
+                    try {
+                        ClassLoader.getSystemClassLoader().loadClass("javafx.embed.swing.JFXPanel");
+                        isJavaFxAvailable = 1;
+                    } catch (ClassNotFoundException e) {
+                        isJavaFxAvailable = 2;
+                    }
                 }
 
-                if (isJavaFxAvailable) {
-                    WebViewPage page = new WebViewPage("http://furaffinity.net/");
+                if (isJavaFxAvailable == 1) {
+                    WebViewPage page = new WebViewPage("https://www.deviantart.com/");
                     this.addTab(language.getContentById("newTab") + "     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
-                } else {
+                } else if (isJavaFxAvailable == 2) {
                     String[] texts = new String[]{language.getContentById("missingJavaFX").replace("&br", "<br>"), language.getContentById("thisNormal")};
 
                     UsefulMethods.makeHyperlinkOptionPane(texts, "https://java.com/en/download/",

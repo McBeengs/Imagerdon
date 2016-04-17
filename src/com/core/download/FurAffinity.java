@@ -39,7 +39,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -411,8 +410,6 @@ public class FurAffinity extends BasicCore {
         }
     }
 
-    public ArrayList<String> failed = new ArrayList<>();
-
     private class ImageExtractor implements Runnable {
 
         String finalLink;
@@ -489,11 +486,11 @@ public class FurAffinity extends BasicCore {
                     artists.saveXml();
                 }
             } catch (java.net.ConnectException ex) {
-                failed.add(link);
-                System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                        + " failed downloads.");
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (MalformedURLException ex) {
                 Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (java.net.SocketException ex) {
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
                 Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
             }

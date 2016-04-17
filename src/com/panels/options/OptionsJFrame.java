@@ -308,7 +308,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
             this.dispose();
         } else {
             int option = JOptionPane.showConfirmDialog(this, language.getContentById("cancelConfirm"),
-                    language.getContentById("cancelLabel"), 0);
+                    language.getContentById("cancel"), 0);
 
             if (option == JOptionPane.OK_OPTION) {
                 this.dispose();

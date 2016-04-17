@@ -31,11 +31,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +45,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
+import java.net.HttpURLConnection;
 
 public class E621 extends BasicCore {
 
@@ -70,7 +69,7 @@ public class E621 extends BasicCore {
         link = url;
         this.taskManager = taskManager;
 
-        webClient = new WebClient(BrowserVersion.CHROME);
+        webClient = new WebClient(BrowserVersion.EDGE);
         webClient.getOptions().setCssEnabled(false);
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
@@ -205,7 +204,7 @@ public class E621 extends BasicCore {
 
             if (result == JOptionPane.YES_OPTION) {
                 taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
-                //new UpdateFurAffinity(link, taskManager).start();
+                new UpdateE621(link, taskManager).start();
                 return false;
             } else {
                 originalNumOfImages = numOfImages;
@@ -248,7 +247,7 @@ public class E621 extends BasicCore {
                         new Thread() {
                             @Override
                             public void run() {
-                                String temp = null;
+                                String temp;
                                 try {
                                     taskManager.progressBar.setIndeterminate(false);
                                     taskManager.progressBar.setMinimum(0);
@@ -301,9 +300,7 @@ public class E621 extends BasicCore {
                                 } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
                                     JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                                 } catch (java.net.SocketTimeoutException ex) {
-                                    failed.add(temp);
-                                    System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                                            + " failed downloads.");
+                                    Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (IOException | InterruptedException ex) {
                                     Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
                                 }
@@ -334,14 +331,9 @@ public class E621 extends BasicCore {
     @Override
     public void terminate() {
         isTerminated = true;
-        executor.shutdownNow();
-        tagOcc = artists.getTagIndex("imageCount", "" + originalNumOfImages);
-        int before = Integer.parseInt(artists.getContentByName("imageCount", tagOcc));
-        artists.setContentByName("imageCount", tagOcc + 1, "" + (before - numOfImages));
-        try {
-            artists.saveXml();
-        } catch (IOException ex) {
-            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+
+        if (executor != null) {
+            executor.shutdownNow();
         }
     }
 
@@ -353,8 +345,6 @@ public class E621 extends BasicCore {
             Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    public ArrayList<String> failed = new ArrayList<>();
 
     private class ImageExtractor implements Runnable {
 
@@ -378,7 +368,11 @@ public class E621 extends BasicCore {
 
             try {
                 URL imageURL = new URL(finalLink);
-                InputStream inputImg = imageURL.openStream();
+                //They think they're smart blocking the access to bots with error 404...
+                //the next 2 lines solves this problem
+                HttpURLConnection conn = (HttpURLConnection) imageURL.openConnection();
+                conn.addRequestProperty("User-Agent", "Mozilla/4.76");
+                InputStream inputImg = conn.getInputStream();
                 OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
@@ -391,7 +385,12 @@ public class E621 extends BasicCore {
                     while (isPaused) {
                         sleep(2);
                     }
-                    writeImg.write(bytes);
+
+                    if (isTerminated) {
+                        break;
+                    } else {
+                        writeImg.write(bytes);
+                    }
                 }
 
                 writeImg.close();
@@ -401,33 +400,39 @@ public class E621 extends BasicCore {
                 numOfImages--;
                 if (!isTerminated) {
                     taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                }
-                taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
 
-                String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                taskManager.progressBar.setString(show);
-                artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                    taskManager.progressBar.setString(show);
+                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
 
-                if (show.equals("100%")) {
-                    taskManager.stopButton.setVisible(false);
-                    taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+                    if (show.equals("100%")) {
+                        taskManager.stopButton.setVisible(false);
+                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
 
-                    for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                        taskManager.playButton.removeMouseListener(listener);
+                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                            taskManager.playButton.removeMouseListener(listener);
+                        }
+
+                        artists.saveXml();
+                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                     }
+                } else {
+                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
+                    files.delete();
 
+                    files = new File(finalPath);
+                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
                     artists.saveXml();
-                    taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                 }
-
             } catch (java.net.ConnectException ex) {
-                failed.add(link);
-                System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                        + " failed downloads.");
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (MalformedURLException ex) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (java.net.SocketException ex) {
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             return false;

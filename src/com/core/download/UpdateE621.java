@@ -52,7 +52,7 @@ import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
 import java.util.concurrent.TimeUnit;
 
-public class UpdateFurAffinity extends BasicCore {
+public class UpdateE621 extends BasicCore {
 
     private boolean isPaused = false;
     private boolean isTerminated = false;
@@ -72,7 +72,7 @@ public class UpdateFurAffinity extends BasicCore {
     private final PasswordManager pass;
     private final DownloadTaskJPanel taskManager;
 
-    public UpdateFurAffinity(String url, DownloadTaskJPanel taskManager) {
+    public UpdateE621(String url, DownloadTaskJPanel taskManager) {
         link = url;
         this.taskManager = taskManager;
 
@@ -298,7 +298,7 @@ public class UpdateFurAffinity extends BasicCore {
                                     }
                                 } catch (IOException ex) {
                                 } catch (InterruptedException ex) {
-                                    Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
                         }.start();
@@ -427,11 +427,11 @@ public class UpdateFurAffinity extends BasicCore {
             } catch (java.net.ConnectException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (MalformedURLException ex) {
-                Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
             } catch (java.net.SocketException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             return false;

@@ -66,8 +66,6 @@ public class UsefulMethods {
             path = System.getProperty("user.home") + separator + "Documents" + separator + "Repository" + separator;
         } else if (os.contains("uni") || os.contains("nux") || os.contains("aix")) {
             path = System.getProperty("user.home") + separator + "Repository" + separator;
-        } else if (os.contains("sunos")) {
-            path = System.getProperty("user.home") + "";
         } else if (os.contains("mac")) {
             path = System.getProperty("user.home") + "";
         } else {

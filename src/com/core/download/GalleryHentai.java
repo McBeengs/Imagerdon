@@ -34,7 +34,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
@@ -344,10 +343,7 @@ public class GalleryHentai extends BasicCore {
                                     }
 
                                 } catch (java.net.SocketTimeoutException | java.lang.IndexOutOfBoundsException ex) {
-                                    failed.add(link);
-                                    System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                                            + " failed downloads.");
-
+                                    Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
                                 } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
                                     JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                                 } catch (IOException | InterruptedException ex) {
@@ -402,8 +398,6 @@ public class GalleryHentai extends BasicCore {
             Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    public ArrayList<String> failed = new ArrayList<>();
 
     private class ImageExtractor implements Runnable {
 
@@ -481,11 +475,11 @@ public class GalleryHentai extends BasicCore {
                     artists.saveXml();
                 }
             } catch (java.net.ConnectException ex) {
-                failed.add(link);
-                System.out.println("An error has happen while download the gallery. The task returned " + failed.size()
-                        + " failed downloads.");
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (MalformedURLException ex) {
                 Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (java.net.SocketException ex) {
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
                 Logger.getLogger(GalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
             }
