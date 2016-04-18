@@ -15,7 +15,7 @@
  * {Insert class description here}
  */
 
-package com.core.download;
+package com.core.web.download;
 
 public class BasicCore extends Thread{
     

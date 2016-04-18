@@ -631,16 +631,20 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         }
     }
 
-    private class ClosableTabbedPane extends JTabbedPane {
+    public class ClosableTabbedPane extends JTabbedPane {
 
         private int tabCount = 0;
         private TabCloseUI closeUI = new TabCloseUI(this);
 
         public ClosableTabbedPane() {
             super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
-            super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel("aaa"));
+            super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel(""));
             super.setFocusable(false);
             super.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        }
+
+        private JTabbedPane getComponent() {
+            return this;
         }
 
         public boolean tabAboutToClose(int tabIndex) {
@@ -670,7 +674,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         private int isJavaFxAvailable = 0;
 
         @Override
-        public void setSelectedIndex(int index) {
+        public void setSelectedIndex(final int index) {
             if (index == this.getTabCount() - 1 && index != 0) {
                 if (isJavaFxAvailable == 0) {
                     try {
@@ -682,8 +686,50 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 }
 
                 if (isJavaFxAvailable == 1) {
-                    WebViewPage page = new WebViewPage("https://www.deviantart.com/");
-                    this.addTab(language.getContentById("newTab") + "     ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png")), page);
+                    final NewTabJFrame newTab = new NewTabJFrame();
+                    newTab.setVisible(true);
+                    newTab.okButton.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            int server = newTab.getServer();
+
+                            if (server > 0) {
+                                String url = null;
+                                ImageIcon icon = null;
+
+                                newTab.dispose();
+                                switch (server) {
+                                    case 1:
+                                        url = "https://www.deviantart.com/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconBig.png"));
+                                        break;
+                                    case 2:
+                                        url = "https://www.tumblr.com/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/tumblrIconBig.png"));
+                                        break;
+                                    case 3:
+                                        url = "http://g.e-hentai.org/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/galleryHentaiIconBig.png"));
+                                        break;
+                                    case 4:
+                                        url = "http://www.furaffinity.net/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png"));
+                                        break;
+                                    case 5:
+                                        url = "https://e621.net/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/e621IconBig.png"));
+                                        break;
+                                    case 6:
+                                        url = "https://www.google.com/";
+                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/googleIconBig.png"));
+                                        break;
+                                }
+
+                                WebViewPage page = new WebViewPage((ClosableTabbedPane) getComponent(), index, icon, url);
+                                addTab(language.getContentById("newTabTitle") + "     ", icon, page);
+                            }
+                        }
+                    });
                 } else if (isJavaFxAvailable == 2) {
                     String[] texts = new String[]{language.getContentById("missingJavaFX").replace("&br", "<br>"), language.getContentById("thisNormal")};
 

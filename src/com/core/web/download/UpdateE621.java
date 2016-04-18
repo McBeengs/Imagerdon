@@ -1,4 +1,4 @@
-/* **********   UpdateGalleryHentai.java   **********
+/* **********   UpdateFurAffinity.java   **********
  *
  * This piece of garbage was brought to you by nothing less than the almighty lord
  * of programming, the Java God and ruler of all the non living things, McBeengs, 
@@ -14,12 +14,17 @@
  /*
  * {Insert class description here}
  */
-package com.core.download;
+package com.core.web.download;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
+import com.util.crypto.PasswordManager;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
@@ -47,27 +52,27 @@ import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
 import java.util.concurrent.TimeUnit;
 
-public class UpdateGalleryHentai extends BasicCore {
+public class UpdateE621 extends BasicCore {
 
-    private int numOfImages;
-    private int numOfPages = 0;
-    private int originalNumOfImages;
-    private int tagOcc;
-    private String finalPath;
-    private String link;
-    private String galleryName;
-    private String display;
     private boolean isPaused = false;
     private boolean isTerminated = false;
     private boolean isDownloading = false;
+    private int tagOcc;
+    private int numOfImages;
+    private int originalNumOfImages;
+    private int numOfPages = 0;
+    private String finalPath;
+    private final String link;
+    private HtmlPage uncensoredLink;
     private final WebClient webClient;
+    private ExecutorService executor;
     private final XmlManager xml;
     private final XmlManager language;
-    private final XmlManager artists;
-    private ExecutorService executor;
+    private XmlManager artists;
+    private final PasswordManager pass;
     private final DownloadTaskJPanel taskManager;
 
-    public UpdateGalleryHentai(String url, DownloadTaskJPanel taskManager) {
+    public UpdateE621(String url, DownloadTaskJPanel taskManager) {
         link = url;
         this.taskManager = taskManager;
 
@@ -82,50 +87,106 @@ public class UpdateGalleryHentai extends BasicCore {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
+        pass = new PasswordManager();
+
+        try {
+            File artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
+            if (!artistsXml.exists()) {
+                artists.createFile(artistsXml.getAbsolutePath());
+            } else {
+                artists.loadFile(artistsXml);
+            }
+
+            String artist = url.substring(35, url.lastIndexOf("/"));
+            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+            if (Boolean.parseBoolean(xml.getContentById("sub"))) {
+                finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + artist;
+                File file = new File(finalPath);
+                if (!file.exists()) {
+                    file.mkdirs();
+                } else {
+                    //System.out.println("folder exists");
+                }
+            } else {
+                finalPath = xml.getContentById("FAoutput");
+                File file = new File(finalPath);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+            }
+        } catch (MalformedURLException ex) {
+            System.out.println(ex.toString());
+        } catch (IOException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+
+    private boolean submittingForm() {
+        try {
+            taskManager.infoDisplay.setText(language.getContentById("loginIn"));
+            HtmlPage page1 = webClient.getPage("https://www.furaffinity.net/login/");
+            HtmlForm form = page1.getFirstByXPath("//form [@method='post']");
+
+            HtmlTextInput usernameField = form.getInputByName("name");
+            HtmlPasswordInput passwordField = form.getInputByName("pass");
+            HtmlSubmitInput button = form.getInputByName("login");
+
+            String user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
+            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
+
+            usernameField.setValueAttribute(user.trim());
+            passwordField.setValueAttribute(passw.trim());
+
+            HtmlPage page2 = button.click();
+
+            if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
+                JOptionPane.showMessageDialog(null, language.getContentById("loginFailedFA"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                return false;
+            }
+
+            String temp = page2.getUrl() + link.substring(27);
+
+            uncensoredLink = webClient.getPage(temp);
+            return true;
+
+        } catch (java.net.UnknownHostException | com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
+            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+        } catch (IOException ex) {
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return false;
     }
 
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage conn = webClient.getPage(link);
-            Document check = Jsoup.parse(conn.asXml());
-            String linkTemp = link;
+            HtmlPage conn = webClient.getPage(uncensoredLink.getUrl());
 
-            if (check.toString().contains("This gallery has been flagged as")) {
-                linkTemp += "?nw=session";
-            }
-
-            if (check.toString().contains("Your IP address has been temporarily banned")) {
-                String left = check.toString().substring(246);
-                left = left.substring(0, left.indexOf("</body>") - 2);
-                System.out.println(left);
-                //JOptionPane.showMessageDialog(null, "Oh shit... Seems that you were temporally banned from the site due\n"
-                //        + "to download overload. If you want to proceed with the task, you must wait");
-            }
-
-            conn = webClient.getPage(linkTemp);
             Document getNumberImages = Jsoup.parse(conn.asXml());
             Elements testURL = getNumberImages.select("body");
 
-            Elements gallery = getNumberImages.select("#gn");
-            setAditionalInfo(gallery.get(0).toString().substring(13));
-
-            if (testURL.toString().contains("Key missing") == true) {
+            if (testURL.toString().contains("could not be found.")) {
                 JOptionPane.showMessageDialog(null, language.getContentById("errorUrlNonExistent"), language.getContentById("genericErrorTitle"), 0);
                 return false;
             } else {
-                Elements getNumber = getNumberImages.select(".gdt2");
+                int c = 1;
+                while (1 > 0) {
+                    HtmlPage page = webClient.getPage(link + c + "/");
 
-                int last = getNumber.get(5).toString().indexOf(" ", 18);
-                String temp = getNumber.get(5).toString().substring(18, last);
-                numOfImages = Integer.parseInt(temp);
-                float result = numOfImages / 40;
-
-                for (int h = 1; h < 999; h++) {
-                    if (result <= h) {
-                        numOfPages = h;
+                    if (page.asXml().contains("There are no submissions to list") == true) {
                         break;
                     }
+                    c++;
+                    numOfPages = c - 1;
+                }
+
+                for (int i = 1; i <= numOfPages; i++) {
+                    String currentPage = (link + i + "/");
+                    HtmlPage getLinks = webClient.getPage(currentPage);
+                    Document doc = Jsoup.parse(getLinks.asXml());
+                    Elements get = doc.select("a[href~=/view/]");
+                    numOfImages += get.size();
                 }
             }
         } catch (java.net.UnknownHostException ex) {
@@ -136,53 +197,13 @@ public class UpdateGalleryHentai extends BasicCore {
         return true;
     }
 
-    private void setAditionalInfo(String galleryName) {
-        this.galleryName = galleryName;
-        this.galleryName = galleryName.substring(0, galleryName.length() - 6);
-
-        display = this.galleryName;
-        if (display.length() > 20) {
-            display = galleryName.substring(0, 20) + "...";
-        }
-
-        taskManager.author.setText(display + " | Gallery Hentai");
-
-        try {
-            File artistsXml = new File(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
-            if (!artistsXml.exists()) {
-                artists.createFile(artistsXml.getAbsolutePath());
-            } else {
-                artists.loadFile(artistsXml);
-            }
-
-            display = this.galleryName;
-            String[] illegal = {"/", "\\", "*", "<", ">", "?", ":", "\"", "|"};
-            String[] legal = {"[bar]", "[bar]", "[star]", "[less]", "[more]", "[question]", "[colon]", "[quotation]", "[bar]"};
-
-            for (int i = 0; i < illegal.length; i++) {
-                if (display.contains(illegal[i])) {
-                    display = display.replace(illegal[i], legal[i]);
-                }
-            }
-
-            finalPath = xml.getContentById("GHoutput") + System.getProperty("file.separator") + display;
-            File file = new File(finalPath);
-            if (!file.exists()) {
-                file.mkdirs();
-            } else {
-                //System.out.println("folder exists");
-            }
-        } catch (MalformedURLException ex) {
-            System.out.println(ex.toString());
-        } catch (IOException ex) {
-            System.out.println(ex.toString());
-        }
-    }
-
     private void download() throws IOException {
-        taskManager.author.setText(language.getContentById("GHGalleryName"));
-        
-        if (getInformationAboutGallery()) {
+        String artist = link.substring(35, link.lastIndexOf("/"));
+        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+        taskManager.author.setText(artist + " | FurAfinity");
+        final String thread = artist;
+
+        if (submittingForm() && getInformationAboutGallery()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
 
             java.awt.event.MouseListener[] teste = this.taskManager.playButton.getMouseListeners();
@@ -204,11 +225,11 @@ public class UpdateGalleryHentai extends BasicCore {
                             public void run() {
                                 try {
                                     int count = 0;
-                                    tagOcc = artists.getTagIndex("name", display);
-                                    int onDisk = Integer.parseInt(artists.getContentByName("imageCount", tagOcc + 2));
+                                    tagOcc = artists.getTagIndex("name", thread);
+                                    int onDisk = Integer.parseInt(artists.getContentByName("imageCount", tagOcc + 1));
 
                                     if (onDisk >= numOfImages) {
-                                        JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", display));
+                                        JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", thread));
                                         taskManager.progressBar.setValue(taskManager.progressBar.getMaximum());
                                         taskManager.progressBar.setStringPainted(true);
                                         taskManager.progressBar.setString("100%");
@@ -218,10 +239,10 @@ public class UpdateGalleryHentai extends BasicCore {
                                         taskManager.playButton.removeMouseListener(taskManager.playButton.getMouseListeners()[0]);
                                         taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                                     } else {
-                                        int cut = numOfImages - ((numOfPages - 1) * 40);
+                                        int cut = numOfImages - ((numOfPages - 1) * 72);
                                         originalNumOfImages = numOfImages;
                                         numOfImages -= onDisk;
-                                        finalPath = xml.getContentById("GHoutput") + System.getProperty("file.separator") + display
+                                        finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + thread
                                                 + System.getProperty("file.separator");
 
                                         taskManager.progressBar.setIndeterminate(false);
@@ -234,24 +255,16 @@ public class UpdateGalleryHentai extends BasicCore {
                                         executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
                                         executor.awaitTermination(0L, TimeUnit.SECONDS);
 
-                                        for (int c = 0; c < numOfPages; c++) {
+                                        for (int c = 1; c <= numOfPages; c++) {
                                             if (isTerminated) {
                                                 break;
                                             }
 
-                                            HtmlPage conn = webClient.getPage(link);
-                                            Document check = Jsoup.parse(conn.asXml());
-
-                                            if (check.toString().contains("This gallery has been flagged as")) {
-                                                link += "?nw=always";
-                                                webClient.getPage(link);
-                                            }
-
-                                            conn = webClient.getPage(link + "?p=" + c);
+                                            HtmlPage conn = webClient.getPage(uncensoredLink.getUrl().toString() + c + "/");
                                             Document docLinks = Jsoup.parse(conn.asXml());
-                                            Elements getLinks = docLinks.select("div .gdtm a");
+                                            Elements getPages = docLinks.select("a[href~=/view/]");
 
-                                            for (int i = 0; i < 40; i++) {
+                                            for (int i = 0; i < 72; i++) {
                                                 while (isPaused) {
                                                     sleep(2);
                                                 }
@@ -262,16 +275,16 @@ public class UpdateGalleryHentai extends BasicCore {
                                                     }
                                                 }
 
-                                                if (count <= (originalNumOfImages - onDisk)) {
-                                                    String temp = getLinks.get(i).toString();
-                                                    temp = temp.substring(9);
-                                                    temp = temp.substring(0, temp.indexOf("\""));
-                                                    Document docImages = Jsoup.connect(temp).get();
-                                                    Elements getImages = docImages.select("#img");
-
-                                                    temp = getImages.get(0).toString();
-                                                    temp = temp.substring(19);
-                                                    temp = temp.substring(0, temp.indexOf("\""));
+                                                if (count < (originalNumOfImages - onDisk)) {
+                                                    String temp = getPages.get(i).toString();
+                                                    int end = temp.indexOf("/", 15);
+                                                    temp = "http://www.furaffinity.net" + temp.substring(9, end);
+                                                    conn = webClient.getPage(temp);
+                                                    Document docImages = Jsoup.parse(conn.asXml());
+                                                    Elements getLinks = docImages.select("a[href~=//d.facdn.net/art/]");
+                                                    String tempImagesArray = getLinks.toString();
+                                                    end = tempImagesArray.indexOf("\"", 10);
+                                                    temp = "http://" + tempImagesArray.substring(11, end);
 
                                                     if (isTerminated) {
                                                         break;
@@ -285,7 +298,7 @@ public class UpdateGalleryHentai extends BasicCore {
                                     }
                                 } catch (IOException ex) {
                                 } catch (InterruptedException ex) {
-                                    Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
                         }.start();
@@ -322,7 +335,7 @@ public class UpdateGalleryHentai extends BasicCore {
         try {
             artists.saveXml();
         } catch (IOException ex) {
-            Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -332,7 +345,7 @@ public class UpdateGalleryHentai extends BasicCore {
             download();
             artists.saveXml();
         } catch (Exception ex) {
-            Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -348,11 +361,11 @@ public class UpdateGalleryHentai extends BasicCore {
 
         private boolean download() {
             String imageName = null;
-            if (!Boolean.parseBoolean(xml.getContentById("GHadvancedNaming"))) {
+            if (!Boolean.parseBoolean(xml.getContentById("FAadvancedNaming"))) {
                 imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
-            } else if (Integer.parseInt(xml.getContentById("GHnamingOption")) == 0) {
+            } else if (Integer.parseInt(xml.getContentById("FAnamingOption")) == 0) {
                 imageName = downloadNumber + finalLink.substring(finalLink.lastIndexOf("."));
-            } else if (Integer.parseInt(xml.getContentById("GHnamingOption")) == 1) {
+            } else if (Integer.parseInt(xml.getContentById("FAnamingOption")) == 1) {
                 imageName = getDate() + finalLink.substring(finalLink.lastIndexOf("."));
             }
 
@@ -390,7 +403,7 @@ public class UpdateGalleryHentai extends BasicCore {
 
                     String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                     taskManager.progressBar.setString(show);
-                    artists.setContentByName("imageCount", tagOcc + 1, "" + (originalNumOfImages - numOfImages));
+                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
 
                     if (show.equals("100%")) {
                         taskManager.stopButton.setVisible(false);
@@ -408,17 +421,17 @@ public class UpdateGalleryHentai extends BasicCore {
                     files.delete();
 
                     files = new File(finalPath);
-                    artists.setContentByName("imageCount", tagOcc + 2, "" + files.list().length);
+                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
                     artists.saveXml();
                 }
             } catch (java.net.ConnectException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (MalformedURLException ex) {
-                Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
             } catch (java.net.SocketException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(UpdateGalleryHentai.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateE621.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             return false;

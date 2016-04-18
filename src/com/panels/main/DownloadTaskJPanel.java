@@ -5,13 +5,13 @@
  */
 package com.panels.main;
 
-import com.core.download.BasicCore;
-import com.core.download.DeviantArt;
-import com.core.download.E621;
-import com.core.download.FurAffinity;
-import com.core.download.GalleryHentai;
-import com.core.download.UpdateFurAffinity;
-import com.core.download.UpdateGalleryHentai;
+import com.core.web.download.BasicCore;
+import com.core.web.download.DeviantArt;
+import com.core.web.download.E621;
+import com.core.web.download.FurAffinity;
+import com.core.web.download.GalleryHentai;
+import com.core.web.download.UpdateFurAffinity;
+import com.core.web.download.UpdateGalleryHentai;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;

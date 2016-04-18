@@ -126,11 +126,19 @@
         <string id="selectArtist">Select an artist:</string>
     </quickTask>
     
+    <!--
+    Strings and buttons that can be found when adding a new tab
+    -->
+    <newTab>
+        <string id="NTLabel">Add New Tab</string>
+        <string id="NTconfirm">Ok... So you want to add a new &string tab ?</string>
+    </newTab>
+    
     <webBrowser>
         <mainLabel id="welcomeLabel">Alpha V3 - Welcome</mainLabel>
         <string id="missingJavaFX">Your machine doesn't have the latest JavaFX Runtime. If you&br want to use the built-in browser, please install</string>
         <string id="thisNormal">this</string>
-        <string id="newTab">New Tab</string>
+        <string id="newTabTitle">New Tab</string>
         <string id="imagesOnDisk">Number of images on disk:</string>
         <string id="artistsOnDisk">Number of artists on disk:</string>
         <string id="imagesOnDisk">Images per artist:</string>

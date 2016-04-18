@@ -14,7 +14,7 @@
  /*
  * {Insert class description here}
  */
-package com.core.download;
+package com.core.web.download;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.WebClient;

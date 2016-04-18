@@ -16,7 +16,10 @@
  */
 package com.core.web.explorer.panes;
 
+import com.panels.main.StylizedMainJFrame.ClosableTabbedPane;
 import com.sun.javafx.application.PlatformImpl;
+import com.sun.javafx.scene.control.skin.ContextMenuContent;
+import com.sun.javafx.scene.control.skin.ContextMenuContent.MenuItemContainer;
 import com.util.serialize.CookiesPersistance;
 import java.awt.GridLayout;
 import java.io.File;
@@ -29,6 +32,7 @@ import java.io.ObjectOutputStream;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,36 +60,58 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
+import javafx.geometry.Side;
+import javafx.scene.Parent;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.Priority;
 import javafx.scene.transform.Scale;
+import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.WebView;
+import javafx.stage.PopupWindow;
+import javafx.stage.Window;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 public class WebViewPage extends JPanel {
 
     private boolean isCookiesEnabled = true;
+    private boolean isBacking = false;
     private CookiesPersistance cookieManager;
+    private JTabbedPane tabbedPane;
+    private ImageIcon icon;
+    private int tabIndex;
     private Button back;
     private Button forward;
     private ProgressBar loadProgress;
     private TextField currentUrl;
     private Button go;
     private Button refresh;
-    private List<Entry> backFields;
-    private List<Entry> forwardFields;
     private ZoomingPane zoomingPane;
     private JFXPanel jFXPanel;
     private WebView browser;
 
-    public WebViewPage() {
+    public WebViewPage(ClosableTabbedPane tabbedPane, int tabIndex, ImageIcon icon) {
         initComponents();
+        this.tabbedPane = tabbedPane;
+        this.tabIndex = tabIndex;
+        this.icon = icon;
     }
 
-    public WebViewPage(String url) {
+    public WebViewPage(ClosableTabbedPane tabbedPane, int tabIndex, ImageIcon icon, String url) {
         initComponents();
+        this.tabbedPane = tabbedPane;
+        this.tabIndex = tabIndex;
+        this.icon = icon;
         createScene(url);
     }
 
@@ -104,6 +130,10 @@ public class WebViewPage extends JPanel {
         return isCookiesEnabled;
     }
 
+    public void setTabbedPane(ClosableTabbedPane tabbedPane) {
+        this.tabbedPane = tabbedPane;
+    }
+
     public void load(String url) {
         createScene(url);
     }
@@ -113,6 +143,7 @@ public class WebViewPage extends JPanel {
             @Override
             public void run() {
                 browser = new WebView();
+                //browser.setContextMenuEnabled(false);
 
                 if (isCookiesEnabled) {
                     File get = new File("cookies.obj");
@@ -129,14 +160,25 @@ public class WebViewPage extends JPanel {
                             cookieManager = new CookiesPersistance(cookieManager.getCookies());
                         } catch (FileNotFoundException ex) {
                             Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (IOException | ClassNotFoundException ex) {
-                            Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException ex) {
+                            int result = JOptionPane.showConfirmDialog(null, "Fatal error while loading options in storage. File \"cookies.obj\" is corrupted",
+                                    "Error", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+
+                            if (result == JOptionPane.OK_OPTION || result == JOptionPane.CANCEL_OPTION) {
+                                JOptionPane.showMessageDialog(null, "Unfortunately, the cookies will be deleted.",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+
+                                cookieManager = new CookiesPersistance();
+                                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+                            }
+                        } catch (ClassNotFoundException ex) {
+
                         }
                     } else {
                         cookieManager = new CookiesPersistance();
                         cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
                     }
-                    
+
                     CookieManager.setDefault(cookieManager);
                 } else {
                     CookieManager.setDefault(new CookieManager());
@@ -150,45 +192,66 @@ public class WebViewPage extends JPanel {
                 layout.getChildren().setAll(createProgressReport(), browser);
                 jFXPanel.setScene(new Scene(layout));
 
-                final ObservableList<Entry> entries = browser.getEngine().getHistory().getEntries();
-
                 browser.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
                     @Override
                     public void changed(ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State t1) {
+                        ObservableList<Entry> entries = browser.getEngine().getHistory().getEntries();
+                        if (browser.getEngine().getHistory().getCurrentIndex()
+                                == browser.getEngine().getHistory().getEntries().size() - 1) {
+                            forward.setDisable(true);
+                        }
+
                         if (entries.size() > 0) {
                             currentUrl.setText(entries.get(entries.size() - 1).getUrl());
                         }
-                        loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
 
+                        loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
                         if (t1.equals(Worker.State.SUCCEEDED)) {
                             loadProgress.progressProperty().unbind();
                             loadProgress.progressProperty().set(100);
+
+                            String title;
+                            try {
+                                title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
+                            } catch (java.lang.NullPointerException ex) {
+                                title = "[Uninformed Name]";
+                            }
+
+                            if (title.length() > 18) {
+                                title = title.substring(0, 18);
+                            }
+
+                            tabbedPane.setTitleAt(tabIndex, title + "     ");
+                            try {
+                                saveCookies();
+                            } catch (IOException ex) {
+                                Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         } else if (t1.equals(Worker.State.FAILED)) {
-                            System.out.println("deu ruim na pagina");
+                            tabbedPane.removeTabAt(tabIndex);
+                            tabbedPane.addTab("Error     ", new ImageIcon(getClass().getResource("/com/style/icons/stopPage.png")),
+                                    new ErrorPane(browser.getEngine().getLoadWorker().getException().toString(), tabbedPane, tabIndex, icon, url));
                         }
                     }
                 });
 
-                backFields = new ArrayList<>();
-                forwardFields = new ArrayList<>();
+                browser.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+                    @Override
+                    public void handle(ContextMenuEvent e) {
+                        createPopupWindow();
+                    }
+                });
 
                 browser.getEngine().getHistory().getEntries().addListener(new ListChangeListener<Entry>() {
                     @Override
                     public void onChanged(ListChangeListener.Change<? extends Entry> change) {
-                        boolean checkIfExists = false;
-                        for (Entry entry : backFields) {
-                            if (entries.get(entries.size() - 1).getUrl().equals(entry.getUrl())) {
-                                checkIfExists = true;
-                            }
-                        }
+                        final WebHistory history = browser.getEngine().getHistory();
+                        int current = history.getCurrentIndex();
 
-                        if (!checkIfExists) {
-                            backFields.add(entries.get(entries.size() - 1));
-                            forwardFields.clear();
-                            forward.setDisable(true);
-                        }
-
-                        if (backFields.size() > 1) {
+                        if (current < 0) {
+                            back.setDisable(true);
+                        } else {
                             back.setDisable(false);
                         }
                     }
@@ -197,39 +260,45 @@ public class WebViewPage extends JPanel {
                 back.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
-                        forward.setDisable(false);
-                        if (backFields.size() > 0) {
-                            browser.getEngine().load(backFields.get(backFields.size() - 2).getUrl());
+                        final WebHistory history = browser.getEngine().getHistory();
 
-                            boolean checkIfExists = false;
-                            for (Entry entry : forwardFields) {
-                                if (forwardFields.get(forwardFields.size() - 1).getUrl().equals(entry.getUrl())) {
-                                    checkIfExists = true;
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (history.getEntries().size() - 1 > 0) {
+                                    isBacking = true;
+                                    history.go(-1);
+                                    forward.setDisable(false);
+                                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
+                                    if (history.getCurrentIndex() == 0) {
+                                        back.setDisable(true);
+                                    }
                                 }
                             }
-
-                            if (!checkIfExists) {
-                                forwardFields.add(backFields.get(backFields.size() - 1));
-                            }
-
-                            backFields.remove(backFields.size() - 1);
-
-                            if (backFields.get(backFields.size() - 1).getUrl().equals(backFields.get(0).getUrl())) {
-                                back.setDisable(true);
-                            }
-                        }
+                        });
                     }
                 });
 
                 forward.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
-                        if (forwardFields.size() > 0) {
-                            browser.getEngine().load(forwardFields.get(forwardFields.size() - 1).getUrl());
-                            forwardFields.remove(forwardFields.size() - 1);
-                        } else {
-                            forward.setDisable(true);
-                        }
+                        final WebHistory history = browser.getEngine().getHistory();
+
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (history.getCurrentIndex() != history.getEntries().size() - 1) {
+                                    history.go(1);
+                                    back.setDisable(false);
+                                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
+                                    if (history.getCurrentIndex() == history.getEntries().size() - 1) {
+                                        forward.setDisable(true);
+                                    }
+                                } else {
+                                    forward.setDisable(true);
+                                }
+                            }
+                        });
                     }
                 });
 
@@ -261,12 +330,6 @@ public class WebViewPage extends JPanel {
                     @Override
                     public void handle(ActionEvent t) {
                         browser.getEngine().reload();
-
-                        try {
-                            destroy();
-                        } catch (IOException ex) {
-                            Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                     }
                 });
 
@@ -274,6 +337,53 @@ public class WebViewPage extends JPanel {
             }
         }
         );
+    }
+
+    private PopupWindow createPopupWindow() {
+        final Iterator<Window> windows = Window.impl_getWindows();
+
+        while (windows.hasNext()) {
+            Window window = windows.next();
+
+            if (window instanceof ContextMenu) {
+                if (window.getScene() != null && window.getScene().getRoot() != null) {
+                    Parent root = window.getScene().getRoot();
+
+                    // access to context menu content
+                    if (root.getChildrenUnmodifiable().size() > 0) {
+                        Node popup = root.getChildrenUnmodifiable().get(0);
+                        if (popup.lookup(".context-menu") != null) {
+                            Node bridge = popup.lookup(".context-menu");
+                            ContextMenuContent cmc = (ContextMenuContent) ((Parent) bridge).getChildrenUnmodifiable().get(0);
+
+                            VBox itemsContainer = cmc.getItemsContainer();
+                            for (Node n : itemsContainer.getChildren()) {
+                                final MenuItemContainer item = (MenuItemContainer) n;
+                                //customize function
+                            }
+                            // remove some item:
+                            // itemsContainer.getChildren().remove(0);
+
+                            // creating new item:
+                            MenuItem menuItem = new MenuItem("Save page");
+                            menuItem.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent e) {
+                                    System.out.println("Save Page");
+                                }
+                            });
+                            // add new item:
+                            cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(menuItem));
+
+                            return (PopupWindow) window;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
     }
 
     private HBox createProgressReport() {
@@ -291,7 +401,7 @@ public class WebViewPage extends JPanel {
         forward.setStyle("-fx-background-radius: 0 90 90 0;");
         forward.setDisable(true);
 
-        loadProgress.setMinHeight(40);
+        loadProgress.setMinHeight(41);
         loadProgress.setMinWidth(330);
         loadProgress.setMaxWidth(Double.MAX_VALUE);
 
@@ -300,7 +410,7 @@ public class WebViewPage extends JPanel {
                 + "-fx-text-fill: white;");
         currentUrl.setFont(new javafx.scene.text.Font(16));
 
-        go.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
+        go.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/navigate.png"))));
         go.setStyle("-fx-background-radius: 0 90 90 0;");
 
         refresh.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/com/style/icons/refresh.png"))));
@@ -327,7 +437,7 @@ public class WebViewPage extends JPanel {
         return progressReport;
     }
 
-    public synchronized void destroy() throws FileNotFoundException, IOException {
+    public synchronized void saveCookies() throws FileNotFoundException, IOException {
         FileOutputStream fileOut = new FileOutputStream("cookies.obj");
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(cookieManager);
