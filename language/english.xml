@@ -141,8 +141,21 @@
         <string id="newTabTitle">New Tab</string>
         <string id="imagesOnDisk">Number of images on disk:</string>
         <string id="artistsOnDisk">Number of artists on disk:</string>
-        <string id="imagesOnDisk">Images per artist:</string>
+        <string id="imagesPerArtist">Images per artist:</string>
         <string id="checkInternet">Internet connection:</string>
+        <mainLabel id="errorLabel">Oh damn...</mainLabel>
+        <string id="errorConnMessage">Seems like something went wrong while loading the page. This could be caused by the internet droppped, an problem with the server being acessed, and eh, whatever... You already know everything that could go wrong. However, an detailed description will be provided at the bottom of this page so you can be sure what happened.</string>
+        <string id="cookiesErr1">Fatal error while loading options in storage. File "cookies.obj" is corrupted</string>
+        <string id="cookiesErr2">Unfortunately, the cookies will be deleted.</string>
+        <string id="uninformedName">[Uninformed Name]</string>
+        <string id="reloadPage">Reload Page</string>
+        <string id="saveGallery">Save Gallery "&string"</string>
+        <string id="goBack">Go Back</string>
+        <string id="goForward">Go Forward</string>
+        <string id="openLink">Open Link</string>
+        <string id="openLinkNT">Open Link in a New Window</string>
+        <string id="copyLinkCB">Copy Link to Clipboard</string>
+        <string id="openImage">Open Image on a New Window</string>
         <random>Lorem ipsun, dolor sit amet.</random>
         <random>I’m not weird, I’m gifted.</random>
         <random>Life called… You failed</random>

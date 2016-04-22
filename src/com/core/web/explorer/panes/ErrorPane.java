@@ -31,12 +31,12 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
 
 public class ErrorPane extends javax.swing.JPanel {
     
-    private final XmlManager xml;
     private final XmlManager language;
     private final JTabbedPane tabbedPane;
     private final int tabIndex;
@@ -44,7 +44,6 @@ public class ErrorPane extends javax.swing.JPanel {
     private final String url;
 
     public ErrorPane(String errorString, JTabbedPane tabbedPane, int tabIndex, ImageIcon icon, String url) {
-        xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         
         this.tabbedPane = tabbedPane;
@@ -73,20 +72,16 @@ public class ErrorPane extends javax.swing.JPanel {
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
         taskLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/stopPage.png"))); // NOI18N
-        taskLabel.setText(language.getContentById("welcomeLabel"));
+        taskLabel.setText(language.getContentById("errorLabel"));
 
         errorMessage.setFont(new java.awt.Font("Verdana", 2, 14)); // NOI18N
         errorMessage.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        errorMessage.setText("<html>    Seems like something went wrong while loading the page.<br>"
-            + "This could be caused by the internet droppped, an problem with the server being "
-            + "acessed, and eh, whatever... You already know everything that could go wrong. However,<br>"
-            + "an detailed description will be provided at the bottom of this page so you can be sure "
-            + "what happened.");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("Error details: ");
 
-        errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         errorLabel.setText("jLabel1");
 
         taskLabel1.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
@@ -111,23 +106,22 @@ public class ErrorPane extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(28, 28, 28)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(errorMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(taskLabel1))))))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(83, 83, 83)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(33, Short.MAX_VALUE))
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(errorMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(taskLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
+                .addGap(45, 45, 45))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,6 +139,9 @@ public class ErrorPane extends javax.swing.JPanel {
                     .addComponent(taskLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(79, Short.MAX_VALUE))
         );
+
+        errorMessage.setHorizontalTextPosition(JLabel.RIGHT);
+        errorMessage.setText("<html><body style=\"text-align: justify;\">   " + language.getContentById("errorConnMessage").replace("&br", "<br>") + "</body></html>");
     }// </editor-fold>//GEN-END:initComponents
 
     private void taskLabel1MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskLabel1MouseEntered
@@ -156,8 +153,9 @@ public class ErrorPane extends javax.swing.JPanel {
     }//GEN-LAST:event_taskLabel1MouseExited
 
     private void taskLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskLabel1MouseClicked
-        tabbedPane.removeTabAt(tabIndex);
-        tabbedPane.addTab("New tab     ", icon, new WebViewPage((StylizedMainJFrame.ClosableTabbedPane) tabbedPane, tabIndex, icon, url));
+        tabbedPane.setTitleAt(tabIndex, "New tab     ");
+        tabbedPane.setIconAt(tabIndex, icon);
+        tabbedPane.setComponentAt(tabIndex, new WebViewPage((StylizedMainJFrame.ClosableTabbedPane) tabbedPane, tabIndex, icon, url));
     }//GEN-LAST:event_taskLabel1MouseClicked
 
 

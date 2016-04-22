@@ -77,7 +77,7 @@ public class MainPane extends javax.swing.JPanel {
         artistsOnDisk.setText("jLabel2");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
-        jLabel5.setText(language.getContentById("imagesOnDisk"));
+        jLabel5.setText(language.getContentById("imagesPerArtist"));
 
         imagesPerArtist.setText("jLabel2");
 

@@ -14,7 +14,7 @@
  /*
  * {Insert class description here}
  */
-package com.util.serialize;
+package com.core.web.cookies;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,20 +30,19 @@ import java.util.logging.Logger;
 public class CookiesPersistance extends CookieManager implements Serializable {
 
     private Map<URI, Map<String, List<String>>> setter = new HashMap<>();
-    
+
     public CookiesPersistance() {
-        
     }
-    
+
     public CookiesPersistance(Map<URI, Map<String, List<String>>> cookies) {
         Object[] injector = cookies.keySet().toArray();
         setter = cookies;
-        
+
         for (Object get : injector) {
             try {
                 URI key = new URI(get.toString());
                 super.put(key, cookies.get(key));
-            }catch (URISyntaxException | IOException ex) {
+            } catch (URISyntaxException | IOException ex) {
                 Logger.getLogger(CookiesPersistance.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -61,7 +60,7 @@ public class CookiesPersistance extends CookieManager implements Serializable {
             setter.put(uri, responseHeaders);
         }
     }
-    
+
     public Map<URI, Map<String, List<String>>> getCookies() {
         return setter;
     }

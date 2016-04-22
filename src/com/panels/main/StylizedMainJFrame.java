@@ -52,6 +52,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -493,6 +494,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     }
 
     public static void main(String args[]) {
+        Locale.setDefault(Locale.US);
         XmlManager style = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         String set = style.getContentByName("style", 0);
         set = set.substring(0, set.indexOf(","));
@@ -669,6 +671,10 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             super.removeTabAt(index);
             tabCount--;
             super.setSelectedIndex(tabCount);
+        }
+        
+        public int getCloseableTabCount() {
+            return tabCount;
         }
 
         private int isJavaFxAvailable = 0;

@@ -160,7 +160,7 @@
           <Font name="Segoe UI Emoji" size="14" style="1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentById(&quot;imagesOnDisk&quot;)" type="code"/>
+          <Connection code="language.getContentById(&quot;imagesPerArtist&quot;)" type="code"/>
         </Property>
       </Properties>
     </Component>

@@ -16,12 +16,18 @@
  */
 package com.core.web.explorer.panes;
 
+import com.panels.main.StylizedMainJFrame;
 import com.panels.main.StylizedMainJFrame.ClosableTabbedPane;
 import com.sun.javafx.application.PlatformImpl;
 import com.sun.javafx.scene.control.skin.ContextMenuContent;
 import com.sun.javafx.scene.control.skin.ContextMenuContent.MenuItemContainer;
-import com.util.serialize.CookiesPersistance;
+import com.core.web.cookies.CookiesPersistance;
+import com.util.UsefulMethods;
+import com.util.xml.XmlManager;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -41,7 +47,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.ActionEvent;
@@ -60,15 +65,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
-import javafx.geometry.Side;
 import javafx.scene.Parent;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.Priority;
 import javafx.scene.transform.Scale;
@@ -81,15 +82,23 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 
 public class WebViewPage extends JPanel {
 
     private boolean isCookiesEnabled = true;
-    private boolean isBacking = false;
+    private String selectedHref;
+    private String selectedFile;
     private CookiesPersistance cookieManager;
     private JTabbedPane tabbedPane;
-    private ImageIcon icon;
-    private int tabIndex;
+    private XmlManager language;
+    private final ImageIcon icon;
+    private final int tabIndex;
     private Button back;
     private Button forward;
     private ProgressBar loadProgress;
@@ -101,13 +110,16 @@ public class WebViewPage extends JPanel {
     private WebView browser;
 
     public WebViewPage(ClosableTabbedPane tabbedPane, int tabIndex, ImageIcon icon) {
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         initComponents();
         this.tabbedPane = tabbedPane;
         this.tabIndex = tabIndex;
         this.icon = icon;
+
     }
 
     public WebViewPage(ClosableTabbedPane tabbedPane, int tabIndex, ImageIcon icon, String url) {
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         initComponents();
         this.tabbedPane = tabbedPane;
         this.tabIndex = tabIndex;
@@ -143,10 +155,9 @@ public class WebViewPage extends JPanel {
             @Override
             public void run() {
                 browser = new WebView();
-                //browser.setContextMenuEnabled(false);
 
                 if (isCookiesEnabled) {
-                    File get = new File("cookies.obj");
+                    File get = new File(UsefulMethods.getClassPath(getClass()) + "cookies.obj");
                     if (get.exists()) {
                         FileInputStream fileOut;
                         ObjectInputStream out;
@@ -161,18 +172,17 @@ public class WebViewPage extends JPanel {
                         } catch (FileNotFoundException ex) {
                             Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (IOException ex) {
-                            int result = JOptionPane.showConfirmDialog(null, "Fatal error while loading options in storage. File \"cookies.obj\" is corrupted",
-                                    "Error", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+                            int result = JOptionPane.showConfirmDialog(null, language.getContentById("cookiesErr1"),
+                                    language.getContentById("error"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
 
                             if (result == JOptionPane.OK_OPTION || result == JOptionPane.CANCEL_OPTION) {
-                                JOptionPane.showMessageDialog(null, "Unfortunately, the cookies will be deleted.",
-                                        "Error", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, language.getContentById("cookiesErr2"),
+                                        language.getContentById("error"), JOptionPane.ERROR_MESSAGE);
 
                                 cookieManager = new CookiesPersistance();
                                 cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
                             }
                         } catch (ClassNotFoundException ex) {
-
                         }
                     } else {
                         cookieManager = new CookiesPersistance();
@@ -195,17 +205,11 @@ public class WebViewPage extends JPanel {
                 browser.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
                     @Override
                     public void changed(ObservableValue<? extends Worker.State> ov, Worker.State t, Worker.State t1) {
-                        ObservableList<Entry> entries = browser.getEngine().getHistory().getEntries();
-                        if (browser.getEngine().getHistory().getCurrentIndex()
-                                == browser.getEngine().getHistory().getEntries().size() - 1) {
+                        loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
+                        if (browser.getEngine().getHistory().getCurrentIndex() == browser.getEngine().getHistory().getEntries().size() - 1) {
                             forward.setDisable(true);
                         }
 
-                        if (entries.size() > 0) {
-                            currentUrl.setText(entries.get(entries.size() - 1).getUrl());
-                        }
-
-                        loadProgress.progressProperty().bind(browser.getEngine().getLoadWorker().progressProperty());
                         if (t1.equals(Worker.State.SUCCEEDED)) {
                             loadProgress.progressProperty().unbind();
                             loadProgress.progressProperty().set(100);
@@ -214,7 +218,7 @@ public class WebViewPage extends JPanel {
                             try {
                                 title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
                             } catch (java.lang.NullPointerException ex) {
-                                title = "[Uninformed Name]";
+                                title = language.getContentById("uninformedName");
                             }
 
                             if (title.length() > 18) {
@@ -222,21 +226,59 @@ public class WebViewPage extends JPanel {
                             }
 
                             tabbedPane.setTitleAt(tabIndex, title + "     ");
+
+                            //set listener to catch eventual right clicks
+                            EventListener hrefListener = new EventListener() {
+                                @Override
+                                public void handleEvent(Event evt) {
+                                    String domEventType = evt.getType();
+                                    if (domEventType.equals("mouseover")) {
+                                        String res = ((Element) evt.getTarget()).getAttribute("href");
+                                        if (res != null) {
+                                            selectedHref = res;
+                                        }
+                                    }
+                                }
+                            };
+
+                            EventListener notHrefListener = new EventListener() {
+                                @Override
+                                public void handleEvent(Event evt) {
+                                    String domEventType = evt.getType();
+                                    if (domEventType.equals("mouseover")) {
+                                        String res = ((Element) evt.getTarget()).getAttribute("src");
+                                        if (res != null) {
+                                            selectedFile = res;
+                                        }
+                                    }
+                                }
+                            };
+
+                            Document doc = browser.getEngine().getDocument();
+                            NodeList anchorList = doc.getElementsByTagName("a");
+                            for (int i = 0; i < anchorList.getLength(); i++) {
+                                ((EventTarget) anchorList.item(i)).addEventListener("mouseover", hrefListener, false);
+                            }
+
+                            NodeList imgList = doc.getElementsByTagName("img");
+                            for (int i = 0; i < imgList.getLength(); i++) {
+                                ((EventTarget) imgList.item(i)).addEventListener("mouseover", notHrefListener, false);
+                            }
+
                             try {
                                 saveCookies();
                             } catch (IOException ex) {
                                 Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         } else if (t1.equals(Worker.State.FAILED)) {
-                            tabbedPane.removeTabAt(tabIndex);
-                            tabbedPane.addTab("Error     ", new ImageIcon(getClass().getResource("/com/style/icons/stopPage.png")),
-                                    new ErrorPane(browser.getEngine().getLoadWorker().getException().toString(), tabbedPane, tabIndex, icon, url));
+                            tabbedPane.setTitleAt(tabIndex, "Error     ");
+                            tabbedPane.setIconAt(tabIndex, new ImageIcon(getClass().getResource("/com/style/icons/stopPage.png")));
+                            tabbedPane.setComponentAt(tabIndex, new ErrorPane(browser.getEngine().getLoadWorker().getException().toString(), tabbedPane, tabIndex, icon, url));
                         }
                     }
                 });
 
                 browser.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-
                     @Override
                     public void handle(ContextMenuEvent e) {
                         createPopupWindow();
@@ -246,6 +288,8 @@ public class WebViewPage extends JPanel {
                 browser.getEngine().getHistory().getEntries().addListener(new ListChangeListener<Entry>() {
                     @Override
                     public void onChanged(ListChangeListener.Change<? extends Entry> change) {
+                        currentUrl.setText(change.getList().get(change.getList().size() - 1).getUrl());
+
                         final WebHistory history = browser.getEngine().getHistory();
                         int current = history.getCurrentIndex();
 
@@ -260,45 +304,14 @@ public class WebViewPage extends JPanel {
                 back.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
-                        final WebHistory history = browser.getEngine().getHistory();
-
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (history.getEntries().size() - 1 > 0) {
-                                    isBacking = true;
-                                    history.go(-1);
-                                    forward.setDisable(false);
-                                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
-                                    if (history.getCurrentIndex() == 0) {
-                                        back.setDisable(true);
-                                    }
-                                }
-                            }
-                        });
+                        goBack();
                     }
                 });
 
                 forward.setOnAction(new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
-                        final WebHistory history = browser.getEngine().getHistory();
-
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (history.getCurrentIndex() != history.getEntries().size() - 1) {
-                                    history.go(1);
-                                    back.setDisable(false);
-                                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
-                                    if (history.getCurrentIndex() == history.getEntries().size() - 1) {
-                                        forward.setDisable(true);
-                                    }
-                                } else {
-                                    forward.setDisable(true);
-                                }
-                            }
-                        });
+                        goForward();
                     }
                 });
 
@@ -335,10 +348,48 @@ public class WebViewPage extends JPanel {
 
                 browser.getEngine().load(url);
             }
-        }
-        );
+        });
     }
 
+    private void goBack() {
+        final WebHistory history = browser.getEngine().getHistory();
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (history.getEntries().size() - 1 > 0) {
+                    history.go(-1);
+                    forward.setDisable(false);
+                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
+                    if (history.getCurrentIndex() == 0) {
+                        back.setDisable(true);
+                    }
+                }
+            }
+        });
+    }
+
+    private void goForward() {
+        final WebHistory history = browser.getEngine().getHistory();
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (history.getCurrentIndex() != history.getEntries().size() - 1) {
+                    history.go(1);
+                    back.setDisable(false);
+                    currentUrl.setText(history.getEntries().get(browser.getEngine().getHistory().getCurrentIndex()).getUrl());
+                    if (history.getCurrentIndex() == history.getEntries().size() - 1) {
+                        forward.setDisable(true);
+                    }
+                } else {
+                    forward.setDisable(true);
+                }
+            }
+        });
+    }
+
+    @SuppressWarnings("deprecation")
     private PopupWindow createPopupWindow() {
         final Iterator<Window> windows = Window.impl_getWindows();
 
@@ -357,24 +408,162 @@ public class WebViewPage extends JPanel {
                             ContextMenuContent cmc = (ContextMenuContent) ((Parent) bridge).getChildrenUnmodifiable().get(0);
 
                             VBox itemsContainer = cmc.getItemsContainer();
+                            String[] typos = new String[]{"Reload page", "Stop loading", "Go Back", "Go Forward", "Open Link", "Open Link in New Window",
+                                "Copy Link to Clipboard", "Open Image in New Window", "Copy Image to Clipboard"};
+                            List<MenuItemContainer> remove = new ArrayList<>();
+
                             for (Node n : itemsContainer.getChildren()) {
-                                final MenuItemContainer item = (MenuItemContainer) n;
-                                //customize function
-                            }
-                            // remove some item:
-                            // itemsContainer.getChildren().remove(0);
-
-                            // creating new item:
-                            MenuItem menuItem = new MenuItem("Save page");
-                            menuItem.setOnAction(new EventHandler<ActionEvent>() {
-
-                                @Override
-                                public void handle(ActionEvent e) {
-                                    System.out.println("Save Page");
+                                MenuItemContainer item = (MenuItemContainer) n;
+                                for (String typo : typos) {
+                                    if (item.getItem().getText().equals(typo)) {
+                                        remove.add(item);
+                                    }
                                 }
-                            });
-                            // add new item:
-                            cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(menuItem));
+                            }
+
+                            for (final MenuItemContainer bye : remove) {
+                                String text = bye.getItem().getText();
+                                itemsContainer.getChildren().remove(bye);
+
+                                if (text.equals(typos[0])) {
+                                    MenuItem reloadPage = new MenuItem(language.getContentById("reloadPage"));
+                                    reloadPage.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent e) {
+                                            browser.getEngine().reload();
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(reloadPage));
+
+                                    text = currentUrl.getText();
+                                    String[] outcomes = new String[]{".deviantart.com/gallery/", ".tumblr.com", "http://g.e-hentai.org/g/",
+                                        "http://www.furaffinity.net/gallery/", "https://e621.net/post/index/"};
+
+                                    for (int i = 0; i < outcomes.length; i++) {
+                                        if (text.contains(outcomes[i])) {
+                                            if (i == 0) {
+                                                if (!text.endsWith("?catpath=/")) {
+                                                    text += "?catpath=/";
+                                                }
+                                            } else if (i == 3) {
+                                                String title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
+                                                if (title.endsWith("| Tumblr")) {
+                                                    break;
+                                                }
+                                            }
+
+                                            String show = null;
+                                            switch (i) {
+                                                case 0:
+                                                    String artist = text.substring(7, text.indexOf("."));
+                                                    artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+                                                    show = language.getContentById("saveGallery").replace("&string", artist);
+                                                    break;
+                                                case 1:
+                                                    show = language.getContentById("saveGallery").replace("&string", "Tumblr");
+                                                    break;
+                                                case 2:
+                                                    String title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
+                                                    if (title.length() > 10) {
+                                                        title = title.substring(0, 10);
+                                                    }
+                                                    show = language.getContentById("saveGallery").replace("&string", title);
+                                                    break;
+                                                case 3:
+                                                    String artist2 = text.substring(35, text.lastIndexOf("/"));
+                                                    artist2 = artist2.substring(0, 1).toUpperCase() + artist2.substring(1);
+                                                    show = language.getContentById("saveGallery").replace("&string", artist2);
+                                                    break;
+                                                case 4:
+                                                    String artist3 = text.substring(text.lastIndexOf("/") + 1);
+                                                    artist3 = artist3.substring(0, 1).toUpperCase() + artist3.substring(1);
+                                                    show = language.getContentById("saveGallery").replace("&string", artist3);
+                                                    break;
+                                            }
+
+                                            final String send = text;
+                                            final int server = i;
+                                            MenuItem openLink = new MenuItem(show);
+                                            openLink.setOnAction(new EventHandler<ActionEvent>() {
+                                                @Override
+                                                public void handle(ActionEvent t) {
+                                                    StylizedMainJFrame.AddTask add = StylizedMainJFrame.ADD_TASK;
+                                                    add.addTask(send, server, -2);
+                                                }
+                                            });
+
+                                            cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(openLink));
+                                            break;
+                                        }
+                                    }
+
+                                } else if (text.equals(typos[2])) {
+                                    MenuItem goBack = new MenuItem(language.getContentById("goBack"));
+                                    goBack.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent e) {
+                                            goBack();
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(goBack));
+                                } else if (text.equals(typos[3])) {
+                                    MenuItem goForward = new MenuItem(language.getContentById("goForward"));
+                                    goForward.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent e) {
+                                            goForward();
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(goForward));
+                                } else if (text.equals(typos[4])) {
+                                    MenuItem openLink = new MenuItem(language.getContentById("openLink"));
+                                    openLink.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent t) {
+                                            browser.getEngine().load(setNewPageUrl());
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(openLink));
+                                } else if (text.equals(typos[5])) {
+                                    MenuItem openLink = new MenuItem(language.getContentById("openLinkNT"));
+                                    openLink.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent t) {
+                                            tabbedPane.addTab("New Tab     ", icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
+                                                    tabbedPane.getTabCount() - 2, icon, setNewPageUrl()));
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(openLink));
+                                } else if (text.equals(typos[6])) {
+                                    MenuItem openLink = new MenuItem(language.getContentById("copyLinkCB"));
+                                    openLink.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent t) {
+                                            StringSelection selection = new StringSelection(setNewPageUrl());
+                                            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                                            clipboard.setContents(selection, selection);
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(openLink));
+                                } else if (text.equals(typos[7])) {
+                                    MenuItem openLink = new MenuItem(language.getContentById("openLink"));
+                                    openLink.setOnAction(new EventHandler<ActionEvent>() {
+                                        @Override
+                                        public void handle(ActionEvent t) {
+                                            tabbedPane.addTab(language.getContentById("openImage") + "     ", icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
+                                                    tabbedPane.getTabCount() - 2, icon, selectedFile));
+                                        }
+                                    });
+
+                                    cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(openLink));
+                                }
+                            }
 
                             return (PopupWindow) window;
                         }
@@ -383,7 +572,23 @@ public class WebViewPage extends JPanel {
                 return null;
             }
         }
+
         return null;
+    }
+
+    private String setNewPageUrl() {
+        String url = currentUrl.getText();
+
+        if (selectedHref.indexOf("/", 1) > 0) {
+            String temp = selectedHref.substring(0, selectedHref.indexOf("/", 1) + 1);
+            if (url.contains(temp)) {
+                url = url.substring(0, url.indexOf(temp)) + selectedHref;
+            }
+        } else {
+            url = url.substring(0, url.length() - 1) + selectedHref;
+        }
+
+        return url;
     }
 
     private HBox createProgressReport() {
@@ -443,6 +648,7 @@ public class WebViewPage extends JPanel {
         out.writeObject(cookieManager);
         out.close();
         fileOut.close();
+
     }
 
     // http://stackoverflow.com/questions/22796742/fit-javafx-webview-browser-content-to-window
