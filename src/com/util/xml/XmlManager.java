@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -43,8 +44,8 @@ public class XmlManager {
     private String filePath;
     private String temp;
     private String found;
-    private ArrayList<String> values;
-    private final ArrayList<Integer> numbers;
+    private List<String> values;
+    private final List<Integer> numbers;
     private int start = 0;
     private int end = 0;
     private int fixer;
@@ -55,8 +56,8 @@ public class XmlManager {
     }
 
     /**
-     * Loads an already existing XML file and sets the content of this instance
-     * with whatever attributes and values that could be found there.
+     * Loads an already existing XML file and sets this instance with whatever
+     * attributes and values that could be found there.
      *
      * @param path the path that leads to the desired file
      */
@@ -84,8 +85,8 @@ public class XmlManager {
     }
 
     /**
-     * Loads an already existing XML file and sets the content of this instance
-     * with whatever attributes and values that could be found there.
+     * Loads an already existing XML file and sets this instance with whatever
+     * attributes and values that could be found there.
      *
      * @param file the desired file
      * @exception FileNotFoundException if the file provided couldn't be founded
@@ -124,44 +125,12 @@ public class XmlManager {
     }
 
     /**
-     * Creates an new tag that will not be attached to any other pre-existing
-     * tags, essentialy adding another root element.
-     * <p>
-     * Example: Say you have this structure:
-     * <blockquote><pre>
-     * {@code <yum>}
-     * {@code     <fruit>Apple</fruit>}
-     * {@code     <food>Hamburguer</food>}
-     * {@code     <candy>Bubblegun</candy>}
-     * {@code </yum>}
-     * </pre></blockquote>
-     *
-     * While {@code <yum>} is the only root element on this file, the command
-     * {@code addIndependedTag("drink")} would produce the following output:
-     *
-     * <blockquote><pre>
-     * {@code <yum>}
-     * {@code     <fruit>Apple</fruit>}
-     * {@code     <food>Hamburguer</food>}
-     * {@code     <candy>Bubblegun</candy>}
-     * {@code </yum>}
-     * {@code <drink>}
-     * {@code     }
-     * {@code </drink>}
-     * </pre></blockquote>
-     *
-     * @param tagName the tag name that will be creaded
-     */
-    public void addIndependedTag(String tagName) {
-        content += "\n<" + tagName + ">\n    \n</" + tagName + ">";
-    }
-
-    /**
      * Creates an new tag that will be attached to other pre-existing tag,
      * especifically as the last node.
      * <p>
      * Example: Say you have this structure:
      * <blockquote><pre>
+     * {@code <?xml version="1.1" encoding="UTF-8"?>}
      * {@code <yum>}
      * {@code     <fruit>Apple</fruit>}
      * {@code     <food>Hamburguer</food>}
@@ -174,6 +143,7 @@ public class XmlManager {
      * following output:
      *
      * <blockquote><pre>
+     * {@code <?xml version="1.1" encoding="UTF-8"?>}
      * {@code <yum>}
      * {@code     <fruit>Apple</fruit>}
      * {@code     <food>Hamburguer</food>}
@@ -182,7 +152,7 @@ public class XmlManager {
      * {@code </yum>}
      * </pre></blockquote>
      *
-     * After created, use the method{@code setContentByName()} to add content to
+     * After created, use the method {@code setContentByName()} to add content to
      * the tag.
      *
      * @param tagName the tag name that will be creaded
@@ -245,10 +215,25 @@ public class XmlManager {
         return false;
     }
 
+    /**
+     * Searchs the tag provided in this instance and returns {@code true} if,
+     * and only if there's at least 1 perfect match
+     *
+     * @param tagName the tag that will be searched
+     * @return the result
+     */
     public boolean checkIfTagExists(String tagName) {
         return content.contains("<" + tagName);
     }
 
+    /**
+     * Searchs both the tag provided and his content in this instance and
+     * returns {@code true} if, and only if there's at least 1 perfect match
+     *
+     * @param tagName the tag that will be searched
+     * @param tagContent the content inside the tag
+     * @return the result
+     */
     public boolean checkIfTagExists(String tagName, String tagContent) {
         if (!checkIfTagExists(tagName)) {
             return false;
@@ -265,7 +250,16 @@ public class XmlManager {
         return false;
     }
 
-    public int getTagIndex(String tagName, String content) {
+    /**
+     * Searchs both the tag provided and his content in this instance and
+     * returns the exact node number it is. If it doesn't exist, this
+     * method will return {@code -1} instead.
+     *
+     * @param tagName the tag that will be searched
+     * @param tagContent the content inside the tag
+     * @return the node index
+     */
+    public int getTagIndex(String tagName, String tagContent) {
         if (tagName.isEmpty()) {
             throw new IllegalArgumentException("The tag name field is empty.");
         }
@@ -273,7 +267,7 @@ public class XmlManager {
         selectValues(tagName, this.content);
 
         for (int i = 0; i < values.size(); i++) {
-            if (values.get(i).equals(content)) {
+            if (values.get(i).equals(tagContent)) {
                 return i;
             }
         }
@@ -282,13 +276,12 @@ public class XmlManager {
     }
 
     /**
-     * Searchs the provided file for an specific tag name and returns the value
+     * Searchs an specific tag name in this instance and returns the value
      * founded inside the tag
      *
-     * @param tagName the tag that you wants to obtain the value
-     * @param item the occurence of the tag; say you wanted to get the third of
-     * four occurences, so you would type "2" on this variable
-     * @return the value founded on the content
+     * @param tagName the tag that you want to obtain the value
+     * @param item the occurence of the tag
+     * @return the value founded
      */
     public String getContentByName(String tagName, int item) {
         selectValues(tagName, content);
@@ -298,13 +291,20 @@ public class XmlManager {
         return send;
     }
 
-    public ArrayList<String> getAllContentsByName(String tagName) {
+    /**
+     * Searchs an specific tag name in this instance and returns all contents founded
+     * within elements of the same name
+     *
+     * @param tagName the tag that you want to obtain the values
+     * @return the values founded
+     */
+    public List<String> getAllContentsByName(String tagName) {
         if (content.contains(tagName)) {
             temp = content;
             selectValues(tagName, temp);
         }
 
-        ArrayList<String> out = new ArrayList<>();
+        List<String> out = new ArrayList<>();
 
         for (int i = 0; i < values.size(); i++) {
             out.add(values.get(i));
@@ -334,7 +334,7 @@ public class XmlManager {
         values.add(found);
 
         temp = temp.substring(end);
-        int fixer2 = temp.indexOf(">");  // Aqui costumava ter um + 2
+        int fixer2 = temp.indexOf(">");
         temp = temp.substring(fixer2);
 
         if (temp.contains("<" + tagName)) {
@@ -344,13 +344,20 @@ public class XmlManager {
         return false;
     }
 
+    /**
+     * Searchs an specific tag ID in this instance and returns the content of the first
+     * perfect match founded
+     *
+     * @param id the tag ID that you want to obtain the value
+     * @return the value founded
+     */
     public String getContentById(String id) {
         if (content.contains("id=\"" + id + "\"")) {
-            temp = content.substring(content.indexOf(id));
+            temp = content.substring(content.indexOf("id=\"" + id + "\""));
             start = temp.indexOf(">") + 1;
             found = temp.substring(start);
 
-            end = found.indexOf("<");
+            end = found.indexOf("</");
             found = found.substring(0, end);
         } else {
             throw new IllegalArgumentException("The ID \"" + id + "\" doesn't exist.");
@@ -359,6 +366,15 @@ public class XmlManager {
         return found;
     }
 
+    /**
+     * Searchs an specific tag in this instance with an attribute provided
+     * ({@code <string foo="value"></string>}) and returns the value founded inside the tag
+     *
+     * @param tagName the tag that you want to obtain the values
+     * @param item the tag index
+     * @param attrName the tag attribute
+     * @return the value founded
+     */
     public String getContentByAttribute(String tagName, int item, String attrName) {
         if (tagName.isEmpty()) {
             throw new IllegalArgumentException("The tag name field is empty.");
@@ -418,6 +434,14 @@ public class XmlManager {
         return false;
     }
 
+    /**
+     * Searchs an specific tag name in this instance and sets his content with the value
+     * provided
+     *
+     * @param tagName the tag that you want to set the value
+     * @param item the occurence of the tag
+     * @param value the new content of the tag
+     */
     public void setContentByName(String tagName, int item, String value) {
         StringBuilder builder = new StringBuilder(content);
         int c = 0;
@@ -445,13 +469,20 @@ public class XmlManager {
         content = builder.toString();
     }
 
+    /**
+     * Searchs an specific tag ID in this instance and sets his content with the value
+     * provided
+     *
+     * @param id the tag ID that you want to set the value
+     * @param value the new content of the tag
+     */
     public void setContentById(String id, String value) {
         StringBuilder builder = new StringBuilder(content);
         int c;
         int d;
         temp = content;
 
-        c = content.indexOf(id) + id.length();
+        c = content.indexOf("id=\"" + id + "\"") + id.length();
         temp = temp.substring(c);
         c = c + temp.indexOf(">") + 1;
         temp = content.substring(c);
@@ -462,6 +493,15 @@ public class XmlManager {
         content = builder.toString();
     }
 
+    /**
+     * Searchs an specific tag in this instance with an attribute provided
+     * ({@code <string foo="value"></string>}) and sets sets his content with the value
+     * provided
+     * @param tagName the tag that you want to set the values
+     * @param item the tag index
+     * @param attrName the tag attribute
+     * @param value the new content of the tag
+     */
     public void setContentByAttribute(String tagName, String attrName, int item, String value) {
         if (tagName.isEmpty()) {
             throw new NoSuchFieldError("The tag name field is empty");
@@ -491,6 +531,68 @@ public class XmlManager {
         builder.replace(c, d + c, value);
 
         content = builder.toString();
+    }
+
+    /**
+     * Searchs an specific tag name in this instance and removes it from his father,
+     * erasing it from the node
+     *
+     * @param tagName the tag that you want to delete
+     * @param item the occurence of the tag
+     */
+    public void deleteTagByName(String tagName, int item) {
+        StringBuilder builder = new StringBuilder(content);
+        int c = 0;
+        temp = content;
+
+        if (temp.contains("<" + tagName) || temp.contains("<" + tagName + " ")) {
+            for (int i = 0; i <= item; i++) {
+                start = temp.indexOf("<" + tagName);
+                temp = temp.substring(start);
+                c += start + end;
+
+                end = temp.indexOf(">") + 1;
+                temp = temp.substring(end);
+
+            }
+        } else {
+            throw new IllegalArgumentException("The tag \"" + tagName + "\" wasn't found.");
+        }
+
+        String helper = (content.substring(c, content.length()));
+
+        builder.replace(c, c + helper.indexOf("\n"), "");
+        content = builder.toString();
+    }
+
+    /**
+     * Searchs an specific tag ID in this instance and removes it from his father,
+     * erasing it from the node
+     *
+     * @param id the tag ID that you want to delete
+     */
+    public void deleteTagById(String id) {
+        if (content.contains("id=\"" + id + "\"")) {
+            start = content.indexOf("id=\"" + id + "\"");
+            temp = content.substring(start);
+
+            for (int i = 1; i < 100; i++) {
+                String first = content.substring(start - i, start - (i - 1));
+                temp = first + temp;
+                if (first.equals("<")) {
+                    break;
+                }
+            }
+
+            start = content.length() - temp.length();
+            StringBuilder builder = new StringBuilder(content);
+            String helper = (content.substring(start, content.length()));
+
+            builder.replace(start, start + helper.indexOf("\n"), "");
+            content = builder.toString();
+        } else {
+            throw new IllegalArgumentException("The ID \"" + id + "\" doesn't exist.");
+        }
     }
 
     /**
@@ -533,9 +635,12 @@ public class XmlManager {
     }
 
     /**
-     * Saves
+     * Saves the XML content of this instance on the file / path that was
+     * indicated back on the instance loading. It automatically formats the content
+     * before saving
      *
-     * @throws java.io.IOException
+     * @throws java.io.IOException if an external problem is impeding the correct
+     * saving of the file
      */
     public void saveXml() throws IOException {
         formatXml();
@@ -543,12 +648,21 @@ public class XmlManager {
         if (newXml.exists()) {
             newXml.delete();
         }
-        
+
         newXml.createNewFile();
         FileUtils.writeStringToFile(newXml, content);
     }
 
-    public String getContent() {
+    /**
+     * Returns the XML content of this instance without formatting, indenting or
+     * checking for errors in parsing. It can be use for debugging purposes as
+     * how changes are being handled by the API, however, it can be
+     * formatted with {@code formatXml()} before the call of this method
+     *
+     * @return the content
+     */
+    @Override
+    public String toString() {
         return content;
     }
 }

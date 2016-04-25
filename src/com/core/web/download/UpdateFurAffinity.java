@@ -140,7 +140,8 @@ public class UpdateFurAffinity extends BasicCore {
             HtmlPage page2 = button.click();
 
             if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailedFA"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
+                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                 return false;
             }
 

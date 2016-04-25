@@ -10,6 +10,7 @@ import com.core.web.download.DeviantArt;
 import com.core.web.download.E621;
 import com.core.web.download.FurAffinity;
 import com.core.web.download.GalleryHentai;
+import com.core.web.download.Tumblr;
 import com.core.web.download.UpdateFurAffinity;
 import com.core.web.download.UpdateGalleryHentai;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
@@ -51,6 +52,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                     extractor = new DeviantArt(url, this);
                     break;
                 case TUMBLR:
+                    extractor = new Tumblr(url, this);
                     break;
                 case GALLERY_HENTAI:
                     extractor = new GalleryHentai(url, this);
@@ -156,6 +158,11 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         playButton.setVisible(false);
         stopButton.setVisible(false);
         extractor.start();
+    }
+
+    public void changeSkinForAutoStart() {
+        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/pauseButtonStandard.png")));
+        isExecuting = true;
     }
 
     public MouseListener playButtonNormalBehavior() {

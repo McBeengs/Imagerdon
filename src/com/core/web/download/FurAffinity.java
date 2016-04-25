@@ -25,6 +25,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
+import com.panels.main.StylizedMainJFrame;
 import com.util.crypto.PasswordManager;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -64,7 +65,6 @@ public class FurAffinity extends BasicCore {
     private int numOfPages = 0;
     private String finalPath;
     private String link;
-    private HtmlPage uncensoredLink;
     private WebClient webClient;
     private ExecutorService executor;
     private XmlManager xml;
@@ -100,7 +100,7 @@ public class FurAffinity extends BasicCore {
             String artist = url.substring(35, url.lastIndexOf("/"));
             artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
             if (Boolean.parseBoolean(xml.getContentById("sub"))) {
-                finalPath = xml.getContentById("FAoutput") + "/" + artist;
+                finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + artist;
                 File file = new File(finalPath);
                 if (!file.exists()) {
                     file.mkdirs();
@@ -140,13 +140,11 @@ public class FurAffinity extends BasicCore {
             HtmlPage page2 = button.click();
 
             if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailedFA"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
+                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                 return false;
             }
-
-            String temp = page2.getUrl() + link.substring(27);
-
-            uncensoredLink = webClient.getPage(temp);
+            
             return true;
 
         } catch (java.net.UnknownHostException | org.apache.http.conn.HttpHostConnectException ex) {
@@ -163,7 +161,7 @@ public class FurAffinity extends BasicCore {
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage conn = webClient.getPage(uncensoredLink.getUrl());
+            HtmlPage conn = webClient.getPage(link);
 
             Document getNumberImages = Jsoup.parse(conn.asXml());
             Elements testURL = getNumberImages.select("body");
@@ -302,73 +300,14 @@ public class FurAffinity extends BasicCore {
             taskManager.playButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent evt) {
-                    if (!isDownloading) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    taskManager.progressBar.setIndeterminate(false);
-                                    taskManager.progressBar.setMinimum(0);
-                                    taskManager.progressBar.setMaximum(numOfImages);
-                                    taskManager.progressBar.setStringPainted(true);
-                                    taskManager.progressBar.setString("0%");
-                                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                    isDownloading = true;
-
-                                    int cut = numOfImages - ((numOfPages - 1) * 72);
-                                    int count = 0;
-                                    executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
-                                    executor.awaitTermination(0L, TimeUnit.SECONDS);
-
-                                    for (int c = 1; c <= numOfPages; c++) {
-                                        if (isTerminated) {
-                                            break;
-                                        }
-
-                                        HtmlPage conn = webClient.getPage(uncensoredLink.getUrl().toString() + c + "/");
-                                        Document docLinks = Jsoup.parse(conn.asXml());
-                                        Elements getPages = docLinks.select("a[href~=/view/]");
-
-                                        for (int i = 0; i < 72; i++) {
-                                            while (isPaused) {
-                                                sleep(2);
-                                            }
-
-                                            if (c == numOfPages) {
-                                                if (i == cut) {
-                                                    break;
-                                                }
-                                            }
-
-                                            String temp = getPages.get(i).toString();
-                                            int end = temp.indexOf("/", 15);
-                                            temp = "http://www.furaffinity.net" + temp.substring(9, end);
-                                            conn = webClient.getPage(temp);
-                                            Document docImages = Jsoup.parse(conn.asXml());
-                                            Elements getLinks = docImages.select("a[href~=//d.facdn.net/art/]");
-                                            String tempImagesArray = getLinks.toString();
-                                            end = tempImagesArray.indexOf("\"", 10);
-                                            temp = "http://" + tempImagesArray.substring(11, end);
-                                            count++;
-
-                                            if (isTerminated) {
-                                                break;
-                                            } else {
-                                                executor.execute(new ImageExtractor(temp, count));
-                                            }
-                                        }
-                                    }
-
-                                } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
-                                    JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                                } catch (IOException | InterruptedException ex) {
-                                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }.start();
-                    }
+                    downloadAction();
+                    taskManager.changeSkinForAutoStart();
                 }
             });
+
+            if (StylizedMainJFrame.AUTO_START) {
+                downloadAction();
+            }
         } else if (!convertedToUpdate) {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
@@ -377,6 +316,74 @@ public class FurAffinity extends BasicCore {
                 taskManager.playButton.removeMouseListener(listener);
             }
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
+        }
+    }
+
+    private void downloadAction() {
+        if (!isDownloading) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        taskManager.progressBar.setIndeterminate(false);
+                        taskManager.progressBar.setMinimum(0);
+                        taskManager.progressBar.setMaximum(numOfImages);
+                        taskManager.progressBar.setStringPainted(true);
+                        taskManager.progressBar.setString("0%");
+                        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
+                        isDownloading = true;
+
+                        int cut = numOfImages - ((numOfPages - 1) * 72);
+                        int count = 0;
+                        executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+                        executor.awaitTermination(0L, TimeUnit.SECONDS);
+
+                        for (int c = 1; c <= numOfPages; c++) {
+                            if (isTerminated) {
+                                break;
+                            }
+
+                            HtmlPage conn = webClient.getPage(link + c + "/");
+                            Document docLinks = Jsoup.parse(conn.asXml());
+                            Elements getPages = docLinks.select("a[href~=/view/]");
+
+                            for (int i = 0; i < getPages.size(); i++) {
+                                while (isPaused) {
+                                    sleep(2);
+                                }
+
+                                if (c == numOfPages) {
+                                    if (i == cut) {
+                                        break;
+                                    }
+                                }
+
+                                String temp = getPages.get(i).toString();
+                                int end = temp.indexOf("/", 15);
+                                temp = "http://www.furaffinity.net" + temp.substring(9, end);
+                                conn = webClient.getPage(temp);
+                                Document docImages = Jsoup.parse(conn.asXml());
+                                Elements getLinks = docImages.select("a[href~=//d.facdn.net/art/]");
+                                String tempImagesArray = getLinks.toString();
+                                end = tempImagesArray.indexOf("\"", 10);
+                                temp = "http://" + tempImagesArray.substring(11, end);
+                                count++;
+
+                                if (isTerminated) {
+                                    break;
+                                } else {
+                                    executor.execute(new ImageExtractor(temp, count));
+                                }
+                            }
+                        }
+
+                    } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
+                        JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                    } catch (IOException | InterruptedException ex) {
+                        Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.start();
         }
     }
 

@@ -32,7 +32,7 @@
         <string id="saveConfirm">Are you sure you want to save these settings?</string>
         <string id="internetDroppedOut">Connection with the Internet has dropped out.</string>
         <string id="errorUrlNonExistent">The URL provided doesn't exist on the site's database</string>
-        <string id="loginFailedFA">Login failed. Check your account settings on "Options < Settings < FurAffinity"</string>
+        <string id="loginFailed">Login failed. Check your account settings on "Options < Settings < &string"</string>
         <string id="artistUp2Date">The artist "&string" is already up to date. No need of an download</string>
         <string id="artistExists">Seems like the artist "&string" already exists on the application database.&br Would you like to just update his images ? He had posted &num new images.</string>
         <string id="skipEnabled">The artist "&string" will be skipped accondingly to the configuration.&br If you want to change this, alter the setting on the "Options" section.</string>

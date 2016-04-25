@@ -85,8 +85,6 @@ public class FADownloadFavs extends javax.swing.JFrame {
                             } catch (IOException ex) {
                                 Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                        } else {
-                            System.err.println("error");
                         }
                     }
                 }.start();
@@ -178,7 +176,8 @@ public class FADownloadFavs extends javax.swing.JFrame {
             HtmlPage page2 = submitButton.click();
 
             if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                JOptionPane.showMessageDialog(null, "Login failed. Check your account settings on \"Options < Settings < FurAffinity\"", "Error", JOptionPane.OK_OPTION);
+                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
+                        "Error", JOptionPane.OK_OPTION);
                 return false;
             }
 
@@ -290,9 +289,10 @@ public class FADownloadFavs extends javax.swing.JFrame {
         new Thread() {
             @Override
             public void run() {
+                StylizedMainJFrame.ADD_TASK.setAutoStart(true);
+                
                 for (int i = 0; i < artistsLinks.size(); i++) {
-                    AddTask add = StylizedMainJFrame.ADD_TASK;
-                    add.addTask(artistsLinks.get(0), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
+                    StylizedMainJFrame.ADD_TASK.addTask(artistsLinks.get(0), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
                     artistsLinks.remove(0);
                     try {
                         sleep(20000);
@@ -300,6 +300,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
                         Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+                StylizedMainJFrame.ADD_TASK.setAutoStart(false);
             }
         }.start();
 
@@ -367,6 +368,10 @@ public class FADownloadFavs extends javax.swing.JFrame {
 
             exit();
         }
+    }
+
+    private javax.swing.JFrame getPanel() {
+        return this;
     }
 
     private void exit() {

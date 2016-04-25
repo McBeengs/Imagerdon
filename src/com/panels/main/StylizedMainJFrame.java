@@ -109,6 +109,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private ArrayList<Object> stack;
     public static RemoveTask REMOVE_TASK;
     public static AddTask ADD_TASK;
+    public static boolean AUTO_START;
     public static TasksStack GET_STACK;
 
     public StylizedMainJFrame() {
@@ -519,6 +520,10 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     }
 
     public class AddTask {
+        
+        public void setAutoStart(boolean bln) {
+            AUTO_START = bln;
+        }
 
         public void addTask(String url, int server, int type) {
             int c = 0;
@@ -672,7 +677,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             tabCount--;
             super.setSelectedIndex(tabCount);
         }
-        
+
         public int getCloseableTabCount() {
             return tabCount;
         }

@@ -96,7 +96,7 @@ public class WebViewPage extends JPanel {
     private String selectedFile;
     private CookiesPersistance cookieManager;
     private JTabbedPane tabbedPane;
-    private XmlManager language;
+    private final XmlManager language;
     private final ImageIcon icon;
     private final int tabIndex;
     private Button back;

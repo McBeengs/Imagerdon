@@ -8,7 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -32,7 +32,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     public QuickTaskJFrame() {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
-        
+
         setTitle(language.getContentById("QTLabel"));
 
         initComponents();
@@ -362,13 +362,18 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                 public void caretUpdate(CaretEvent e) {
                     switch (status) {
                         case 1:
-                            if (urlText.getText().endsWith("/gallery/?catpath=/")) {
+                            if (urlText.getText().contains(".deviantart.com/gallery/")) {
                                 okButton.setEnabled(true);
                             } else {
                                 okButton.setEnabled(false);
                             }
                             break;
                         case 2:
+                            if (urlText.getText().contains(".tumblr.com/")) {
+                                okButton.setEnabled(true);
+                            } else {
+                                okButton.setEnabled(false);
+                            }
                             break;
                         case 3:
                             if (urlText.getText().contains("http://g.e-hentai.org/g/")) {
@@ -475,7 +480,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             } catch (java.io.IOException ex) {
             }
 
-            final ArrayList<String> list = artists.getAllContentsByName("name");
+            final List<String> list = artists.getAllContentsByName("name");
             int size = list.size();
 
             String[] comboFiller = new String[size + 1];
@@ -504,7 +509,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                             case 3:
                                 XmlManager gh = new XmlManager();
                                 gh.loadFile(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
-                                
+
                                 String nameTag = artistsCombo.getSelectedItem().toString();
                                 int tagOcc = gh.getTagIndex("name", nameTag) + 1;
                                 url = gh.getContentByName("galleryUrl", tagOcc);

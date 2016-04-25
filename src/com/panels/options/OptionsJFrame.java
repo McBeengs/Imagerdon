@@ -34,7 +34,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
 
-        originalContent = xml.getContent();
+        originalContent = xml.toString();
         initComponents();
         setTree();
 
@@ -185,7 +185,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
         hierarchy.add(section2);
         String[] section2Ops = new String[5];
 
-        for (int i = 2; i < language.getAllContentsByName("mainLabel").size() - 1; i++) {
+        for (int i = 2; i < language.getAllContentsByName("mainLabel").size() - 2; i++) {
             section2Ops[i - 2] = language.getContentByName("mainLabel", i);
         }
         for (String section2Op : section2Ops) {
@@ -304,7 +304,7 @@ public class OptionsJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        if (xml.getContent().equals(originalContent)) {
+        if (xml.toString().equals(originalContent)) {
             this.dispose();
         } else {
             int option = JOptionPane.showConfirmDialog(this, language.getContentById("cancelConfirm"),

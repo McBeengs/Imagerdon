@@ -16,14 +16,15 @@
  */
 package testArea;
 
+import com.util.xml.XmlManager;
+
 public class NovoClass {
 
     public static void main(String[] args) throws Exception {
-        long before = System.currentTimeMillis();
-        JSoupLoginSubmition teste = new JSoupLoginSubmition();
-        System.out.println(teste.getPageContent("https://www.deviantart.com/"));
-        long now = System.currentTimeMillis();
-        now = now - before;
-        System.out.println("---------------------\nTime elapsed: " + now);
+        XmlManager xml = new XmlManager();
+        xml.loadFile("C:\\Users\\Mc\\Desktop\\delete.txt");
+        
+        xml.setContentById("delete", "ayyy");
+        System.out.println(System.getProperty("file.separator"));
     }
 }

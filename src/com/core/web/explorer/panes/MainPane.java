@@ -19,7 +19,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +29,7 @@ public class MainPane extends javax.swing.JPanel {
 
     private final XmlManager xml;
     private final XmlManager language;
-    private final ArrayList<String> randoms;
+    private final List<String> randoms;
 
     public MainPane() {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
@@ -178,7 +178,7 @@ public class MainPane extends javax.swing.JPanel {
                         try {
                             XmlManager get = new XmlManager();
                             get.loadFile(xml);
-                            ArrayList<String> num = get.getAllContentsByName("imageCount");
+                            List<String> num = get.getAllContentsByName("imageCount");
                             for (int i = 0; i < num.size(); i++) {
                                 totalImagesNumber += Integer.parseInt(num.get(i));
                             }
@@ -194,7 +194,7 @@ public class MainPane extends javax.swing.JPanel {
                         try {
                             XmlManager get = new XmlManager();
                             get.loadFile(xml);
-                            ArrayList<String> num = get.getAllContentsByName("name");
+                            List<String> num = get.getAllContentsByName("name");
                             totalArtistsNumber += num.size();
                         } catch (IOException ex) {
                             Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
@@ -204,7 +204,7 @@ public class MainPane extends javax.swing.JPanel {
 
                 imagesOnDisk.setText("" + totalImagesNumber);
                 artistsOnDisk.setText("" + totalArtistsNumber);
-                float show;
+                double show;
                 if (totalArtistsNumber == 0) {
                     show = 0;
                 } else {
