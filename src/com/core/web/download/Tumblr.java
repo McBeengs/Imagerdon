@@ -24,7 +24,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
 import com.util.UsefulMethods;
@@ -51,7 +50,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Tumblr extends BasicCore {
@@ -83,12 +81,12 @@ public class Tumblr extends BasicCore {
             link += "/archive/";
         }
 
-        webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        webClient.getOptions().setAppletEnabled(false);
+        try {
+            webClient = UsefulMethods.getWebClientInstance();
+        } catch (Exception ex) {
+            Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-        webClient = UsefulMethods.shutUpHtmlUnit(webClient);
         webClient.getCurrentWindow().setInnerHeight(Integer.MAX_VALUE);
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
@@ -126,41 +124,6 @@ public class Tumblr extends BasicCore {
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
-    }
-
-    private boolean submittingForm() {
-        try {
-            taskManager.infoDisplay.setText(language.getContentById("loginIn"));
-            HtmlPage page1 = webClient.getPage("https://www.tumblr.com/login");
-            HtmlForm form = page1.getHtmlElementById("signup_form");
-
-            HtmlTextInput usernameCheck = form.getInputByName("determine_email");
-            HtmlTextInput usernameField = form.getInputByName("user[email]");
-            HtmlPasswordInput passwordField = form.getInputByName("user[password]");
-            HtmlButton next = (HtmlButton) page1.getElementsByIdAndOrName("signup_forms_submit").get(0);
-            HtmlButton button = form.getFirstByXPath("button");
-
-            usernameCheck.setValueAttribute("nunomcbeenga@gmail.com");
-            usernameField.setValueAttribute("nunomcbeenga@gmail.com");
-            next.click();
-            passwordField.setValueAttribute("swordfish");
-
-            HtmlPage page2 = button.click();
-            if (page2.getBaseURL().toString().equals("https://www.tumblr.com/login")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "Tumblr"),
-                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                return false;
-            }
-
-        } catch (java.net.UnknownHostException | org.apache.http.conn.HttpHostConnectException ex) {
-            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-        } catch (IOException ex) {
-            Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FailingHttpStatusCodeException ex) {
-            System.err.println("Deu ruim na task nº" + taskManager.getTaskNumber());
-        }
-
-        return true;
     }
 
     private boolean getInformationAboutGallery() throws IOException {
@@ -288,7 +251,7 @@ public class Tumblr extends BasicCore {
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         taskManager.author.setText(artist + " | Tumblr");
 
-        if (submittingForm() && getInformationAboutGallery() && checkArtistExistance()) {
+        if (getInformationAboutGallery() && checkArtistExistance()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
             taskManager.playButton.setVisible(true);
             taskManager.progressBar.setIndeterminate(false);

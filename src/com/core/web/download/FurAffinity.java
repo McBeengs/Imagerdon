@@ -16,14 +16,9 @@
  */
 package com.core.web.download;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
 import com.panels.main.StylizedMainJFrame;
 import com.util.crypto.PasswordManager;
@@ -51,8 +46,10 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+@SuppressWarnings("")
 public class FurAffinity extends BasicCore {
 
     private boolean isPaused = false;
@@ -65,6 +62,14 @@ public class FurAffinity extends BasicCore {
     private int numOfPages = 0;
     private String finalPath;
     private String link;
+
+    private String avatarUrl;
+    private String pageVisits;
+    private String commentsReceived;
+    private String commentsGiven;
+    private String journals;
+    private String favourites;
+
     private WebClient webClient;
     private ExecutorService executor;
     private XmlManager xml;
@@ -77,17 +82,13 @@ public class FurAffinity extends BasicCore {
         link = url;
         this.taskManager = taskManager;
 
-        webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        webClient.getOptions().setAppletEnabled(false);
-
-        webClient = UsefulMethods.shutUpHtmlUnit(webClient);
-
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
         pass = new PasswordManager();
+
+        String artist = url.substring(35, url.lastIndexOf("/"));
+        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
 
         try {
             File artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
@@ -97,8 +98,6 @@ public class FurAffinity extends BasicCore {
                 artists.loadFile(artistsXml);
             }
 
-            String artist = url.substring(35, url.lastIndexOf("/"));
-            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
             if (Boolean.parseBoolean(xml.getContentById("sub"))) {
                 finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + artist;
                 File file = new File(finalPath);
@@ -119,43 +118,6 @@ public class FurAffinity extends BasicCore {
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
-    }
-
-    private boolean submittingForm() {
-        try {
-            taskManager.infoDisplay.setText(language.getContentById("loginIn"));
-            HtmlPage page1 = webClient.getPage("https://www.furaffinity.net/login/");
-            HtmlForm form = page1.getFirstByXPath("//form [@method='post']");
-
-            HtmlTextInput usernameField = form.getInputByName("name");
-            HtmlPasswordInput passwordField = form.getInputByName("pass");
-            HtmlSubmitInput button = form.getInputByName("login");
-
-            String user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
-            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
-
-            usernameField.setValueAttribute(user.trim());
-            passwordField.setValueAttribute(passw.trim());
-
-            HtmlPage page2 = button.click();
-
-            if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
-                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                return false;
-            }
-            
-            return true;
-
-        } catch (java.net.UnknownHostException | org.apache.http.conn.HttpHostConnectException ex) {
-            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-        } catch (IOException ex) {
-            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FailingHttpStatusCodeException ex) {
-            System.err.println("Deu ruim na task nº" + taskManager.getTaskNumber());
-        }
-
-        return false;
     }
 
     private boolean getInformationAboutGallery() throws IOException {
@@ -197,9 +159,49 @@ public class FurAffinity extends BasicCore {
         return true;
     }
 
+    private boolean isDone = false;
+
     private boolean checkArtistExistance() throws IOException {
         String artist = link.substring(35, link.lastIndexOf("/"));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+
+        final String artistFinal = artist;
+        new Thread("Get info") {
+            @Override
+            public void run() {
+                try {
+                    HtmlPage page = webClient.getPage("http://www.furaffinity.net/user/" + artistFinal.toLowerCase());
+                    Document parsed = Jsoup.parse(page.getBody().asXml());
+
+                    avatarUrl = parsed.select("img.avatar").get(0).attr("src");
+                    Elements infoTable = parsed.select("table").get(3).select("td");
+                    String temp = infoTable.get(12).text();
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    pageVisits = temp.substring(0, temp.indexOf(" "));
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    commentsReceived = temp.substring(0, temp.indexOf(" "));
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    commentsGiven = temp.substring(0, temp.indexOf(" "));
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    journals = temp.substring(0, temp.indexOf(" "));
+                    temp = temp.substring(temp.indexOf(":") + 2);
+                    favourites = temp;
+                    isDone = true;
+
+                } catch (IOException | FailingHttpStatusCodeException ex) {
+                    Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }.start();
+
+        while (!isDone) {
+            try {
+                sleep(2);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 
         if (Integer.parseInt(xml.getContentById("existed")) == 1) {
             if (finalPath.contains(artist)) {
@@ -282,6 +284,18 @@ public class FurAffinity extends BasicCore {
         tagOcc = artists.getAllContentsByName("artist").size() - 1;
         artists.addSubordinatedTag("name", "artist", tagOcc);
         artists.setContentByName("name", tagOcc, artist);
+        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
+        artists.setContentByName("avatarUrl", tagOcc, "http://" + avatarUrl.substring(2, avatarUrl.length()));
+        artists.addSubordinatedTag("pageVisits", "artist", tagOcc);
+        artists.setContentByName("pageVisits", tagOcc, pageVisits);
+        artists.addSubordinatedTag("commentsReceived", "artist", tagOcc);
+        artists.setContentByName("commentsReceived", tagOcc, commentsReceived);
+        artists.addSubordinatedTag("commentsGiven", "artist", tagOcc);
+        artists.setContentByName("commentsGiven", tagOcc, commentsGiven);
+        artists.addSubordinatedTag("journals", "artist", tagOcc);
+        artists.setContentByName("journals", tagOcc, journals);
+        artists.addSubordinatedTag("favourites", "artist", tagOcc);
+        artists.setContentByName("favourites", tagOcc, favourites);
         artists.addSubordinatedTag("imageCount", "artist", tagOcc);
         artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
         artists.saveXml();
@@ -292,7 +306,13 @@ public class FurAffinity extends BasicCore {
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         taskManager.author.setText(artist + " | FurAfinity");
 
-        if (submittingForm() && getInformationAboutGallery() && checkArtistExistance()) {
+        taskManager.infoDisplay.setText(language.getContentById("loginIn"));
+        while (!UsefulMethods.isWebClientReady()) {
+            sleep(2);
+        }
+        webClient = UsefulMethods.getWebClientInstance();
+
+        if (getInformationAboutGallery() && checkArtistExistance()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
             taskManager.playButton.setVisible(true);
             taskManager.progressBar.setIndeterminate(false);
@@ -307,6 +327,7 @@ public class FurAffinity extends BasicCore {
 
             if (StylizedMainJFrame.AUTO_START) {
                 downloadAction();
+                taskManager.changeSkinForAutoStart();
             }
         } else if (!convertedToUpdate) {
             taskManager.progressBar.setIndeterminate(false);
@@ -365,14 +386,40 @@ public class FurAffinity extends BasicCore {
                                 Document docImages = Jsoup.parse(conn.asXml());
                                 Elements getLinks = docImages.select("a[href~=//d.facdn.net/art/]");
                                 String tempImagesArray = getLinks.toString();
-                                end = tempImagesArray.indexOf("\"", 10);
-                                temp = "http://" + tempImagesArray.substring(11, end);
-                                count++;
+                                end = tempImagesArray.indexOf("\"", 11);
 
-                                if (isTerminated) {
-                                    break;
+                                if (end - 11 > 0) {
+                                    temp = "http://" + tempImagesArray.substring(11, end);
+                                    count++;
+
+                                    if (isTerminated) {
+                                        break;
+                                    } else {
+                                        executor.execute(new ImageExtractor(temp, count));
+                                    }
                                 } else {
-                                    executor.execute(new ImageExtractor(temp, count));
+                                    numOfImages--;
+                                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+
+                                    NumberFormat nf = NumberFormat.getNumberInstance();
+                                    nf.setMaximumFractionDigits(1);
+                                    nf.setGroupingUsed(true);
+
+                                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                                    taskManager.progressBar.setString(show);
+                                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+
+                                    if (show.equals("100%")) {
+                                        taskManager.stopButton.setVisible(false);
+                                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+
+                                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                                            taskManager.playButton.removeMouseListener(listener);
+                                        }
+
+                                        artists.saveXml();
+                                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+                                    }
                                 }
                             }
                         }

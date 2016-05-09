@@ -10,7 +10,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
 import com.panels.main.StylizedMainJFrame;
-import com.panels.main.StylizedMainJFrame.AddTask;
 import com.util.crypto.PasswordManager;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -368,10 +367,6 @@ public class FADownloadFavs extends javax.swing.JFrame {
 
             exit();
         }
-    }
-
-    private javax.swing.JFrame getPanel() {
-        return this;
     }
 
     private void exit() {

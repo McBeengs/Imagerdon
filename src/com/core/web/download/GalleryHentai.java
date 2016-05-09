@@ -78,8 +78,6 @@ public class GalleryHentai extends BasicCore {
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
 
-        webClient = UsefulMethods.shutUpHtmlUnit(webClient);
-
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();

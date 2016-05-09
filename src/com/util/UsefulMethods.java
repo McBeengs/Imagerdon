@@ -16,12 +16,20 @@
  */
 package com.util;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.InteractivePage;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.gargoylesoftware.htmlunit.javascript.JavaScriptErrorListener;
+import com.util.crypto.PasswordManager;
 import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Desktop;
@@ -31,6 +39,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -53,6 +63,8 @@ public class UsefulMethods {
 
     public static final int OPTIONS = 0;
     public static final int LANGUAGE = 1;
+    private static WebClient webClient;
+    private static boolean isWebViewReady = false;
 
     public static String getOptions() {
         //get OS
@@ -120,6 +132,102 @@ public class UsefulMethods {
                 + "  </optionsPane>\n"
                 + "</root>\n"
                 + "";
+    }
+
+    public static WebClient getWebClientInstance() throws Exception {
+        if (webClient == null) {
+            webClient = new WebClient(BrowserVersion.CHROME);
+            webClient.getOptions().setCssEnabled(false);
+            webClient.getOptions().setJavaScriptEnabled(false);
+            webClient.getOptions().setAppletEnabled(false);
+            webClient = shutUpHtmlUnit(webClient);
+
+            HtmlPage preLogin, posLogin;
+            HtmlForm form;
+            HtmlTextInput usernameField;
+            HtmlPasswordInput passwordField;
+            HtmlSubmitInput button;
+            PasswordManager pass = new PasswordManager();
+            XmlManager xml = loadManager(OPTIONS);
+            String user;
+            String passw;
+
+            // DeviantArt login
+            preLogin = webClient.getPage("https://www.deviantart.com/");
+            form = preLogin.getHtmlElementById("form-login");
+
+            usernameField = form.getInputByName("username");
+            passwordField = form.getInputByName("password");
+            button = form.getInputByName("action");
+
+            user = "TheMcBeenga10";
+            passw = "suckmyb44lz";
+
+            usernameField.setValueAttribute(user.trim());
+            passwordField.setValueAttribute(passw.trim());
+
+            posLogin = button.click();
+
+            if (posLogin.asXml().contains("The password you entered was incorrect")) {
+                webClient = null;
+                throw new Exception("DeviantArt");
+            }
+            // End of DeviantArt login
+
+            // Tumblr login
+            preLogin = webClient.getPage("https://www.tumblr.com/login");
+            form = preLogin.getHtmlElementById("signup_form");
+
+            HtmlTextInput usernameCheck = form.getInputByName("determine_email");
+            usernameField = form.getInputByName("user[email]");
+            passwordField = form.getInputByName("user[password]");
+            HtmlButton next = (HtmlButton) preLogin.getElementsByIdAndOrName("signup_forms_submit").get(0);
+            HtmlButton buttonInput = form.getFirstByXPath("button");
+
+            usernameCheck.setValueAttribute("nunomcbeenga@gmail.com");
+            usernameField.setValueAttribute("nunomcbeenga@gmail.com");
+            next.click();
+            passwordField.setValueAttribute("swordfish");
+
+            posLogin = buttonInput.click();
+
+            if (posLogin.getBaseURL().toString().equals("https://www.tumblr.com/login")) {
+                webClient = null;
+                throw new Exception("Tumblr");
+            }
+            // End of Tumblr login
+
+            // FurAffinity login
+            preLogin = webClient.getPage("https://www.furaffinity.net/login/");
+            form = preLogin.getFirstByXPath("//form [@method='post']");
+
+            usernameField = form.getInputByName("name");
+            passwordField = form.getInputByName("pass");
+            button = form.getInputByName("login");
+
+            user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
+            passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
+
+            usernameField.setValueAttribute(user.trim());
+            passwordField.setValueAttribute(passw.trim());
+
+            posLogin = button.click();
+
+            if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
+                webClient = null;
+                throw new Exception("FurAffinity");
+            }
+            // End of FurAffinity login
+
+            isWebViewReady = true;
+            return webClient;
+        } else {
+            return webClient;
+        }
+    }
+
+    public static boolean isWebClientReady() {
+        return isWebViewReady;
     }
 
     public static String getClassPath(Class<?> cls) {
@@ -225,6 +333,12 @@ public class UsefulMethods {
         JOptionPane.showMessageDialog(null, ep, messageTitle, messageType);
     }
 
+    public static String getSimpleDateFormat() {
+        Calendar date = Calendar.getInstance();
+
+        return date.getDisplayName(2, 2, Locale.US) + " " + date.get(Calendar.DATE) + ", " + date.get(Calendar.YEAR);
+    }
+
     public static void makeBalloon(final JComponent component, final String text, final Color color) {
         new Thread("Showing ballon \"" + text + "\"") {
             @Override
@@ -244,7 +358,7 @@ public class UsefulMethods {
         }.start();
     }
 
-    public static WebClient shutUpHtmlUnit(WebClient webClient) {
+    private static WebClient shutUpHtmlUnit(WebClient webClient) {
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
         java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);

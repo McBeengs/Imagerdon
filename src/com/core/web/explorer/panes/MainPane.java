@@ -8,12 +8,15 @@ import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -24,6 +27,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 public class MainPane extends javax.swing.JPanel {
 
@@ -42,6 +46,24 @@ public class MainPane extends javax.swing.JPanel {
 
         Random random = new Random();
         niceMessage.setText(randoms.get(random.nextInt(randoms.size() - 1)));
+
+        retryButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                checkConnection();
+                setupWebClient();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                retryButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                retryButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -59,6 +81,12 @@ public class MainPane extends javax.swing.JPanel {
         imagesPerArtist = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         internetConnection = new javax.swing.JLabel();
+        webClientSetup = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        DALogin = new javax.swing.JLabel();
+        TULogin = new javax.swing.JLabel();
+        FALogin = new javax.swing.JLabel();
+        retryButton = new javax.swing.JLabel();
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
         taskLabel.setText(language.getContentById("welcomeLabel"));
@@ -88,16 +116,66 @@ public class MainPane extends javax.swing.JPanel {
         internetConnection.setForeground(new java.awt.Color(51, 109, 243));
         internetConnection.setText(null);
 
+        webClientSetup.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        webClientSetup.setForeground(new java.awt.Color(51, 109, 243));
+        webClientSetup.setText(null);
+
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/leftBrace.png"))); // NOI18N
+
+        DALogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        DALogin.setForeground(new java.awt.Color(51, 109, 243));
+        DALogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
+        DALogin.setText("DeviantArt");
+
+        TULogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        TULogin.setForeground(new java.awt.Color(51, 109, 243));
+        TULogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
+        TULogin.setText("Tumblr");
+
+        FALogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        FALogin.setForeground(new java.awt.Color(51, 109, 243));
+        FALogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
+        FALogin.setText("FurAffinity");
+
+        retryButton.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        retryButton.setForeground(new java.awt.Color(51, 109, 243));
+        retryButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/ok.png"))); // NOI18N
+        retryButton.setText("Retry");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(80, 80, 80)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(58, 58, 58)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(niceMessage, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(FALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(DALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(TULogin)
+                                        .addGap(51, 51, 51)
+                                        .addComponent(retryButton, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
@@ -117,16 +195,7 @@ public class MainPane extends javax.swing.JPanel {
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addGap(5, 5, 5)
                                         .addComponent(artistsOnDisk)))))
-                        .addGap(0, 75, Short.MAX_VALUE))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(28, 28, 28)
-                        .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(80, 80, 80)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -153,7 +222,23 @@ public class MainPane extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(70, 70, 70))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(DALogin)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(TULogin)
+                            .addComponent(retryButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(FALogin)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -213,6 +298,7 @@ public class MainPane extends javax.swing.JPanel {
                 imagesPerArtist.setText("" + show);
 
                 checkConnection();
+                setupWebClient();
             }
 
             @Override
@@ -249,7 +335,68 @@ public class MainPane extends javax.swing.JPanel {
         }.start();
     }
 
+    private void setupWebClient() {
+        webClientSetup.setForeground(new java.awt.Color(51, 109, 243));
+        webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
+        DALogin.setForeground(new java.awt.Color(51, 109, 243));
+        DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
+        TULogin.setForeground(new java.awt.Color(51, 109, 243));
+        TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
+        FALogin.setForeground(new java.awt.Color(51, 109, 243));
+        FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
+        webClientSetup.setText("Setting logins instance");
+
+        new Thread("Setting up webClient (MainPane.java)") {
+            @Override
+            public void run() {
+                try {
+                    UsefulMethods.getWebClientInstance();
+                } catch (Exception ex) {
+                    switch (ex.getMessage()) {
+                        case "DeviantArt":
+                            JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "DeviantArt"),
+                                    language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                            break;
+                        case "Tumblr":
+                            JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "Tumblr"),
+                                    language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                            break;
+                        case "FurAffinity":
+                            JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
+                                    language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                            break;
+                        default:
+                            ex.printStackTrace();
+                            break;
+                    }
+
+                    webClientSetup.setForeground(new java.awt.Color(238, 44, 44));
+                    webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    DALogin.setForeground(new java.awt.Color(238, 44, 44));
+                    DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    TULogin.setForeground(new java.awt.Color(238, 44, 44));
+                    TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    FALogin.setForeground(new java.awt.Color(238, 44, 44));
+                    FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    return;
+                }
+
+                webClientSetup.setForeground(new java.awt.Color(50, 205, 50));
+                webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+                DALogin.setForeground(new java.awt.Color(50, 205, 50));
+                DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+                TULogin.setForeground(new java.awt.Color(50, 205, 50));
+                TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+                FALogin.setForeground(new java.awt.Color(50, 205, 50));
+                FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+            }
+        }.start();
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel DALogin;
+    private javax.swing.JLabel FALogin;
+    private javax.swing.JLabel TULogin;
     private javax.swing.JLabel artistsOnDisk;
     private javax.swing.JLabel imagesOnDisk;
     private javax.swing.JLabel imagesPerArtist;
@@ -257,13 +404,17 @@ public class MainPane extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel niceMessage;
+    private javax.swing.JLabel retryButton;
     private javax.swing.JLabel taskLabel;
+    private javax.swing.JLabel webClientSetup;
     // End of variables declaration//GEN-END:variables
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
+
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();

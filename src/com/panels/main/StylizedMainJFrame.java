@@ -40,6 +40,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -379,6 +380,18 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         });
         //end of quickTaskButton
 
+        artistsTasksButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        new ArtistsOptionsJFrame().setVisible(true);
+                    }
+                }.start();
+            }
+        });
+
         searchButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -520,14 +533,25 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     }
 
     public class AddTask {
-        
+
         public void setAutoStart(boolean bln) {
             AUTO_START = bln;
+        }
+        
+        public void rearrangeTasks() {
+            adjustTasks();
         }
 
         public void addTask(String url, int server, int type) {
             int c = 0;
             if (scrollPane.getComponentCount() > 0) {
+                for (int i = 0; i < numOfThreads; i++) {
+                    DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
+                    if (task.getTaskUrl().equals(url)) {
+                        return;
+                    }
+                }
+                
                 for (int i = 0; i < numOfThreads; i++) {
                     DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
                     task.setNewTaskNumber(i + 1);

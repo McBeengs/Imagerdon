@@ -62,6 +62,11 @@ public class DeviantArt extends BasicCore {
     private boolean convertedToUpdate;
     private String finalPath;
     private String link;
+    
+    private String avatarUrl;
+    private String memberSince;
+    private String sexNacionality;
+    
     private WebClient webClient;
     private XmlManager xml;
     private XmlManager language;
@@ -86,7 +91,7 @@ public class DeviantArt extends BasicCore {
             link += "%2F&offset=";
         }
 
-        webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
+        webClient = new WebClient(BrowserVersion.CHROME);
         webClient.getOptions().setCssEnabled(false);
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setAppletEnabled(false);
@@ -94,6 +99,22 @@ public class DeviantArt extends BasicCore {
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
+
+        new Thread("Get info") {
+            @Override
+            public void run() {
+                try {
+                    HtmlPage page = webClient.getPage(link.substring(0, link.indexOf("/", 10)));
+                    Document parsed = Jsoup.parse(page.getBody().asXml());
+                    
+                    avatarUrl = parsed.select(".avatar").get(2).attr("src");
+                    System.out.println(avatarUrl);
+                    
+                } catch (IOException | FailingHttpStatusCodeException ex) {
+                    Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }.start();
 
         try {
             File artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
@@ -277,6 +298,12 @@ public class DeviantArt extends BasicCore {
         tagOcc = artists.getAllContentsByName("artist").size() - 1;
         artists.addSubordinatedTag("name", "artist", tagOcc);
         artists.setContentByName("name", tagOcc, artist);
+        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
+        artists.setContentByName("avatarUrl", tagOcc, avatarUrl);
+        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
+        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
+        artists.addSubordinatedTag("lastUpdate", "artist", tagOcc);
+        artists.setContentByName("lastUpdate", tagOcc, "Never");
         artists.addSubordinatedTag("imageCount", "artist", tagOcc);
         artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
         artists.saveXml();
@@ -346,7 +373,8 @@ public class DeviantArt extends BasicCore {
                                                 temp = temp.substring(temp.indexOf("src") + 5);
                                                 temp = temp.substring(0, temp.indexOf("\""));
                                                 count++;
-                                                System.out.println(temp);
+
+                                                executor.submit(new ImageExtractor(temp, count));
 
                                             }
                                         }

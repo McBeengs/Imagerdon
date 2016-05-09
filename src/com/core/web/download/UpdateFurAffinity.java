@@ -309,7 +309,13 @@ public class UpdateFurAffinity extends BasicCore {
         } else {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
+            taskManager.stopButton.setVisible(true);
             taskManager.playButton.setVisible(true);
+
+            for (MouseListener listener : taskManager.stopButton.getMouseListeners()) {
+                taskManager.stopButton.removeMouseListener(listener);
+            }
+            taskManager.stopButton.addMouseListener(taskManager.stopButtonErrorBehavior());
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
         }
     }

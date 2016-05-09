@@ -11,6 +11,7 @@ import com.core.web.download.E621;
 import com.core.web.download.FurAffinity;
 import com.core.web.download.GalleryHentai;
 import com.core.web.download.Tumblr;
+import com.core.web.download.UpdateE621;
 import com.core.web.download.UpdateFurAffinity;
 import com.core.web.download.UpdateGalleryHentai;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
@@ -38,13 +39,19 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
     private boolean isExecuting = false;
     private boolean isTerminated = false;
     private boolean firstClick = false;
+    private String url;
     private int numOfTask;
+    private int typeOfServer;
+    private int typeOfTask;
     private BasicCore extractor;
     private final XmlManager language;
 
     public DownloadTaskJPanel(String url, int numOfTask, int typeOfServer, int typeOfTask) {
         initComponents();
+        this.url = url;
         this.numOfTask = numOfTask;
+        this.typeOfServer = typeOfServer;
+        this.typeOfTask = typeOfTask;
 
         if (typeOfTask == DOWNLOAD_TASK) {
             switch (typeOfServer) {
@@ -78,7 +85,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                     extractor = new UpdateFurAffinity(url, this);
                     break;
                 case E621:
-                    //extractor = new E621(url, this);
+                    extractor = new UpdateE621(url, this);
                     break;
             }
         }
@@ -162,6 +169,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
     public void changeSkinForAutoStart() {
         playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/pauseButtonStandard.png")));
+        stopButton.setVisible(true);
         isExecuting = true;
     }
 
@@ -250,9 +258,18 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                         Logger.getLogger(DownloadTaskJPanel.class.getName()).log(Level.SEVERE, null, ex);
                     }
 
-                    int missed = Integer.parseInt(infoDisplay.getText().replaceAll("[^0-9]", ""));
-                    infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "" + missed));
-                    stopButton.setVisible(false);
+                    String text = language.getContentById("downloading");
+                    if (!infoDisplay.getText().contains(text.substring(0, text.indexOf("&")))) {
+                        int missed = Integer.parseInt(infoDisplay.getText().replaceAll("[^0-9]", ""));
+                        infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "" + missed));
+                    } else {
+                        infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "0"));
+                    }
+
+                    for (MouseListener listener : stopButton.getMouseListeners()) {
+                        stopButton.removeMouseListener(listener);
+                    }
+                    stopButton.addMouseListener(stopButtonErrorBehavior());
 
                     for (MouseListener listener : playButton.getMouseListeners()) {
                         playButton.removeMouseListener(listener);
@@ -284,6 +301,93 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             public void mouseExited(MouseEvent evt) {
                 playButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deleteButtonStandard.png")));
+            }
+        };
+    }
+
+    public MouseListener stopButtonErrorBehavior() {
+        stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/refreshButtonStandard.png")));
+
+        return new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent evt) {
+                stopButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/refreshButtonHover.png")));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent evt) {
+                stopButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                stopButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/refreshButtonStandard.png")));
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                isTerminated = false;
+                firstClick = false;
+                isExecuting = false;
+                stopButton.setVisible(false);
+                extractor = null;
+
+                if (typeOfTask == DOWNLOAD_TASK) {
+                    switch (typeOfServer) {
+                        case DEVIANT_ART:
+                            extractor = new DeviantArt(url, getContent());
+                            break;
+                        case TUMBLR:
+                            extractor = new Tumblr(url, getContent());
+                            break;
+                        case GALLERY_HENTAI:
+                            extractor = new GalleryHentai(url, getContent());
+                            break;
+                        case FUR_AFFINITY:
+                            extractor = new FurAffinity(url, getContent());
+                            break;
+                        case E621:
+                            extractor = new E621(url, getContent());
+                            break;
+                    }
+                } else {
+                    switch (typeOfServer) {
+                        case DEVIANT_ART:
+                            //extractor = new DeviantArt(url, this);
+                            break;
+                        case TUMBLR:
+                            break;
+                        case GALLERY_HENTAI:
+                            extractor = new UpdateGalleryHentai(url, getContent());
+                            break;
+                        case FUR_AFFINITY:
+                            extractor = new UpdateFurAffinity(url, getContent());
+                            break;
+                        case E621:
+                            extractor = new UpdateE621(url, getContent());
+                            break;
+                    }
+                }
+
+                if (typeOfTask == DOWNLOAD_TASK) {
+                    taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));
+                    taskLabel.setText(language.getContentById("downloadTitle"));
+                } else if (typeOfTask == UPDATE_TASK) {
+                    taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png")));
+                    taskLabel.setText(language.getContentById("updateTitle"));
+                }
+
+                for (MouseListener listener : stopButton.getMouseListeners()) {
+                    stopButton.removeMouseListener(listener);
+                }
+                stopButton.addMouseListener(stopButtonNormalBehavior());
+
+                for (MouseListener listener : playButton.getMouseListeners()) {
+                    playButton.removeMouseListener(listener);
+                }
+
+                infoDisplay.setText(language.getContentById("connecting"));
+                progressBar.setIndeterminate(true);
+                progressBar.setStringPainted(false);
+                progressBar.setValue(0);
+                extractor.start();
             }
         };
     }
@@ -323,6 +427,10 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         revalidate();
     }
 
+    private DownloadTaskJPanel getContent() {
+        return this;
+    }
+
     public void setNewTaskNumber(int newTaskNum) {
         this.numOfTask = newTaskNum;
     }
@@ -348,6 +456,10 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
     public int getTaskNumber() {
         return numOfTask;
+    }
+    
+    public String getTaskUrl() {
+        return url;
     }
 
     public boolean isTerminated() {
