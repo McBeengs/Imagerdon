@@ -64,7 +64,7 @@ public class UpdateFurAffinity extends BasicCore {
     private String finalPath;
     private final String link;
     private HtmlPage uncensoredLink;
-    private final WebClient webClient;
+    private WebClient webClient;
     private ExecutorService executor;
     private final XmlManager xml;
     private final XmlManager language;
@@ -78,11 +78,6 @@ public class UpdateFurAffinity extends BasicCore {
 
         this.taskManager.playButton.setVisible(false);
         this.taskManager.progressBar.setIndeterminate(true);
-
-        webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        webClient.getOptions().setAppletEnabled(false);
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
@@ -119,44 +114,6 @@ public class UpdateFurAffinity extends BasicCore {
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
-    }
-
-    private boolean submittingForm() {
-        try {
-            taskManager.infoDisplay.setText(language.getContentById("loginIn"));
-            HtmlPage page1 = webClient.getPage("https://www.furaffinity.net/login/");
-            HtmlForm form = page1.getFirstByXPath("//form [@method='post']");
-
-            HtmlTextInput usernameField = form.getInputByName("name");
-            HtmlPasswordInput passwordField = form.getInputByName("pass");
-            HtmlSubmitInput button = form.getInputByName("login");
-
-            String user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
-            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
-
-            usernameField.setValueAttribute(user.trim());
-            passwordField.setValueAttribute(passw.trim());
-
-            HtmlPage page2 = button.click();
-
-            if (page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "FurAffinity"),
-                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                return false;
-            }
-
-            String temp = page2.getUrl() + link.substring(27);
-
-            uncensoredLink = webClient.getPage(temp);
-            return true;
-
-        } catch (java.net.UnknownHostException | com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
-            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-        } catch (IOException ex) {
-            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return false;
     }
 
     private boolean getInformationAboutGallery() throws IOException {
@@ -198,13 +155,19 @@ public class UpdateFurAffinity extends BasicCore {
         return true;
     }
 
-    private void download() throws IOException {
+    private void download() throws Exception {
         String artist = link.substring(35, link.lastIndexOf("/"));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         taskManager.author.setText(artist + " | FurAfinity");
         final String thread = artist;
+        
+        while (!UsefulMethods.isWebClientReady()) {
+            sleep(2);
+        }
 
-        if (submittingForm() && getInformationAboutGallery()) {
+        webClient = UsefulMethods.getWebClientInstance();
+
+        if (getInformationAboutGallery()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
 
             java.awt.event.MouseListener[] teste = this.taskManager.playButton.getMouseListeners();

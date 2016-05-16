@@ -502,9 +502,10 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         okButton.setEnabled(true);
                         switch (status) {
                             case 1:
-                                url = artistsCombo.getSelectedItem().toString().toLowerCase() + "deviantart.com/gallery/?catpath=/";
+                                url = "http://" + artistsCombo.getSelectedItem().toString().toLowerCase() + ".deviantart.com/gallery/?catpath=/";
                                 break;
                             case 2:
+                                url = "http://" + artistsCombo.getSelectedItem().toString().toLowerCase() + ".tumblr.com/archive/";
                                 break;
                             case 3:
                                 XmlManager gh = new XmlManager();

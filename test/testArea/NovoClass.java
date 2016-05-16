@@ -22,9 +22,8 @@ public class NovoClass {
 
     public static void main(String[] args) throws Exception {
         XmlManager xml = new XmlManager();
-        xml.loadFile("C:\\Users\\Mc\\Desktop\\delete.txt");
+        xml.loadFile("C:\\Users\\Mc\\Documents\\Repository\\FurAffinity\\artists-log.xml");
         
-        xml.setContentById("delete", "ayyy");
-        System.out.println(System.getProperty("file.separator"));
+        System.out.println();
     }
 }

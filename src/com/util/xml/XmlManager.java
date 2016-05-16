@@ -123,6 +123,24 @@ public class XmlManager {
 
         content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n\n</root>";
     }
+    
+    /**
+     * Loads an already existing file, clears his content and automatically sets
+     * this instance to work with it.
+     *
+     * @param file the file that will be cleared and 
+     * @exception IOException if an external problem is impeding the correct
+     * loading of the file
+     */
+    public void createFile(File file) throws IOException {
+        filePath = file.getAbsolutePath();
+
+        content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n\n</root>";
+    }
+    
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     /**
      * Creates an new tag that will be attached to other pre-existing tag,
@@ -264,6 +282,7 @@ public class XmlManager {
             throw new IllegalArgumentException("The tag name field is empty.");
         }
 
+        values.clear();
         selectValues(tagName, this.content);
 
         for (int i = 0; i < values.size(); i++) {
@@ -284,6 +303,7 @@ public class XmlManager {
      * @return the value founded
      */
     public String getContentByName(String tagName, int item) {
+        values.clear();
         selectValues(tagName, content);
         String send = values.get(item);
         values.clear();
@@ -300,6 +320,7 @@ public class XmlManager {
      */
     public List<String> getAllContentsByName(String tagName) {
         if (content.contains(tagName)) {
+            values.clear();
             temp = content;
             selectValues(tagName, temp);
         }

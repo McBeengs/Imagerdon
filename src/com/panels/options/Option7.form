@@ -165,7 +165,7 @@
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jRadioButton2MouseClicked"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;FAadvancedNaming&quot;)));&#xa;jRadioButton2.setSelected(xml.getContentById(&quot;FAnamingOption&quot;).equals(&quot;1&quot;));"/>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;E621advancedNaming&quot;)));&#xa;jRadioButton2.setSelected(xml.getContentById(&quot;E621namingOption&quot;).equals(&quot;1&quot;));"/>
       </AuxValues>
     </Component>
   </SubComponents>

@@ -34,10 +34,10 @@ public class Option3 extends javax.swing.JPanel {
         this.xml = xml;
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         pass = new PasswordManager();
-        
+
         userOutput = xml.getContentById("DAoutput");
         directory = new JFileChooser(userOutput);
-        
+
         initComponents();
 
         if (Boolean.getBoolean(xml.getContentById("sub"))) {
@@ -158,8 +158,8 @@ public class Option3 extends javax.swing.JPanel {
                         .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
+                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(downloadsAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -178,13 +178,12 @@ public class Option3 extends javax.swing.JPanel {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jRadioButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jRadioButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(folderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                            .addComponent(jCheckBox1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(folderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -239,11 +238,11 @@ public class Option3 extends javax.swing.JPanel {
     private void passwordTextFieldCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_passwordTextFieldCaretUpdate
         String getPass = "";
         char[] array = passwordTextField.getPassword();
-        
+
         for (int i = 0; i < array.length; i++) {
             getPass += array[i];
         }
-        
+
         byte[] lock = pass.encrypt(getPass, "12345678".getBytes(), "12345678".getBytes());
         String temp = Arrays.toString(lock);
         xml.setContentById("DApass", temp.substring(1, temp.length() - 1));
@@ -326,22 +325,26 @@ public class Option3 extends javax.swing.JPanel {
             webClient.getOptions().setJavaScriptEnabled(false);
             webClient.getOptions().setAppletEnabled(false);
 
-            HtmlPage page1 = webClient.getPage("https://www.furaffinity.net/login/");
-            HtmlForm form = page1.getFirstByXPath("//form [@method='post']");
+            HtmlPage page1 = webClient.getPage("https://www.deviantart.com/");
+            HtmlForm form = page1.getHtmlElementById("form-login");
 
-            HtmlTextInput usernameField = form.getInputByName("name");
-            HtmlPasswordInput passwordField = form.getInputByName("pass");
-            HtmlSubmitInput button = form.getInputByName("login");
-            
-            String user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
-            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
+            HtmlTextInput usernameField = form.getInputByName("username");
+            HtmlPasswordInput passwordField = form.getInputByName("password");
+            HtmlSubmitInput button = form.getInputByName("action");
 
-            usernameField.setValueAttribute(user.trim());
-            passwordField.setValueAttribute(passw.trim());
+            String getPass = "";
+            char[] array = passwordTextField.getPassword();
+
+            for (int i = 0; i < array.length; i++) {
+                getPass += array[i];
+            }
+
+            usernameField.setValueAttribute(userTextField.getText());
+            passwordField.setValueAttribute(getPass);
 
             HtmlPage page2 = button.click();
-
-            return !page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1");
+            
+            return !page2.asXml().contains("The password you entered was incorrect");
 
         } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
             JOptionPane.showMessageDialog(null, "Connection with the Internet has dropped", "Error", JOptionPane.OK_OPTION);

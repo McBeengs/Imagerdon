@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.panels.main;
 
 import com.core.web.download.BasicCore;
+import com.core.web.download.CustomBatchDownload;
 import com.core.web.download.DeviantArt;
 import com.core.web.download.E621;
 import com.core.web.download.FurAffinity;
@@ -14,6 +10,7 @@ import com.core.web.download.Tumblr;
 import com.core.web.download.UpdateE621;
 import com.core.web.download.UpdateFurAffinity;
 import com.core.web.download.UpdateGalleryHentai;
+import com.core.web.download.UpdateTumblr;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -75,8 +72,10 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             switch (typeOfServer) {
                 case DEVIANT_ART:
                     //extractor = new DeviantArt(url, this);
-                    break;
+                    throw new UnsupportedOperationException("Updating DA isn't supported yet.");
+                    //break;
                 case TUMBLR:
+                    extractor = new UpdateTumblr(url, this);
                     break;
                 case GALLERY_HENTAI:
                     extractor = new UpdateGalleryHentai(url, this);
@@ -100,6 +99,18 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             taskLabel.setText(language.getContentById("updateTitle"));
         }
 
+        initSubComponents(numOfTask);
+    }
+
+    public DownloadTaskJPanel(String[] urls, int numOfTask) {
+        initComponents();
+        this.numOfTask = numOfTask;
+
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
+        taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));
+        taskLabel.setText(language.getContentById("downloadTitle"));
+        
+        extractor = new CustomBatchDownload(urls, this);
         initSubComponents(numOfTask);
     }
 
@@ -165,12 +176,6 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         playButton.setVisible(false);
         stopButton.setVisible(false);
         extractor.start();
-    }
-
-    public void changeSkinForAutoStart() {
-        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/pauseButtonStandard.png")));
-        stopButton.setVisible(true);
-        isExecuting = true;
     }
 
     public MouseListener playButtonNormalBehavior() {
@@ -327,6 +332,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 firstClick = false;
                 isExecuting = false;
                 stopButton.setVisible(false);
+                playButton.setVisible(false);
                 extractor = null;
 
                 if (typeOfTask == DOWNLOAD_TASK) {
@@ -353,6 +359,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                             //extractor = new DeviantArt(url, this);
                             break;
                         case TUMBLR:
+                            //extractor = new DeviantArt(url, this);
                             break;
                         case GALLERY_HENTAI:
                             extractor = new UpdateGalleryHentai(url, getContent());
@@ -382,7 +389,8 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 for (MouseListener listener : playButton.getMouseListeners()) {
                     playButton.removeMouseListener(listener);
                 }
-
+                
+                playButton.addMouseListener(playButtonNormalBehavior());
                 infoDisplay.setText(language.getContentById("connecting"));
                 progressBar.setIndeterminate(true);
                 progressBar.setStringPainted(false);
@@ -395,6 +403,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
     public MouseListener playButtonDownloadFinishedBehavior() {
         playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/finishedButtonStandard.png")));
         isTerminated = true;
+        StylizedMainJFrame.GET_STACK.notifyStack();
 
         return new MouseAdapter() {
             @Override
@@ -418,17 +427,16 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         };
     }
 
-    public void resetControls() {
-        infoDisplay.setText("Preparing download...");
-        progressBar.setIndeterminate(true);
-        playButton.setVisible(false);
-        stopButton.setVisible(false);
-        repaint();
-        revalidate();
-    }
-
     private DownloadTaskJPanel getContent() {
         return this;
+    }
+
+    public void setExecutingLayout() {
+        stopButton.setVisible(true);
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        playButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/pauseButtonStandard.png")));
+        isExecuting = true;
+        firstClick = true;
     }
 
     public void setNewTaskNumber(int newTaskNum) {
@@ -456,10 +464,6 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
     public int getTaskNumber() {
         return numOfTask;
-    }
-    
-    public String getTaskUrl() {
-        return url;
     }
 
     public boolean isTerminated() {

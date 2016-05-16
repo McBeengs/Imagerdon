@@ -136,8 +136,8 @@ public class Option7 extends javax.swing.JPanel {
         jLabel2.setVisible(Boolean.parseBoolean(xml.getContentById("E621advancedNaming")));
         jRadioButton1.setVisible(Boolean.parseBoolean(xml.getContentById("E621advancedNaming")));
         jRadioButton1.setSelected(xml.getContentById("E621namingOption").equals("0"));
-        jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById("FAadvancedNaming")));
-        jRadioButton2.setSelected(xml.getContentById("FAnamingOption").equals("1"));
+        jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById("E621advancedNaming")));
+        jRadioButton2.setSelected(xml.getContentById("E621namingOption").equals("1"));
     }// </editor-fold>//GEN-END:initComponents
 
     private void folderTextFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_folderTextFieldMouseClicked

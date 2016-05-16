@@ -24,7 +24,11 @@ import aurelienribon.slidinglayout.SLSide;
 import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
-import com.panels.tools.FADownloadFavs;
+import com.panels.tools.BatchDownloads;
+import com.panels.tools.e621.E621OptimizeArtists;
+import com.panels.tools.furaffinity.FADownloadFavs;
+import com.panels.tools.furaffinity.FAOptimizeArtists;
+import com.panels.tools.furaffinity.FARemoveFavs;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.BasicStroke;
@@ -41,6 +45,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -72,6 +77,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import org.xml.sax.SAXException;
 
 public class StylizedMainJFrame extends javax.swing.JFrame {
@@ -96,8 +103,14 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private JMenu fileOption;
     private JMenu toolsOption;
     private JMenu optionsOption;
-    private JMenuItem downloadFAFavs;
+    private JMenuItem imageBatchDownload;
+    private JMenuItem serverBatchDownload;
     private JMenu furAffinityTools;
+    private JMenuItem optimizeFAArtists;
+    private JMenuItem downloadFAFavs;
+    private JMenuItem removeFAFavs;
+    private JMenu e621Tools;
+    private JMenuItem optimizeE621Artists;
     private JMenuItem settingsOptions;
     private JSeparator jSeparator3;
     private JTextField searchText;
@@ -142,8 +155,14 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         menuBar = new JMenuBar();
         fileOption = new JMenu();
         toolsOption = new JMenu();
+        imageBatchDownload = new JMenuItem();
+        serverBatchDownload = new JMenuItem();
         furAffinityTools = new JMenu();
+        optimizeFAArtists = new JMenuItem();
         downloadFAFavs = new JMenuItem();
+        removeFAFavs = new JMenuItem();
+        e621Tools = new JMenu();
+        optimizeE621Artists = new JMenuItem();
         optionsOption = new JMenu();
         settingsOptions = new JMenuItem();
 
@@ -151,6 +170,9 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new Dimension(500, 590));
         setPreferredSize(new Dimension(1142, 530));
+        
+        UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+        defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
 
         mainPanel.setTweenManager(SLAnimator.createTweenManager());
         SLAnimator.start();
@@ -249,6 +271,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         menuBar.add(fileOption);
 
         toolsOption.setText(language.getContentById("tools"));
+        toolsOption.add(imageBatchDownload);
+        toolsOption.add(serverBatchDownload);
         //Add DeviantArt tools here
         toolsOption.add(new Separator());
         //Add Tumblr tools here
@@ -257,12 +281,25 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         toolsOption.add(new Separator());
         furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
         furAffinityTools.setText(language.getContentByName("mainLabel", 5));
+        imageBatchDownload.setText("Download batch of images");
+        serverBatchDownload.setText("Download batch of servers");
+        optimizeFAArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
+        optimizeFAArtists.setText("Optimize artists");
         downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
         downloadFAFavs.setText(language.getContentById("downloadFavs"));
+        removeFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
+        removeFAFavs.setText("Remove all favs");
+        furAffinityTools.add(optimizeFAArtists);
         furAffinityTools.add(downloadFAFavs);
+        furAffinityTools.add(removeFAFavs);
         toolsOption.add(furAffinityTools);
         toolsOption.add(new Separator());
-        //Add E621 tools here
+        e621Tools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
+        e621Tools.setText(language.getContentByName("mainLabel", 6));
+        optimizeE621Artists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
+        optimizeE621Artists.setText("Optimize artists");
+        e621Tools.add(optimizeE621Artists);
+        toolsOption.add(e621Tools);
         menuBar.add(toolsOption);
 
         optionsOption.setText(language.getContentById("options"));
@@ -341,6 +378,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         addListeners();
 
         pack();
+        setLocationRelativeTo(null);
     }
 
     private void addListeners() {
@@ -429,6 +467,33 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         });
         //end of searchText
 
+        imageBatchDownload.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BatchDownloads batch = new BatchDownloads(BatchDownloads.IMAGES);
+                batch.setVisible(true);
+            }
+        });
+        //end of imageBatchDownload
+        
+        serverBatchDownload.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BatchDownloads batch = new BatchDownloads(BatchDownloads.SERVERS);
+                batch.setVisible(true);
+            }
+        });
+        //end of serverBatchDownload
+
+        optimizeFAArtists.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                FAOptimizeArtists fa = new FAOptimizeArtists();
+                fa.setVisible(true);
+            }
+        });
+        //end of optimizeFAArtists
+        
         downloadFAFavs.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -437,6 +502,23 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of downloadFAFavs
+
+        removeFAFavs.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new FARemoveFavs();
+            }
+        });
+        //end of removeFAFavs
+        
+        optimizeE621Artists.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                E621OptimizeArtists e = new E621OptimizeArtists();
+                e.setVisible(true);
+            }
+        });
+        //end of optimizeFAArtists
 
         settingsOptions.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -537,7 +619,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         public void setAutoStart(boolean bln) {
             AUTO_START = bln;
         }
-        
+
         public void rearrangeTasks() {
             adjustTasks();
         }
@@ -545,13 +627,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         public void addTask(String url, int server, int type) {
             int c = 0;
             if (scrollPane.getComponentCount() > 0) {
-                for (int i = 0; i < numOfThreads; i++) {
-                    DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
-                    if (task.getTaskUrl().equals(url)) {
-                        return;
-                    }
-                }
-                
                 for (int i = 0; i < numOfThreads; i++) {
                     DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
                     task.setNewTaskNumber(i + 1);
@@ -579,6 +654,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 stack.add(Arrays.asList(store));
 
                 if (!isTasksPanelHidden) {
+                    // FurAffinity name... It must get from all servers
                     String artist = url.substring(35, url.lastIndexOf("/"));
                     artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
 
@@ -610,6 +686,16 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                         }
                     })).play();
                 }
+            }
+        }
+
+        public void addBatchTask(String[] urls) {
+            numOfThreads++;
+            scrollPane.add(new DownloadTaskJPanel(urls, numOfThreads));
+            adjustTasks();
+
+            if (isTasksPanelHidden) {
+                UsefulMethods.makeBalloon(hideTasksButton, language.getContentById("newTaskBalloon"), new Color(0, 0, 200));
             }
         }
     }
@@ -657,8 +743,13 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 comma = array.indexOf(",", comma + 1) + 2;
                 int type = Integer.parseInt(array.substring(comma, array.indexOf("]")));
 
+                stack.remove(0);
                 ADD_TASK.addTask(url, server, type);
             }
+        }
+
+        public int getStackSize() {
+            return stack.size();
         }
     }
 

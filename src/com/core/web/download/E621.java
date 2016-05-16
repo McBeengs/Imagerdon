@@ -69,11 +69,6 @@ public class E621 extends BasicCore {
         link = url;
         this.taskManager = taskManager;
 
-        webClient = new WebClient(BrowserVersion.EDGE);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        webClient.getOptions().setAppletEnabled(false);
-
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
@@ -225,15 +220,27 @@ public class E621 extends BasicCore {
         tagOcc = artists.getAllContentsByName("artist").size() - 1;
         artists.addSubordinatedTag("name", "artist", tagOcc);
         artists.setContentByName("name", tagOcc, artist);
+        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
+        artists.setContentByName("avatarUrl", tagOcc, "null");
+        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
+        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
+        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
+        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
         artists.addSubordinatedTag("imageCount", "artist", tagOcc);
         artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
         artists.saveXml();
     }
 
-    private void download() throws IOException {
+    private void download() throws Exception {
         String artist = link.substring(link.lastIndexOf("/") + 1);
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         taskManager.author.setText(artist + " | e621");
+
+        taskManager.infoDisplay.setText(language.getContentById("loginIn"));
+        while (!UsefulMethods.isWebClientReady()) {
+            sleep(2);
+        }
+        webClient = UsefulMethods.getWebClientInstance();
 
         if (getInformationAboutGallery() && checkArtistExistance()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
@@ -243,77 +250,84 @@ public class E621 extends BasicCore {
             taskManager.playButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent evt) {
-                    if (!isDownloading) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                String temp;
-                                try {
-                                    taskManager.progressBar.setIndeterminate(false);
-                                    taskManager.progressBar.setMinimum(0);
-                                    taskManager.progressBar.setMaximum(numOfImages);
-                                    taskManager.progressBar.setStringPainted(true);
-                                    taskManager.progressBar.setString("0%");
-                                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                    isDownloading = true;
-
-                                    int cut = numOfImages - ((numOfPages - 1) * 75);
-                                    int count = 0;
-                                    executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
-
-                                    for (int c = 1; c <= numOfPages; c++) {
-                                        if (isTerminated) {
-                                            break;
-                                        }
-
-                                        HtmlPage conn = webClient.getPage(link.substring(0, 28) + c + "/" + link.substring(link.indexOf("/", 28) + 1));
-                                        Document docLinks = Jsoup.parse(conn.asXml());
-                                        Elements getLinks = docLinks.select("a[href~=/post/show/]");
-
-                                        for (int i = 0; i < 75; i++) {
-                                            while (isPaused) {
-                                                sleep(2);
-                                            }
-
-                                            if (c == numOfPages) {
-                                                if (i == cut) {
-                                                    break;
-                                                }
-                                            }
-
-                                            temp = getLinks.get(i).toString();
-                                            int end = temp.indexOf("\"", 35);
-                                            String placeholder = temp.substring(31, end);
-                                            temp = "https://e621.net" + placeholder;
-                                            conn = webClient.getPage(temp);
-                                            Document docImages = Jsoup.parse(conn.asXml());
-                                            Elements getPages = docImages.select("a[href~=https://static1.e621.net/]");
-                                            String tempImagesArray = getPages.toString();
-                                            end = tempImagesArray.indexOf("\"", 11);
-                                            temp = tempImagesArray.substring(9, end);
-                                            count++;
-
-                                            executor.execute(new E621.ImageExtractor(temp, count));
-                                        }
-                                    }
-
-                                } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
-                                    JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                                } catch (java.net.SocketTimeoutException ex) {
-                                    Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
-                                } catch (IOException | InterruptedException ex) {
-                                    Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }.start();
-                    }
+                    downloadAction();
                 }
             });
         } else {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
             taskManager.playButton.setVisible(true);
+            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                taskManager.playButton.removeMouseListener(listener);
+            }
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
+        }
+    }
+
+    private void downloadAction() {
+        if (!isDownloading) {
+            new Thread() {
+                @Override
+                public void run() {
+                    String temp;
+                    try {
+                        taskManager.progressBar.setIndeterminate(false);
+                        taskManager.progressBar.setMinimum(0);
+                        taskManager.progressBar.setMaximum(numOfImages);
+                        taskManager.progressBar.setStringPainted(true);
+                        taskManager.progressBar.setString("0%");
+                        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
+                        isDownloading = true;
+
+                        int cut = numOfImages - ((numOfPages - 1) * 75);
+                        int count = 0;
+                        executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+
+                        for (int c = 1; c <= numOfPages; c++) {
+                            if (isTerminated) {
+                                break;
+                            }
+
+                            HtmlPage conn = webClient.getPage(link.substring(0, 28) + c + "/" + link.substring(link.indexOf("/", 28) + 1));
+                            Document docLinks = Jsoup.parse(conn.asXml());
+                            Elements getLinks = docLinks.select("a[href~=/post/show/]");
+
+                            for (int i = 0; i < 75; i++) {
+                                while (isPaused) {
+                                    sleep(2);
+                                }
+
+                                if (c == numOfPages) {
+                                    if (i == cut) {
+                                        break;
+                                    }
+                                }
+
+                                temp = getLinks.get(i).toString();
+                                int end = temp.indexOf("\"", 35);
+                                String placeholder = temp.substring(31, end);
+                                temp = "https://e621.net" + placeholder;
+                                conn = webClient.getPage(temp);
+                                Document docImages = Jsoup.parse(conn.asXml());
+                                Elements getPages = docImages.select("a[href~=https://static1.e621.net/]");
+                                String tempImagesArray = getPages.toString();
+                                end = tempImagesArray.indexOf("\"", 11);
+                                temp = tempImagesArray.substring(9, end);
+                                count++;
+
+                                executor.execute(new E621.ImageExtractor(temp, count));
+                            }
+                        }
+
+                    } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
+                        JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                    } catch (java.net.SocketTimeoutException ex) {
+                        Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException | InterruptedException ex) {
+                        Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.start();
         }
     }
 
@@ -341,7 +355,7 @@ public class E621 extends BasicCore {
     public void run() {
         try {
             download();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

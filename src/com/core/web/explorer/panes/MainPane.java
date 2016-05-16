@@ -22,6 +22,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
@@ -97,17 +100,20 @@ public class MainPane extends javax.swing.JPanel {
         jLabel1.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
         jLabel1.setText(language.getContentById("imagesOnDisk"));
 
-        imagesOnDisk.setText("jLabel2");
+        imagesOnDisk.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        imagesOnDisk.setText("Getting info...");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
         jLabel3.setText(language.getContentById("artistsOnDisk"));
 
-        artistsOnDisk.setText("jLabel2");
+        artistsOnDisk.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        artistsOnDisk.setText("Getting info...");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
         jLabel5.setText(language.getContentById("imagesPerArtist"));
 
-        imagesPerArtist.setText("jLabel2");
+        imagesPerArtist.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        imagesPerArtist.setText("Getting info...");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
         jLabel2.setText(language.getContentById("checkInternet"));
@@ -167,11 +173,9 @@ public class MainPane extends javax.swing.JPanel {
                                 .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(FALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                            .addComponent(DALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(FALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(DALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(TULogin)
                                         .addGap(51, 51, 51)
@@ -181,9 +185,11 @@ public class MainPane extends javax.swing.JPanel {
                                     .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
                                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(5, 5, 5)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(imagesPerArtist)
-                                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(imagesPerArtist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGap(54, 54, 54))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
@@ -191,10 +197,10 @@ public class MainPane extends javax.swing.JPanel {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(imagesOnDisk))
+                                        .addComponent(imagesOnDisk, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGap(5, 5, 5)
-                                        .addComponent(artistsOnDisk)))))
+                                        .addGap(6, 6, 6)
+                                        .addComponent(artistsOnDisk, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -222,23 +228,19 @@ public class MainPane extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
                         .addComponent(DALogin)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(TULogin)
                             .addComponent(retryButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(FALogin)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(FALogin))
+                    .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -249,56 +251,65 @@ public class MainPane extends javax.swing.JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
-                String s = System.getProperty("file.separator");
-                File daXml = new File(xml.getContentById("DAoutput") + s + "artists-log.xml");
-                File tuXml = new File(xml.getContentById("TUoutput") + s + "artists-log.xml");
-                File ghXml = new File(xml.getContentById("GHoutput") + s + "artists-log.xml");
-                File faXml = new File(xml.getContentById("FAoutput") + s + "artists-log.xml");
-                File e621Xml = new File(xml.getContentById("E621output") + s + "artists-log.xml");
-                File[] xmls = new File[]{daXml, tuXml, ghXml, faXml, e621Xml};
+                new Thread() {
+                    @Override
+                    public void run() {
+                        String s = System.getProperty("file.separator");
+                        File daXml = new File(xml.getContentById("DAoutput") + s + "artists-log.xml");
+                        File tuXml = new File(xml.getContentById("TUoutput") + s + "artists-log.xml");
+                        File ghXml = new File(xml.getContentById("GHoutput") + s + "artists-log.xml");
+                        File faXml = new File(xml.getContentById("FAoutput") + s + "artists-log.xml");
+                        File e621Xml = new File(xml.getContentById("E621output") + s + "artists-log.xml");
+                        File[] xmls = new File[]{daXml, tuXml, ghXml, faXml, e621Xml};
 
-                int totalImagesNumber = 0;
-                for (File xml : xmls) {
-                    if (xml.exists()) {
-                        try {
-                            XmlManager get = new XmlManager();
-                            get.loadFile(xml);
-                            List<String> num = get.getAllContentsByName("imageCount");
-                            for (int i = 0; i < num.size(); i++) {
-                                totalImagesNumber += Integer.parseInt(num.get(i));
+                        int totalImagesNumber = 0;
+                        for (File xml : xmls) {
+                            if (xml.exists()) {
+                                try {
+                                    XmlManager get = new XmlManager();
+                                    get.loadFile(xml);
+                                    List<String> num = get.getAllContentsByName("imageCount");
+                                    for (int i = 0; i < num.size(); i++) {
+                                        totalImagesNumber += Integer.parseInt(num.get(i));
+                                    }
+                                } catch (IOException ex) {
+                                    Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
-                        } catch (IOException ex) {
-                            Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    }
-                }
 
-                int totalArtistsNumber = 0;
-                for (File xml : xmls) {
-                    if (xml.exists()) {
-                        try {
-                            XmlManager get = new XmlManager();
-                            get.loadFile(xml);
-                            List<String> num = get.getAllContentsByName("name");
-                            totalArtistsNumber += num.size();
-                        } catch (IOException ex) {
-                            Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
+                        int totalArtistsNumber = 0;
+                        for (File xml : xmls) {
+                            if (xml.exists()) {
+                                try {
+                                    XmlManager get = new XmlManager();
+                                    get.loadFile(xml);
+                                    List<String> num = get.getAllContentsByName("name");
+                                    totalArtistsNumber += num.size();
+                                } catch (IOException ex) {
+                                    Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
                         }
+
+                        NumberFormat format = DecimalFormat.getInstance();
+                        format.setRoundingMode(RoundingMode.FLOOR);
+                        format.setMinimumFractionDigits(0);
+                        format.setMaximumFractionDigits(2);
+                        imagesOnDisk.setText("" + format.format(totalImagesNumber));
+                        artistsOnDisk.setText("" + totalArtistsNumber);
+                        double show;
+                        if (totalArtistsNumber == 0) {
+                            show = 0;
+                        } else {
+                            show = (double) ((double) totalImagesNumber / (double) totalArtistsNumber);
+                        }
+                        imagesPerArtist.setText("" + format.format(show));
+
+                        checkConnection();
+                        setupWebClient();
                     }
-                }
-
-                imagesOnDisk.setText("" + totalImagesNumber);
-                artistsOnDisk.setText("" + totalArtistsNumber);
-                double show;
-                if (totalArtistsNumber == 0) {
-                    show = 0;
-                } else {
-                    show = (totalImagesNumber / totalArtistsNumber);
-                }
-                imagesPerArtist.setText("" + show);
-
-                checkConnection();
-                setupWebClient();
+                }.start();
             }
 
             @Override
@@ -351,6 +362,16 @@ public class MainPane extends javax.swing.JPanel {
             public void run() {
                 try {
                     UsefulMethods.getWebClientInstance();
+                } catch (java.net.UnknownHostException ex) {
+                    webClientSetup.setForeground(new java.awt.Color(238, 44, 44));
+                    webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    DALogin.setForeground(new java.awt.Color(238, 44, 44));
+                    DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    TULogin.setForeground(new java.awt.Color(238, 44, 44));
+                    TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    FALogin.setForeground(new java.awt.Color(238, 44, 44));
+                    FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                    return;
                 } catch (Exception ex) {
                     switch (ex.getMessage()) {
                         case "DeviantArt":

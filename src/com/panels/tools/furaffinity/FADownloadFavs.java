@@ -1,4 +1,4 @@
-package com.panels.tools;
+package com.panels.tools.furaffinity;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -185,8 +185,8 @@ public class FADownloadFavs extends javax.swing.JFrame {
             uncensoredLink = webClient.getPage(temp);
             return true;
 
-        } catch (FailingHttpStatusCodeException ex) {
-            JOptionPane.showMessageDialog(null, "Connection with the Internet has dropped", "Error", JOptionPane.OK_OPTION);
+        } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
+            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
         } catch (IOException ex) {
             Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -289,7 +289,7 @@ public class FADownloadFavs extends javax.swing.JFrame {
             @Override
             public void run() {
                 StylizedMainJFrame.ADD_TASK.setAutoStart(true);
-                
+
                 for (int i = 0; i < artistsLinks.size(); i++) {
                     StylizedMainJFrame.ADD_TASK.addTask(artistsLinks.get(0), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
                     artistsLinks.remove(0);
@@ -299,6 +299,15 @@ public class FADownloadFavs extends javax.swing.JFrame {
                         Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+                
+                while(StylizedMainJFrame.GET_STACK.getStackSize() > 0) {
+                    try {
+                        sleep(2);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                
                 StylizedMainJFrame.ADD_TASK.setAutoStart(false);
             }
         }.start();

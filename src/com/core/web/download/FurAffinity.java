@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 @SuppressWarnings("")
@@ -159,48 +158,38 @@ public class FurAffinity extends BasicCore {
         return true;
     }
 
-    private boolean isDone = false;
-
     private boolean checkArtistExistance() throws IOException {
         String artist = link.substring(35, link.lastIndexOf("/"));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
 
-        final String artistFinal = artist;
-        new Thread("Get info") {
-            @Override
-            public void run() {
-                try {
-                    HtmlPage page = webClient.getPage("http://www.furaffinity.net/user/" + artistFinal.toLowerCase());
-                    Document parsed = Jsoup.parse(page.getBody().asXml());
+        try {
+            HtmlPage page = webClient.getPage("http://www.furaffinity.net/user/" + artist.toLowerCase());
+            Document parsed = Jsoup.parse(page.getBody().asXml());
 
-                    avatarUrl = parsed.select("img.avatar").get(0).attr("src");
-                    Elements infoTable = parsed.select("table").get(3).select("td");
-                    String temp = infoTable.get(12).text();
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    pageVisits = temp.substring(0, temp.indexOf(" "));
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    commentsReceived = temp.substring(0, temp.indexOf(" "));
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    commentsGiven = temp.substring(0, temp.indexOf(" "));
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    journals = temp.substring(0, temp.indexOf(" "));
-                    temp = temp.substring(temp.indexOf(":") + 2);
-                    favourites = temp;
-                    isDone = true;
+            avatarUrl = parsed.select("img.avatar").get(0).attr("src");
+            Elements infoTable = parsed.select("table").get(3).select("td");
+            String temp = infoTable.get(12).text();
+            temp = temp.substring(temp.indexOf(":") + 2);
+            pageVisits = temp.substring(0, temp.indexOf(" "));
+            temp = temp.substring(temp.indexOf(":") + 2);
+            temp = temp.substring(temp.indexOf(":") + 2);
+            commentsReceived = temp.substring(0, temp.indexOf(" "));
+            temp = temp.substring(temp.indexOf(":") + 2);
+            commentsGiven = temp.substring(0, temp.indexOf(" "));
+            temp = temp.substring(temp.indexOf(":") + 2);
+            journals = temp.substring(0, temp.indexOf(" "));
+            temp = temp.substring(temp.indexOf(":") + 2);
+            favourites = temp.replaceAll("[^0-9]", "");
 
-                } catch (IOException | FailingHttpStatusCodeException ex) {
-                    Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }.start();
-
-        while (!isDone) {
-            try {
-                sleep(2);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        } catch (java.lang.IndexOutOfBoundsException ex) {
+            avatarUrl = "null";
+            pageVisits = "null";
+            commentsReceived = "null";
+            commentsGiven = "null";
+            journals = "null";
+            favourites = "null";
+        } catch (FailingHttpStatusCodeException | java.lang.NullPointerException ex) {
+            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
         }
 
         if (Integer.parseInt(xml.getContentById("existed")) == 1) {
@@ -255,7 +244,7 @@ public class FurAffinity extends BasicCore {
 
             if (result == JOptionPane.YES_OPTION) {
                 taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
-                new Thread("Changed to Download to Update task") {
+                new Thread("Changed from Download to Update task") {
                     @Override
                     public void run() {
                         taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
@@ -286,6 +275,10 @@ public class FurAffinity extends BasicCore {
         artists.setContentByName("name", tagOcc, artist);
         artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
         artists.setContentByName("avatarUrl", tagOcc, "http://" + avatarUrl.substring(2, avatarUrl.length()));
+        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
+        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
+        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
+        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
         artists.addSubordinatedTag("pageVisits", "artist", tagOcc);
         artists.setContentByName("pageVisits", tagOcc, pageVisits);
         artists.addSubordinatedTag("commentsReceived", "artist", tagOcc);
@@ -321,14 +314,14 @@ public class FurAffinity extends BasicCore {
                 @Override
                 public void mouseClicked(MouseEvent evt) {
                     downloadAction();
-                    taskManager.changeSkinForAutoStart();
                 }
             });
 
             if (StylizedMainJFrame.AUTO_START) {
                 downloadAction();
-                taskManager.changeSkinForAutoStart();
+                taskManager.setExecutingLayout();
             }
+
         } else if (!convertedToUpdate) {
             taskManager.progressBar.setIndeterminate(false);
             taskManager.infoDisplay.setText(language.getContentById("taskError"));
@@ -424,7 +417,7 @@ public class FurAffinity extends BasicCore {
                             }
                         }
 
-                    } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
+                    } catch (FailingHttpStatusCodeException | java.net.UnknownHostException | java.net.ConnectException ex) {
                         JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                     } catch (IOException | InterruptedException ex) {
                         Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
@@ -541,12 +534,39 @@ public class FurAffinity extends BasicCore {
                 }
             } catch (java.net.ConnectException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
+            } catch (java.io.FileNotFoundException ex) {
+                numOfImages--;
+                taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                nf.setMaximumFractionDigits(1);
+                nf.setGroupingUsed(true);
+
+                String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                taskManager.progressBar.setString(show);
+                artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
+
+                if (show.equals("100%")) {
+                    taskManager.stopButton.setVisible(false);
+                    taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+
+                    for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                        taskManager.playButton.removeMouseListener(listener);
+                    }
+
+                    try {
+                        artists.saveXml();
+                    } catch (IOException ex1) {
+                        Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex1);
+                    }
+                    taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+                }
             } catch (MalformedURLException ex) {
                 Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
             } catch (java.net.SocketException ex) {
                 executor.submit(new ImageExtractor(finalLink, downloadNumber));
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                executor.submit(new ImageExtractor(finalLink, downloadNumber));
             }
 
             return false;

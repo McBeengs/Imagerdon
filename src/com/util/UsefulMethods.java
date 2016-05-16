@@ -134,7 +134,7 @@ public class UsefulMethods {
                 + "";
     }
 
-    public static WebClient getWebClientInstance() throws Exception {
+    public static WebClient getWebClientInstance() throws IOException, Exception {
         if (webClient == null) {
             webClient = new WebClient(BrowserVersion.CHROME);
             webClient.getOptions().setCssEnabled(false);
@@ -154,14 +154,17 @@ public class UsefulMethods {
 
             // DeviantArt login
             preLogin = webClient.getPage("https://www.deviantart.com/");
+            if (preLogin == null) {
+                webClient = null;
+            }
             form = preLogin.getHtmlElementById("form-login");
 
             usernameField = form.getInputByName("username");
             passwordField = form.getInputByName("password");
             button = form.getInputByName("action");
 
-            user = "TheMcBeenga10";
-            passw = "suckmyb44lz";
+            user = pass.decrypt(pass.stringToByte(xml.getContentById("DAuser")), "12345678".getBytes(), "12345678".getBytes());
+            passw = pass.decrypt(pass.stringToByte(xml.getContentById("DApass")), "12345678".getBytes(), "12345678".getBytes());
 
             usernameField.setValueAttribute(user.trim());
             passwordField.setValueAttribute(passw.trim());
@@ -183,11 +186,14 @@ public class UsefulMethods {
             passwordField = form.getInputByName("user[password]");
             HtmlButton next = (HtmlButton) preLogin.getElementsByIdAndOrName("signup_forms_submit").get(0);
             HtmlButton buttonInput = form.getFirstByXPath("button");
+            
+            user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
+            passw = pass.decrypt(pass.stringToByte(xml.getContentById("TUpass")), "12345678".getBytes(), "12345678".getBytes());
 
-            usernameCheck.setValueAttribute("nunomcbeenga@gmail.com");
-            usernameField.setValueAttribute("nunomcbeenga@gmail.com");
+            usernameCheck.setValueAttribute(user);
+            usernameField.setValueAttribute(user);
             next.click();
-            passwordField.setValueAttribute("swordfish");
+            passwordField.setValueAttribute(passw);
 
             posLogin = buttonInput.click();
 
@@ -211,8 +217,13 @@ public class UsefulMethods {
             usernameField.setValueAttribute(user.trim());
             passwordField.setValueAttribute(passw.trim());
 
-            posLogin = button.click();
-
+            try {
+                posLogin = button.click();
+            } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
+                webClient = null;
+                throw new Exception("FurAffinity");
+            }
+            
             if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
                 webClient = null;
                 throw new Exception("FurAffinity");

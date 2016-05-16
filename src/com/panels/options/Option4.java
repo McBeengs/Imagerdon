@@ -3,6 +3,7 @@ package com.panels.options;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
@@ -58,15 +59,15 @@ public class Option4 extends javax.swing.JPanel {
         folderLabel = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        userTextField = new javax.swing.JTextField();
-        String user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
-        passwordTextField = new javax.swing.JPasswordField();
         downloadsAlert = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
+        userTextField = new javax.swing.JTextField();
+        String user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
+        passwordTextField = new javax.swing.JPasswordField();
 
         setMinimumSize(new java.awt.Dimension(516, 434));
 
@@ -89,22 +90,6 @@ public class Option4 extends javax.swing.JPanel {
         });
 
         jLabel1.setText(language.getContentById("changeLogin"));
-
-        userTextField.setText(user);
-        userTextField.setFocusable(false);
-        userTextField.addCaretListener(new javax.swing.event.CaretListener() {
-            public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                userTextFieldCaretUpdate(evt);
-            }
-        });
-
-        passwordTextField.setText("example");
-        passwordTextField.setFocusable(false);
-        passwordTextField.addCaretListener(new javax.swing.event.CaretListener() {
-            public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                passwordTextFieldCaretUpdate(evt);
-            }
-        });
 
         downloadsAlert.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         downloadsAlert.setForeground(new java.awt.Color(51, 109, 243));
@@ -146,6 +131,20 @@ public class Option4 extends javax.swing.JPanel {
             }
         });
 
+        userTextField.setText(user);
+        userTextField.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                userTextFieldCaretUpdate(evt);
+            }
+        });
+
+        passwordTextField.setText("example");
+        passwordTextField.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                passwordTextFieldCaretUpdate(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -163,13 +162,13 @@ public class Option4 extends javax.swing.JPanel {
                             .addGap(22, 22, 22)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
+                                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                     .addComponent(downloadsAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createSequentialGroup()
                                     .addGap(21, 21, 21)
                                     .addComponent(usernameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addGap(10, 10, 10)
                                     .addComponent(userTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
                                     .addComponent(passwordLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -177,12 +176,12 @@ public class Option4 extends javax.swing.JPanel {
                                     .addComponent(passwordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(folderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(folderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -226,25 +225,6 @@ public class Option4 extends javax.swing.JPanel {
         jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById("TUadvancedNaming")));
         jRadioButton2.setSelected(xml.getContentById("TUnamingOption").equals("1"));
     }// </editor-fold>//GEN-END:initComponents
-
-    private void userTextFieldCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_userTextFieldCaretUpdate
-        byte[] lock = pass.encrypt(userTextField.getText(), "12345678".getBytes(), "12345678".getBytes());
-        String temp = Arrays.toString(lock);
-        xml.setContentById("TUuser", temp.substring(1, temp.length() - 1));
-    }//GEN-LAST:event_userTextFieldCaretUpdate
-
-    private void passwordTextFieldCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_passwordTextFieldCaretUpdate
-        String getPass = "";
-        char[] array = passwordTextField.getPassword();
-        
-        for (int i = 0; i < array.length; i++) {
-            getPass += array[i];
-        }
-        
-        byte[] lock = pass.encrypt(getPass, "12345678".getBytes(), "12345678".getBytes());
-        String temp = Arrays.toString(lock);
-        xml.setContentById("TUpass", temp.substring(1, temp.length() - 1));
-    }//GEN-LAST:event_passwordTextFieldCaretUpdate
 
     private void folderTextFieldMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_folderTextFieldMouseClicked
         if (evt.getClickCount() == 2) {
@@ -300,6 +280,25 @@ public class Option4 extends javax.swing.JPanel {
         xml.setContentById("TUnamingOption", "1");
     }//GEN-LAST:event_jRadioButton2MouseClicked
 
+    private void userTextFieldCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_userTextFieldCaretUpdate
+        byte[] lock = pass.encrypt(userTextField.getText(), "12345678".getBytes(), "12345678".getBytes());
+        String temp = Arrays.toString(lock);
+        xml.setContentById("TUuser", temp.substring(1, temp.length() - 1));
+    }//GEN-LAST:event_userTextFieldCaretUpdate
+
+    private void passwordTextFieldCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_passwordTextFieldCaretUpdate
+        String getPass = "";
+        char[] array = passwordTextField.getPassword();
+
+        for (int i = 0; i < array.length; i++) {
+            getPass += array[i];
+        }
+
+        byte[] lock = pass.encrypt(getPass, "12345678".getBytes(), "12345678".getBytes());
+        String temp = Arrays.toString(lock);
+        xml.setContentById("TUpass", temp.substring(1, temp.length() - 1));
+    }//GEN-LAST:event_passwordTextFieldCaretUpdate
+
     private void clearField() {
         userTextField.addMouseListener(new MouseAdapter() {
             @Override
@@ -323,22 +322,30 @@ public class Option4 extends javax.swing.JPanel {
             webClient.getOptions().setJavaScriptEnabled(false);
             webClient.getOptions().setAppletEnabled(false);
 
-            HtmlPage page1 = webClient.getPage("https://www.furaffinity.net/login/");
-            HtmlForm form = page1.getFirstByXPath("//form [@method='post']");
+            HtmlPage page1 = webClient.getPage("https://www.tumblr.com/login");
+            HtmlForm form = page1.getHtmlElementById("signup_form");
 
-            HtmlTextInput usernameField = form.getInputByName("name");
-            HtmlPasswordInput passwordField = form.getInputByName("pass");
-            HtmlSubmitInput button = form.getInputByName("login");
+            HtmlTextInput usernameCheck = form.getInputByName("determine_email");
+            HtmlTextInput usernameField = form.getInputByName("user[email]");
+            HtmlPasswordInput passwordField = form.getInputByName("user[password]");
+            HtmlButton next = (HtmlButton) page1.getElementsByIdAndOrName("signup_forms_submit").get(0);
+            HtmlButton button = form.getFirstByXPath("button");
             
-            String user = pass.decrypt(pass.stringToByte(xml.getContentById("FAuser")), "12345678".getBytes(), "12345678".getBytes());
-            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("FApass")), "12345678".getBytes(), "12345678".getBytes());
+            String getPass = "";
+            char[] array = passwordTextField.getPassword();
 
-            usernameField.setValueAttribute(user.trim());
-            passwordField.setValueAttribute(passw.trim());
+            for (int i = 0; i < array.length; i++) {
+                getPass += array[i];
+            }
+
+            usernameCheck.setValueAttribute(userTextField.getText());
+            usernameField.setValueAttribute(userTextField.getText());
+            next.click();
+            passwordField.setValueAttribute(getPass);
 
             HtmlPage page2 = button.click();
-
-            return !page2.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1");
+            
+            return !page2.getBaseURL().toString().equals("https://www.tumblr.com/login");
 
         } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
             JOptionPane.showMessageDialog(null, "Connection with the Internet has dropped", "Error", JOptionPane.OK_OPTION);

@@ -16,14 +16,9 @@
  */
 package com.core.web.download;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.panels.main.DownloadTaskJPanel;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -62,11 +57,11 @@ public class DeviantArt extends BasicCore {
     private boolean convertedToUpdate;
     private String finalPath;
     private String link;
-    
+
     private String avatarUrl;
     private String memberSince;
     private String sexNacionality;
-    
+
     private WebClient webClient;
     private XmlManager xml;
     private XmlManager language;
@@ -91,30 +86,9 @@ public class DeviantArt extends BasicCore {
             link += "%2F&offset=";
         }
 
-        webClient = new WebClient(BrowserVersion.CHROME);
-        webClient.getOptions().setCssEnabled(false);
-        webClient.getOptions().setJavaScriptEnabled(false);
-        webClient.getOptions().setAppletEnabled(false);
-
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         artists = new XmlManager();
-
-        new Thread("Get info") {
-            @Override
-            public void run() {
-                try {
-                    HtmlPage page = webClient.getPage(link.substring(0, link.indexOf("/", 10)));
-                    Document parsed = Jsoup.parse(page.getBody().asXml());
-                    
-                    avatarUrl = parsed.select(".avatar").get(2).attr("src");
-                    System.out.println(avatarUrl);
-                    
-                } catch (IOException | FailingHttpStatusCodeException ex) {
-                    Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }.start();
 
         try {
             File artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
@@ -140,37 +114,6 @@ public class DeviantArt extends BasicCore {
         }
     }
 
-    private boolean submittingForm() {
-        try {
-            taskManager.infoDisplay.setText(language.getContentById("loginIn"));
-            HtmlPage page1 = webClient.getPage("https://www.deviantart.com/");
-            HtmlForm form = page1.getHtmlElementById("form-login");
-
-            HtmlTextInput usernameField = form.getInputByName("username");
-            HtmlPasswordInput passwordField = form.getInputByName("password");
-            HtmlSubmitInput button = form.getInputByName("action");
-
-            usernameField.setValueAttribute("TheMcBeenga10");
-            passwordField.setValueAttribute("suckmyb44lz");
-
-            HtmlPage page2 = button.click();
-            if (page2.asXml().contains("The password you entered was incorrect")) {
-                JOptionPane.showMessageDialog(null, language.getContentById("loginFailed").replace("&string", "DeviantArt"),
-                        language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                return false;
-            }
-
-        } catch (java.net.UnknownHostException | org.apache.http.conn.HttpHostConnectException ex) {
-            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-        } catch (IOException ex) {
-            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (FailingHttpStatusCodeException ex) {
-            System.err.println("Deu ruim na task nº" + taskManager.getTaskNumber());
-        }
-
-        return true;
-    }
-
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
@@ -183,8 +126,14 @@ public class DeviantArt extends BasicCore {
                 JOptionPane.showMessageDialog(null, language.getContentById("errorUrlNonExistent"), language.getContentById("genericErrorTitle"), 0);
                 return false;
             } else {
+                avatarUrl = getNumberImages.select("img.avatar.float-left").get(0).attr("src");
+
                 numOfImages = 0;
                 while (true) {
+                    if (!link.contains("%2F&offset=")) {
+                        link += "%2F&offset=";
+                    }
+                    
                     conn = webClient.getPage(link + numOfImages);
 
                     if (conn.asText().contains("This section has no deviations yet!")) {
@@ -302,8 +251,8 @@ public class DeviantArt extends BasicCore {
         artists.setContentByName("avatarUrl", tagOcc, avatarUrl);
         artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
         artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("lastUpdate", "artist", tagOcc);
-        artists.setContentByName("lastUpdate", tagOcc, "Never");
+        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
+        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
         artists.addSubordinatedTag("imageCount", "artist", tagOcc);
         artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
         artists.saveXml();
@@ -311,83 +260,24 @@ public class DeviantArt extends BasicCore {
 
     private void download() throws Exception {
         String artist = link.substring(7, link.indexOf("."));
-        final String artistFinal = artist;
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
         taskManager.author.setText(artist + " | DeviantArt");
 
-        if (submittingForm() && getInformationAboutGallery() && checkArtistExistance()) {
+        taskManager.infoDisplay.setText(language.getContentById("loginIn"));
+        while (!UsefulMethods.isWebClientReady()) {
+            sleep(2);
+        }
+        webClient = UsefulMethods.getWebClientInstance();
+
+        if (getInformationAboutGallery() && checkArtistExistance()) {
             taskManager.infoDisplay.setText(language.getContentById("wentOK"));
             taskManager.playButton.setVisible(true);
             taskManager.progressBar.setIndeterminate(false);
+
             taskManager.playButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent evt) {
-                    if (!isDownloading) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    taskManager.progressBar.setIndeterminate(false);
-                                    taskManager.progressBar.setMinimum(0);
-                                    taskManager.progressBar.setMaximum(numOfImages);
-                                    taskManager.progressBar.setStringPainted(true);
-                                    taskManager.progressBar.setString("0%");
-                                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                    isDownloading = true;
-
-                                    int cut = numOfImages - ((numOfPages - 1) * 24);
-                                    int c = 0;
-                                    int count = 0;
-                                    String before = "";
-                                    executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
-
-                                    while (c < numOfImages) {
-                                        if (isTerminated) {
-                                            break;
-                                        }
-
-                                        HtmlPage conn = webClient.getPage(link + c);
-                                        Document docLinks = Jsoup.parse(conn.asXml());
-                                        Elements getPages = docLinks.select("a[href~=" + artistFinal + ".deviantart.com/art/]");
-
-                                        for (int i = 0; i < getPages.size(); i++) {
-                                            while (isPaused) {
-                                                sleep(2);
-                                            }
-                                            if (count == numOfImages) {
-                                                break;
-                                            }
-
-                                            String temp = getPages.get(i).toString();
-                                            temp = temp.substring(temp.indexOf("href"));
-                                            temp = temp.substring(6, temp.indexOf("\"", 6));
-
-                                            if (!before.equals(temp) && !temp.contains("#comments")) {
-                                                before = temp;
-                                                HtmlPage page = webClient.getPage(temp);
-
-                                                Document docImages = Jsoup.parse(page.asXml());
-                                                Elements getLinks = docImages.select("img[data-embed-format~=thumb]");
-                                                temp = getLinks.get(1).toString();
-
-                                                temp = temp.substring(temp.indexOf("src") + 5);
-                                                temp = temp.substring(0, temp.indexOf("\""));
-                                                count++;
-
-                                                executor.submit(new ImageExtractor(temp, count));
-
-                                            }
-                                        }
-                                        c += 24;
-                                    }
-                                } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
-                                    JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
-                                } catch (IOException | InterruptedException ex) {
-                                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }.start();
-                    }
+                    downloadAction();
                 }
             });
         } else if (!convertedToUpdate) {
@@ -398,6 +288,78 @@ public class DeviantArt extends BasicCore {
                 taskManager.playButton.removeMouseListener(listener);
             }
             taskManager.playButton.addMouseListener(taskManager.playButtonErrorBehavior());
+        }
+    }
+
+    private void downloadAction() {
+        String artist = link.substring(7, link.indexOf("."));
+        final String artistFinal = artist;
+
+        if (!isDownloading) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        taskManager.progressBar.setIndeterminate(false);
+                        taskManager.progressBar.setMinimum(0);
+                        taskManager.progressBar.setMaximum(numOfImages);
+                        taskManager.progressBar.setStringPainted(true);
+                        taskManager.progressBar.setString("0%");
+                        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
+                        isDownloading = true;
+
+                        int cut = numOfImages - ((numOfPages - 1) * 24);
+                        int c = 0;
+                        int count = 0;
+                        String before = "";
+                        executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
+
+                        while (c < numOfImages) {
+                            if (isTerminated) {
+                                break;
+                            }
+
+                            HtmlPage conn = webClient.getPage(link + c);
+                            Document docLinks = Jsoup.parse(conn.asXml());
+                            Elements getPages = docLinks.select("a[href~=" + artistFinal + ".deviantart.com/art/]");
+
+                            for (int i = 0; i < getPages.size(); i++) {
+                                while (isPaused) {
+                                    sleep(2);
+                                }
+                                if (count == numOfImages) {
+                                    break;
+                                }
+
+                                String temp = getPages.get(i).toString();
+                                temp = temp.substring(temp.indexOf("href"));
+                                temp = temp.substring(6, temp.indexOf("\"", 6));
+
+                                if (!before.equals(temp) && !temp.contains("#comments")) {
+                                    before = temp;
+                                    HtmlPage page = webClient.getPage(temp);
+
+                                    Document docImages = Jsoup.parse(page.asXml());
+                                    Elements getLinks = docImages.select("img[data-embed-format~=thumb]");
+                                    temp = getLinks.get(1).toString();
+
+                                    temp = temp.substring(temp.indexOf("src") + 5);
+                                    temp = temp.substring(0, temp.indexOf("\""));
+                                    count++;
+
+                                    executor.submit(new ImageExtractor(temp, count));
+
+                                }
+                            }
+                            c += 24;
+                        }
+                    } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
+                        JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+                    } catch (IOException | InterruptedException ex) {
+                        Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.start();
         }
     }
 
