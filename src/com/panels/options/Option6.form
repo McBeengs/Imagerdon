@@ -27,58 +27,32 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="topSeparator" alignment="1" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="mainLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="296" max="32767" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jRadioButton1" max="32767" attributes="0"/>
-                                  <Component id="jRadioButton2" max="32767" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="jRadioButton1" alignment="1" min="-2" pref="465" max="-2" attributes="0"/>
+                              <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="jCheckBox1" alignment="0" pref="475" max="32767" attributes="0"/>
+                                  <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                          </Group>
-                          <Component id="jLabel2" alignment="0" max="32767" attributes="0"/>
-                          <Component id="jCheckBox1" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="folderLabel" max="32767" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="folderTextField" min="-2" pref="326" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                              <Component id="jRadioButton2" alignment="1" min="-2" pref="465" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="jButton2" min="-2" pref="90" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="downloadsAlert" min="-2" pref="405" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                                              <Component id="usernameLabel" min="-2" pref="70" max="-2" attributes="0"/>
-                                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                                              <Component id="userTextField" min="-2" pref="133" max="-2" attributes="0"/>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Component id="passwordLabel" min="-2" pref="70" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="jLabel1" alignment="0" min="-2" pref="314" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="passwordTextField" min="-2" pref="148" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <Component id="folderLabel" min="-2" pref="154" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="folderTextField" min="-2" pref="320" max="-2" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -89,23 +63,6 @@
               <Component id="mainLabel" min="-2" pref="38" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="topSeparator" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel1" min="-2" pref="23" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="usernameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="userTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="jButton2" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="1" pref="1" max="-2" attributes="0"/>
-                      <Component id="downloadsAlert" max="32767" attributes="0"/>
-                  </Group>
-              </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="folderLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
@@ -119,7 +76,7 @@
               <Component id="jRadioButton1" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jRadioButton2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="102" max="32767" attributes="0"/>
+              <EmptySpace pref="195" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -132,25 +89,11 @@
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;mainLabel&quot;, 5) + &quot; &quot; + language.getContentById(&quot;options&quot;)" type="code"/>
+          <Connection code="language.getContentById(&quot;e621&quot;) + &quot; &quot; + language.getContentById(&quot;options&quot;)" type="code"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="topSeparator">
-    </Component>
-    <Component class="javax.swing.JLabel" name="usernameLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentById(&quot;username&quot;)" type="code"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="passwordLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentById(&quot;password&quot;)" type="code"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="folderLabel">
       <Properties>
@@ -163,65 +106,11 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="xml.getContentById(&quot;FAoutput&quot;)" type="code"/>
+          <Connection code="xml.getContentById(&quot;E621output&quot;)" type="code"/>
         </Property>
       </Properties>
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="folderTextFieldMouseClicked"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel1">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentById(&quot;changeLogin&quot;)" type="code"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="userTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="user" type="code"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="caretUpdate" listener="javax.swing.event.CaretListener" parameters="javax.swing.event.CaretEvent" handler="userTextFieldCaretUpdate"/>
-      </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="String user = pass.decrypt(pass.stringToByte(xml.getContentById(&quot;FAuser&quot;)), &quot;12345678&quot;.getBytes(), &quot;12345678&quot;.getBytes());"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JPasswordField" name="passwordTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="&quot;example&quot;" type="code"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="caretUpdate" listener="javax.swing.event.CaretListener" parameters="javax.swing.event.CaretEvent" handler="passwordTextFieldCaretUpdate"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="downloadsAlert">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="12" style="0"/>
-        </Property>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f3" green="6d" red="33" type="rgb"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="null" type="code"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="jButton2">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentById(&quot;tryLogin&quot;)" type="code"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton2MouseClicked"/>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBox1">
@@ -234,7 +123,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox1ActionPerformed"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jCheckBox1.setSelected(Boolean.parseBoolean(xml.getContentById(&quot;FAadvancedNaming&quot;)));"/>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jCheckBox1.setSelected(Boolean.parseBoolean(xml.getContentById(&quot;E621advancedNaming&quot;)));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
@@ -244,7 +133,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jLabel2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;FAadvancedNaming&quot;)));"/>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jLabel2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;E621advancedNaming&quot;)));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JRadioButton" name="jRadioButton1">
@@ -260,7 +149,7 @@
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jRadioButton1MouseClicked"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton1.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;FAadvancedNaming&quot;)));&#xa;jRadioButton1.setSelected(xml.getContentById(&quot;FAnamingOption&quot;).equals(&quot;0&quot;));"/>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton1.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;E621advancedNaming&quot;)));&#xa;jRadioButton1.setSelected(xml.getContentById(&quot;E621namingOption&quot;).equals(&quot;0&quot;));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JRadioButton" name="jRadioButton2">
@@ -276,7 +165,7 @@
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jRadioButton2MouseClicked"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;FAadvancedNaming&quot;)));&#xa;jRadioButton2.setSelected(xml.getContentById(&quot;FAnamingOption&quot;).equals(&quot;1&quot;));"/>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="jRadioButton2.setVisible(Boolean.parseBoolean(xml.getContentById(&quot;E621advancedNaming&quot;)));&#xa;jRadioButton2.setSelected(xml.getContentById(&quot;E621namingOption&quot;).equals(&quot;1&quot;));"/>
       </AuxValues>
     </Component>
   </SubComponents>

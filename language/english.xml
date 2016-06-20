@@ -84,19 +84,16 @@
             <string id="askUser">Ask the user</string>
         </downloads>
         <deviantArt>
-            <mainLabel>DeviantArt</mainLabel>
+            <mainLabel id="deviantArt">DeviantArt</mainLabel>
         </deviantArt>
         <tumblr>
-            <mainLabel>Tumblr</mainLabel>
+            <mainLabel id="tumblr">Tumblr</mainLabel>
         </tumblr>
-        <galleryHentai>
-            <mainLabel>Gallery Hentai</mainLabel>
-        </galleryHentai>
         <furAffinity>
-            <mainLabel>FurAffinity</mainLabel>
+            <mainLabel id="furAffinity">FurAffinity</mainLabel>
         </furAffinity>
         <e621>
-            <mainLabel>e621</mainLabel>
+            <mainLabel id="e621">e621</mainLabel>
         </e621>
     </optionsPane>
     

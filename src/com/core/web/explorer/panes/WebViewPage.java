@@ -225,7 +225,7 @@ public class WebViewPage extends JPanel {
                                 title = title.substring(0, 18);
                             }
 
-                            tabbedPane.setTitleAt(tabIndex, title + "     ");
+                            tabbedPane.setTitleAt(tabIndex,"   " + title + "   ");
 
                             //set listener to catch eventual right clicks
                             EventListener hrefListener = new EventListener() {
@@ -271,7 +271,7 @@ public class WebViewPage extends JPanel {
                                 Logger.getLogger(WebViewPage.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         } else if (t1.equals(Worker.State.FAILED)) {
-                            tabbedPane.setTitleAt(tabIndex, "Error     ");
+                            tabbedPane.setTitleAt(tabIndex, "   Error   ");
                             tabbedPane.setIconAt(tabIndex, new ImageIcon(getClass().getResource("/com/style/icons/stopPage.png")));
                             tabbedPane.setComponentAt(tabIndex, new ErrorPane(browser.getEngine().getLoadWorker().getException().toString(), tabbedPane, tabIndex, icon, url));
                         }
@@ -533,7 +533,7 @@ public class WebViewPage extends JPanel {
                                     openLink.setOnAction(new EventHandler<ActionEvent>() {
                                         @Override
                                         public void handle(ActionEvent t) {
-                                            tabbedPane.addTab("New Tab     ", icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
+                                            tabbedPane.addTab("   New Tab   ", icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
                                                     tabbedPane.getTabCount() - 2, icon, setNewPageUrl()));
                                         }
                                     });

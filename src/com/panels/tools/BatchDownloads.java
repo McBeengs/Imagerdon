@@ -16,7 +16,9 @@
  */
 package com.panels.tools;
 
+import com.panels.main.DownloadTaskJPanel;
 import com.panels.main.StylizedMainJFrame;
+import com.panels.main.StylizedMainJFrame.AddTask;
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -31,8 +33,9 @@ public class BatchDownloads extends javax.swing.JFrame {
 
     public static final int IMAGES = 1;
     public static final int SERVERS = 2;
-    private int type;
+    private final int type;
 
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public BatchDownloads(int type) {
         initComponents();
         setTitle("Download Batch");
@@ -150,7 +153,7 @@ public class BatchDownloads extends javax.swing.JFrame {
         if (type == IMAGES) {
             StylizedMainJFrame.ADD_TASK.addBatchTask(links);
         } else if (type == SERVERS) {
-            final String[] outcomes = new String[]{".deviantart.com/gallery/", ".tumblr.com", "http://g.e-hentai.org/g/",
+            final String[] outcomes = new String[]{".deviantart.com/gallery/", ".tumblr.com",
                 "http://www.furaffinity.net/gallery/", "https://e621.net/post/index/"};
 
             new Thread() {
@@ -159,9 +162,10 @@ public class BatchDownloads extends javax.swing.JFrame {
                     for (String link : links) {
                         for (int j = 0; j < outcomes.length; j++) {
                             if (link.contains(outcomes[j])) {
-                                StylizedMainJFrame.ADD_TASK.addTask(link, j, -2);
+                                AddTask add = StylizedMainJFrame.ADD_TASK;
+                                add.addTask(link.substring(0, link.length() - 1), j, DownloadTaskJPanel.DOWNLOAD_TASK);
                                 try {
-                                    Thread.sleep(3000);
+                                    Thread.sleep(20000);
                                 } catch (InterruptedException ex) {
                                     Logger.getLogger(BatchDownloads.class.getName()).log(Level.SEVERE, null, ex);
                                 }

@@ -53,6 +53,7 @@ public class Option1 extends javax.swing.JPanel {
         styleLabel = new javax.swing.JLabel();
         styleSelector = new javax.swing.JComboBox<>();
         styleAlert = new javax.swing.JLabel();
+        updates = new javax.swing.JCheckBox();
 
         setMinimumSize(new java.awt.Dimension(516, 434));
 
@@ -92,6 +93,13 @@ public class Option1 extends javax.swing.JPanel {
         styleAlert.setForeground(new java.awt.Color(255, 204, 0));
         styleAlert.setText(language.getContentByName("alert", 0));
 
+        updates.setText("Check updates on the start");
+        updates.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updatesActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -104,9 +112,11 @@ public class Option1 extends javax.swing.JPanel {
                         .addComponent(mainLabel))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(28, 28, 28)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(languageLabel)
-                            .addComponent(styleLabel))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(updates)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(languageLabel)
+                                .addComponent(styleLabel)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(languageSelector, 0, 48, Short.MAX_VALUE)
@@ -115,7 +125,7 @@ public class Option1 extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(languageAlert)
                             .addComponent(styleAlert, javax.swing.GroupLayout.Alignment.TRAILING))))
-                .addContainerGap(299, Short.MAX_VALUE))
+                .addContainerGap(245, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -134,8 +144,12 @@ public class Option1 extends javax.swing.JPanel {
                     .addComponent(styleLabel)
                     .addComponent(styleSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(styleAlert))
-                .addContainerGap(288, Short.MAX_VALUE))
+                .addGap(113, 113, 113)
+                .addComponent(updates)
+                .addContainerGap(152, Short.MAX_VALUE))
         );
+
+        updates.setSelected(Boolean.parseBoolean(xml.getContentById("update")));
     }// </editor-fold>//GEN-END:initComponents
 
     private void languageSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_languageSelectorActionPerformed
@@ -160,6 +174,14 @@ public class Option1 extends javax.swing.JPanel {
             + ", " + styleSelector.getSelectedIndex());
     }//GEN-LAST:event_styleSelectorActionPerformed
 
+    private void updatesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updatesActionPerformed
+        if (updates.isSelected()) {
+            xml.setContentById("update", "true");
+        } else {
+            xml.setContentById("update", "false");
+        }
+    }//GEN-LAST:event_updatesActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel languageAlert;
@@ -170,5 +192,6 @@ public class Option1 extends javax.swing.JPanel {
     private javax.swing.JLabel styleLabel;
     private javax.swing.JComboBox<String> styleSelector;
     private javax.swing.JSeparator topSeparator;
+    private javax.swing.JCheckBox updates;
     // End of variables declaration//GEN-END:variables
 }

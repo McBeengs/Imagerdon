@@ -24,6 +24,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlImage;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
@@ -33,20 +34,33 @@ import com.util.crypto.PasswordManager;
 import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.image.BufferedImage;
 import java.io.UnsupportedEncodingException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import net.java.balloontip.BalloonTip;
@@ -59,11 +73,12 @@ import org.w3c.css.sac.CSSException;
 import org.w3c.css.sac.CSSParseException;
 import org.w3c.css.sac.ErrorHandler;
 
-public class UsefulMethods {
+public class UsefulMethods implements Serializable {
 
     public static final int OPTIONS = 0;
     public static final int LANGUAGE = 1;
     private static WebClient webClient;
+    private static Connection conn;
     private static boolean isWebViewReady = false;
 
     public static String getOptions() {
@@ -97,6 +112,7 @@ public class UsefulMethods {
                 + "      <directory id=\"mainOutput\">" + path + "</directory>\n"
                 + "      <boolean id=\"sub\">true</boolean>\n"
                 + "      <dropdown id=\"existed\">2</dropdown>\n"
+                + "      <boolean id=\"update\">true</boolean>\n"
                 + "    </downloads>\n"
                 + "    <deviantArt>\n"
                 + "      <string id=\"DAuser\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
@@ -112,11 +128,6 @@ public class UsefulMethods {
                 + "      <boolean id=\"TUadvancedNaming\">false</boolean>\n"
                 + "      <number id=\"TUnamingOption\">0</number>\n"
                 + "    </tumblr>\n"
-                + "    <galleryHentai>\n"
-                + "      <directory id=\"GHoutput\">" + path + "Gallery Hentai" + "</directory>\n"
-                + "      <boolean id=\"GHadvancedNaming\">false</boolean>\n"
-                + "      <number id=\"GHnamingOption\">0</number>\n"
-                + "    </galleryHentai>\n"
                 + "    <furAffinity>\n"
                 + "      <string id=\"FAuser\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
                 + "      <string id=\"FApass\">110, 126, 122, 83, 72, -100, -91, -14, -65, -68, -60, -72, 81, 71, 64, -60</string>\n"
@@ -134,13 +145,24 @@ public class UsefulMethods {
                 + "";
     }
 
+    @SuppressWarnings("null")
     public static WebClient getWebClientInstance() throws IOException, Exception {
-        if (webClient == null) {
-            webClient = new WebClient(BrowserVersion.CHROME);
-            webClient.getOptions().setCssEnabled(false);
-            webClient.getOptions().setJavaScriptEnabled(false);
-            webClient.getOptions().setAppletEnabled(false);
-            webClient = shutUpHtmlUnit(webClient);
+        File get = new File(getClassPath(UsefulMethods.class) + System.getProperty("file.separator") + "login_cache.obj");
+
+        if (webClient != null) {
+            return shutUpHtmlUnit(webClient);
+        } else if (get.exists()) {
+            FileInputStream fileIn = new FileInputStream(get);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            webClient = (WebClient) in.readObject();
+
+            isWebViewReady = true;
+            return shutUpHtmlUnit(webClient);
+        } else {
+            WebClient save = new WebClient(BrowserVersion.CHROME);
+            save.getOptions().setCssEnabled(false);
+            save.getOptions().setJavaScriptEnabled(false);
+            save.getOptions().setAppletEnabled(false);
 
             HtmlPage preLogin, posLogin;
             HtmlForm form;
@@ -153,9 +175,9 @@ public class UsefulMethods {
             String passw;
 
             // DeviantArt login
-            preLogin = webClient.getPage("https://www.deviantart.com/");
+            preLogin = save.getPage("https://www.deviantart.com/");
             if (preLogin == null) {
-                webClient = null;
+                throw new Exception("DeviantArt");
             }
             form = preLogin.getHtmlElementById("form-login");
 
@@ -172,13 +194,13 @@ public class UsefulMethods {
             posLogin = button.click();
 
             if (posLogin.asXml().contains("The password you entered was incorrect")) {
-                webClient = null;
+                save = null;
                 throw new Exception("DeviantArt");
             }
             // End of DeviantArt login
 
             // Tumblr login
-            preLogin = webClient.getPage("https://www.tumblr.com/login");
+            preLogin = save.getPage("https://www.tumblr.com/login");
             form = preLogin.getHtmlElementById("signup_form");
 
             HtmlTextInput usernameCheck = form.getInputByName("determine_email");
@@ -186,7 +208,7 @@ public class UsefulMethods {
             passwordField = form.getInputByName("user[password]");
             HtmlButton next = (HtmlButton) preLogin.getElementsByIdAndOrName("signup_forms_submit").get(0);
             HtmlButton buttonInput = form.getFirstByXPath("button");
-            
+
             user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
             passw = pass.decrypt(pass.stringToByte(xml.getContentById("TUpass")), "12345678".getBytes(), "12345678".getBytes());
 
@@ -198,13 +220,17 @@ public class UsefulMethods {
             posLogin = buttonInput.click();
 
             if (posLogin.getBaseURL().toString().equals("https://www.tumblr.com/login")) {
-                webClient = null;
+                save = null;
                 throw new Exception("Tumblr");
             }
             // End of Tumblr login
 
             // FurAffinity login
-            preLogin = webClient.getPage("https://www.furaffinity.net/login/");
+            preLogin = save.getPage("https://www.furaffinity.net/login/");
+            if (preLogin.asXml().contains("If you believe you are seeing this screen in error please press CTRL-F5 to refresh")) {
+                save = null;
+                throw new Exception("FurAffinity");
+            }
             form = preLogin.getFirstByXPath("//form [@method='post']");
 
             usernameField = form.getInputByName("name");
@@ -217,28 +243,89 @@ public class UsefulMethods {
             usernameField.setValueAttribute(user.trim());
             passwordField.setValueAttribute(passw.trim());
 
+            //show captcha pane
+            JPanel panel = new JPanel();
+            panel.add(new JLabel("Type the characters you see in the picture aside:"));
+            HtmlImage getCaptcha = preLogin.getHtmlElementById("captcha_img");
+            BufferedImage bi = getCaptcha.getImageReader().read(0);
+            JLabel captcha = new JLabel(new ImageIcon(bi));
+            captcha.setBorder(new LineBorder(Color.gray));
+            panel.add(captcha);
+            String value = JOptionPane.showInputDialog(null, panel, "Captcha", JOptionPane.QUESTION_MESSAGE);
+
+            if (value.isEmpty()) {
+                save = null;
+                throw new Exception("FurAffinity");
+            }
+
+            HtmlTextInput captchaInput = form.getInputByName("captcha");
+            captchaInput.setValueAttribute(value);
+
             try {
                 posLogin = button.click();
             } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
-                webClient = null;
+                save = null;
                 throw new Exception("FurAffinity");
             }
-            
+
             if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
-                webClient = null;
+                save = null;
+                throw new Exception("FurAffinity");
+            } else if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=2")) {
+                save = null;
                 throw new Exception("FurAffinity");
             }
             // End of FurAffinity login
 
+            try {
+                FileOutputStream fileOut = new FileOutputStream(get);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(save);
+            } catch (IOException ex) {
+                Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
             isWebViewReady = true;
-            return webClient;
-        } else {
-            return webClient;
+            webClient = save;
+            return shutUpHtmlUnit(webClient);
         }
     }
 
     public static boolean isWebClientReady() {
         return isWebViewReady;
+    }
+
+    public static void clearWebClientInstance() {
+        webClient = null;
+        isWebViewReady = false;
+
+        File get = new File(getClassPath(UsefulMethods.class) + System.getProperty("file.separator") + "login_cache.obj");
+        if (get.exists()) {
+            get.delete();
+        }
+    }
+
+    public static Connection getDBInstance() {
+        if (conn != null) {
+            return conn;
+        } else {
+            try {
+                Class.forName("org.sqlite.JDBC");
+                conn = DriverManager.getConnection("jdbc:sqlite:" + getClassPath(UsefulMethods.class) + "artists_sqlite.db");
+                Statement s = conn.createStatement();
+
+                s.execute("CREATE TABLE IF NOT EXISTS `artist` ( `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `server` INT NOT NULL, `name` VARCHAR(100) NOT NULL , `avatar_url` VARCHAR(150) NOT NULL , `first_downloaded` DATE NOT NULL , `last_updated` DATE NOT NULL , `image_count` INT NOT NULL)");
+                s.execute("CREATE TABLE IF NOT EXISTS `tag` ( `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `tag` VARCHAR(100) NOT NULL );");
+                s.execute("CREATE TABLE IF NOT EXISTS `inner_tag` ( `artist_id` INT NOT NULL , `tag_id` INT NOT NULL );");
+                s.execute("CREATE TABLE IF NOT EXISTS `info` ( `artist_id` INT NOT NULL, `description` TEXT(255), `fav` BOOLEAN NOT NULL );");
+                s.close();
+                
+                return conn;
+            } catch (ClassNotFoundException | SQLException ex) {
+                Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
     }
 
     public static String getClassPath(Class<?> cls) {
@@ -350,6 +437,44 @@ public class UsefulMethods {
         return date.getDisplayName(2, 2, Locale.US) + " " + date.get(Calendar.DATE) + ", " + date.get(Calendar.YEAR);
     }
 
+    public static String getComplexDateFormat() {
+        Calendar date = Calendar.getInstance();
+        String gmt;
+        String hours;
+        String minutes;
+        String seconds;
+        String millis;
+
+        if (((date.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60)) % 24) < 10) {
+            gmt = "GMT -0" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
+        } else {
+            gmt = "GMT -" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
+        }
+
+        if (date.get(Calendar.HOUR_OF_DAY) < 10) {
+            hours = "0" + date.get(Calendar.HOUR_OF_DAY);
+        } else {
+            hours = "" + date.get(Calendar.HOUR_OF_DAY);
+        }
+
+        if (date.get(Calendar.MINUTE) < 10) {
+            minutes = "0" + date.get(Calendar.MINUTE);
+        } else {
+            minutes = "" + date.get(Calendar.MINUTE);
+        }
+
+        if (date.get(Calendar.SECOND) < 10) {
+            seconds = "0" + date.get(Calendar.SECOND);
+        } else {
+            seconds = "" + date.get(Calendar.SECOND);
+        }
+
+        millis = "" + date.get(Calendar.MILLISECOND);
+
+        return hours + "h, " + minutes + "min, " + seconds + "sec & " + millis + "mil (" + gmt + ")" + ", at "
+                + date.getDisplayName(2, 2, Locale.US) + " " + date.get(5) + ", " + date.get(1);
+    }
+
     public static void makeBalloon(final JComponent component, final String text, final Color color) {
         new Thread("Showing ballon \"" + text + "\"") {
             @Override
@@ -369,7 +494,7 @@ public class UsefulMethods {
         }.start();
     }
 
-    private static WebClient shutUpHtmlUnit(WebClient webClient) {
+    public static WebClient shutUpHtmlUnit(WebClient webClient) {
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
         java.util.logging.Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(Level.OFF);

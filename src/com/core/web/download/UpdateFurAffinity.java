@@ -63,7 +63,6 @@ public class UpdateFurAffinity extends BasicCore {
     private int numOfPages = 0;
     private String finalPath;
     private final String link;
-    private HtmlPage uncensoredLink;
     private WebClient webClient;
     private ExecutorService executor;
     private final XmlManager xml;
@@ -119,7 +118,7 @@ public class UpdateFurAffinity extends BasicCore {
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage conn = webClient.getPage(uncensoredLink.getUrl());
+            HtmlPage conn = webClient.getPage(link);
 
             Document getNumberImages = Jsoup.parse(conn.asXml());
             Elements testURL = getNumberImages.select("body");
@@ -224,7 +223,7 @@ public class UpdateFurAffinity extends BasicCore {
                                                 break;
                                             }
 
-                                            HtmlPage conn = webClient.getPage(uncensoredLink.getUrl().toString() + c + "/");
+                                            HtmlPage conn = webClient.getPage(link + c + "/");
                                             Document docLinks = Jsoup.parse(conn.asXml());
                                             Elements getPages = docLinks.select("a[href~=/view/]");
 

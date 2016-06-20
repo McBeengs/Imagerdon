@@ -47,14 +47,12 @@ public class OptionsJFrame extends javax.swing.JFrame {
         final Option4 o4 = new Option4(xml);
         final Option5 o5 = new Option5(xml);
         final Option6 o6 = new Option6(xml);
-        final Option7 o7 = new Option7(xml);
         o1.setVisible(true);
         o2.setVisible(false);
         o3.setVisible(false);
         o4.setVisible(false);
         o5.setVisible(false);
         o6.setVisible(false);
-        o7.setVisible(false);
         c.gridx = 0;
         c.gridy = 0;
         mainContainer.add(o1, c);
@@ -63,7 +61,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
         mainContainer.add(o4, c);
         mainContainer.add(o5, c);
         mainContainer.add(o6, c);
-        mainContainer.add(o7, c);
 
         optionsTree.addMouseListener(new MouseAdapter() {
             @Override
@@ -76,7 +73,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 1:
                         o1.setVisible(true);
@@ -85,7 +81,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 2:
                         o1.setVisible(false);
@@ -94,7 +89,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 3:
                         o1.setVisible(false);
@@ -103,7 +97,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 4:
                         o1.setVisible(false);
@@ -112,7 +105,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 5:
                         o1.setVisible(false);
@@ -121,7 +113,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(true);
                         o5.setVisible(false);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 6:
                         o1.setVisible(false);
@@ -130,7 +121,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(true);
                         o6.setVisible(false);
-                        o7.setVisible(false);
                         break;
                     case 7:
                         o1.setVisible(false);
@@ -139,16 +129,6 @@ public class OptionsJFrame extends javax.swing.JFrame {
                         o4.setVisible(false);
                         o5.setVisible(false);
                         o6.setVisible(true);
-                        o7.setVisible(false);
-                        break;
-                    case 8:
-                        o1.setVisible(false);
-                        o2.setVisible(false);
-                        o3.setVisible(false);
-                        o4.setVisible(false);
-                        o5.setVisible(false);
-                        o6.setVisible(false);
-                        o7.setVisible(true);
                         break;
                     default:
                         break;
@@ -183,11 +163,12 @@ public class OptionsJFrame extends javax.swing.JFrame {
         //And repeats the whole process until everything is in place
         DefaultMutableTreeNode section2 = new DefaultMutableTreeNode(language.getContentById("second"));
         hierarchy.add(section2);
-        String[] section2Ops = new String[5];
-
-        for (int i = 2; i < language.getAllContentsByName("mainLabel").size() - 2; i++) {
-            section2Ops[i - 2] = language.getContentByName("mainLabel", i);
-        }
+        String[] section2Ops = new String[4];
+        section2Ops[0] = language.getContentById("deviantArt");
+        section2Ops[1] = language.getContentById("tumblr");
+        section2Ops[2] = language.getContentById("furAffinity");
+        section2Ops[3] = language.getContentById("e621");
+        
         for (String section2Op : section2Ops) {
             batch = new DefaultMutableTreeNode(section2Op);
             section2.add(batch);

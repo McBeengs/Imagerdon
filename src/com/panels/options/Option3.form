@@ -123,7 +123,7 @@
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;mainLabel&quot;, 2) + &quot; &quot; + language.getContentById(&quot;options&quot;)" type="code"/>
+          <Connection code="language.getContentById(&quot;deviantArt&quot;) + &quot; &quot; + language.getContentById(&quot;options&quot;)" type="code"/>
         </Property>
       </Properties>
     </Component>

@@ -8,21 +8,22 @@ import com.util.xml.XmlManager;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-import java.io.File;
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -31,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 public class MainPane extends javax.swing.JPanel {
 
@@ -44,29 +47,12 @@ public class MainPane extends javax.swing.JPanel {
 
         initComponents();
         initSubComponents();
+        checkVersion();
 
         randoms = language.getAllContentsByName("random");
-
         Random random = new Random();
         niceMessage.setText(randoms.get(random.nextInt(randoms.size() - 1)));
 
-        retryButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                checkConnection();
-                setupWebClient();
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                retryButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                retryButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")
@@ -84,12 +70,8 @@ public class MainPane extends javax.swing.JPanel {
         imagesPerArtist = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         internetConnection = new javax.swing.JLabel();
-        webClientSetup = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        DALogin = new javax.swing.JLabel();
-        TULogin = new javax.swing.JLabel();
-        FALogin = new javax.swing.JLabel();
-        retryButton = new javax.swing.JLabel();
+        TULogin1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
         taskLabel.setText(language.getContentById("welcomeLabel"));
@@ -122,31 +104,19 @@ public class MainPane extends javax.swing.JPanel {
         internetConnection.setForeground(new java.awt.Color(51, 109, 243));
         internetConnection.setText(null);
 
-        webClientSetup.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        webClientSetup.setForeground(new java.awt.Color(51, 109, 243));
-        webClientSetup.setText(null);
+        TULogin1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
+        TULogin1.setForeground(new java.awt.Color(51, 109, 243));
+        TULogin1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
+        TULogin1.setText("Checking version");
 
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/leftBrace.png"))); // NOI18N
-
-        DALogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        DALogin.setForeground(new java.awt.Color(51, 109, 243));
-        DALogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
-        DALogin.setText("DeviantArt");
-
-        TULogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        TULogin.setForeground(new java.awt.Color(51, 109, 243));
-        TULogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
-        TULogin.setText("Tumblr");
-
-        FALogin.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        FALogin.setForeground(new java.awt.Color(51, 109, 243));
-        FALogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/spinner.gif"))); // NOI18N
-        FALogin.setText("FurAffinity");
-
-        retryButton.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        retryButton.setForeground(new java.awt.Color(51, 109, 243));
-        retryButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/ok.png"))); // NOI18N
-        retryButton.setText("Retry");
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png"))); // NOI18N
+        jButton1.setText("Retry");
+        jButton1.setFocusable(false);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -159,7 +129,9 @@ public class MainPane extends javax.swing.JPanel {
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 228, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(28, 28, 28)
-                        .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(TULogin1)
+                            .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(58, 58, 58)
@@ -167,29 +139,6 @@ public class MainPane extends javax.swing.JPanel {
                     .addComponent(niceMessage, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(FALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(DALogin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(TULogin)
-                                        .addGap(51, 51, 51)
-                                        .addComponent(retryButton, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(5, 5, 5)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(imagesPerArtist, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGap(54, 54, 54))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
@@ -200,8 +149,21 @@ public class MainPane extends javax.swing.JPanel {
                                         .addComponent(imagesOnDisk, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addGap(6, 6, 6)
-                                        .addComponent(artistsOnDisk, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addContainerGap())))
+                                        .addComponent(artistsOnDisk, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(5, 5, 5)
+                                        .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jButton1))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(imagesPerArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addContainerGap(18, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,22 +189,17 @@ public class MainPane extends javax.swing.JPanel {
                 .addGap(45, 45, 45)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(DALogin)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(TULogin)
-                            .addComponent(retryButton))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(FALogin))
-                    .addComponent(webClientSetup, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(internetConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
+                .addComponent(TULogin1)
+                .addGap(34, 34, 34))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        checkConnection();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void initSubComponents() {
         this.setBorder(new RoundedCornerBorder());
@@ -251,45 +208,24 @@ public class MainPane extends javax.swing.JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentShown(ComponentEvent e) {
+                checkConnection();
+                setupWebClient();
+
                 new Thread() {
                     @Override
                     public void run() {
-                        String s = System.getProperty("file.separator");
-                        File daXml = new File(xml.getContentById("DAoutput") + s + "artists-log.xml");
-                        File tuXml = new File(xml.getContentById("TUoutput") + s + "artists-log.xml");
-                        File ghXml = new File(xml.getContentById("GHoutput") + s + "artists-log.xml");
-                        File faXml = new File(xml.getContentById("FAoutput") + s + "artists-log.xml");
-                        File e621Xml = new File(xml.getContentById("E621output") + s + "artists-log.xml");
-                        File[] xmls = new File[]{daXml, tuXml, ghXml, faXml, e621Xml};
-
+                        Connection conn = UsefulMethods.getDBInstance();
                         int totalImagesNumber = 0;
-                        for (File xml : xmls) {
-                            if (xml.exists()) {
-                                try {
-                                    XmlManager get = new XmlManager();
-                                    get.loadFile(xml);
-                                    List<String> num = get.getAllContentsByName("imageCount");
-                                    for (int i = 0; i < num.size(); i++) {
-                                        totalImagesNumber += Integer.parseInt(num.get(i));
-                                    }
-                                } catch (IOException ex) {
-                                    Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        }
-
                         int totalArtistsNumber = 0;
-                        for (File xml : xmls) {
-                            if (xml.exists()) {
-                                try {
-                                    XmlManager get = new XmlManager();
-                                    get.loadFile(xml);
-                                    List<String> num = get.getAllContentsByName("name");
-                                    totalArtistsNumber += num.size();
-                                } catch (IOException ex) {
-                                    Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                        try {
+
+                            ResultSet rs = conn.createStatement().executeQuery("SELECT image_count FROM artist");
+                            while (rs.next()) {
+                                totalArtistsNumber++;
+                                totalImagesNumber += rs.getInt("image_count");
                             }
+                        } catch (SQLException ex) {
+                            Logger.getLogger(MainPane.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
                         NumberFormat format = DecimalFormat.getInstance();
@@ -305,9 +241,6 @@ public class MainPane extends javax.swing.JPanel {
                             show = (double) ((double) totalImagesNumber / (double) totalArtistsNumber);
                         }
                         imagesPerArtist.setText("" + format.format(show));
-
-                        checkConnection();
-                        setupWebClient();
                     }
                 }.start();
             }
@@ -346,32 +279,50 @@ public class MainPane extends javax.swing.JPanel {
         }.start();
     }
 
-    private void setupWebClient() {
-        webClientSetup.setForeground(new java.awt.Color(51, 109, 243));
-        webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
-        DALogin.setForeground(new java.awt.Color(51, 109, 243));
-        DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
-        TULogin.setForeground(new java.awt.Color(51, 109, 243));
-        TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
-        FALogin.setForeground(new java.awt.Color(51, 109, 243));
-        FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
-        webClientSetup.setText("Setting logins instance");
+    private void checkVersion() {
+        if (Boolean.parseBoolean(xml.getContentById("update"))) {
 
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        Document page = Jsoup.parse(new URL("http://version-check.hol.es/"), 5000);
+                        if (!page.getElementById("newer_version").text().equals("1.0.0")) {
+                            String[] message = new String[]{"There's a new version of \"Imagerdon\" (" + page.getElementById("newer_version").text()
+                                + "). Click ", "here", " to download it."};
+                            String link = page.getElementById("download").toString();
+                            link = link.substring(link.indexOf("\"", 20) + 1);
+                            link = "http://version-check.hol.es/" + link.substring(0, link.indexOf("\""));
+                            UsefulMethods.makeHyperlinkOptionPane(message, link, 1, JOptionPane.INFORMATION_MESSAGE, "New Version");
+
+                            TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
+                            TULogin1.setForeground(new java.awt.Color(238, 44, 44));
+                            TULogin1.setText("There's a newer version of \"Imagerdon\"");
+                        } else {
+                            TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+                            TULogin1.setForeground(new java.awt.Color(50, 205, 50));
+                            TULogin1.setText("The program is up to date :)");
+                        }
+                    } catch (IOException ex) {
+                        System.err.println("failed to check version update");
+                    }
+                }
+            }.start();
+        } else {
+            TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
+            TULogin1.setForeground(new java.awt.Color(50, 205, 50));
+            TULogin1.setText("The program is up to date :)");
+        }
+    }
+
+    private void setupWebClient() {
         new Thread("Setting up webClient (MainPane.java)") {
             @Override
             public void run() {
                 try {
                     UsefulMethods.getWebClientInstance();
                 } catch (java.net.UnknownHostException ex) {
-                    webClientSetup.setForeground(new java.awt.Color(238, 44, 44));
-                    webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    DALogin.setForeground(new java.awt.Color(238, 44, 44));
-                    DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    TULogin.setForeground(new java.awt.Color(238, 44, 44));
-                    TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    FALogin.setForeground(new java.awt.Color(238, 44, 44));
-                    FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    return;
+                    //internet caiu
                 } catch (Exception ex) {
                     switch (ex.getMessage()) {
                         case "DeviantArt":
@@ -390,48 +341,25 @@ public class MainPane extends javax.swing.JPanel {
                             ex.printStackTrace();
                             break;
                     }
-
-                    webClientSetup.setForeground(new java.awt.Color(238, 44, 44));
-                    webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    DALogin.setForeground(new java.awt.Color(238, 44, 44));
-                    DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    TULogin.setForeground(new java.awt.Color(238, 44, 44));
-                    TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    FALogin.setForeground(new java.awt.Color(238, 44, 44));
-                    FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
-                    return;
                 }
-
-                webClientSetup.setForeground(new java.awt.Color(50, 205, 50));
-                webClientSetup.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
-                DALogin.setForeground(new java.awt.Color(50, 205, 50));
-                DALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
-                TULogin.setForeground(new java.awt.Color(50, 205, 50));
-                TULogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
-                FALogin.setForeground(new java.awt.Color(50, 205, 50));
-                FALogin.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
             }
         }.start();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel DALogin;
-    private javax.swing.JLabel FALogin;
-    private javax.swing.JLabel TULogin;
+    private javax.swing.JLabel TULogin1;
     private javax.swing.JLabel artistsOnDisk;
     private javax.swing.JLabel imagesOnDisk;
     private javax.swing.JLabel imagesPerArtist;
     private javax.swing.JLabel internetConnection;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel niceMessage;
-    private javax.swing.JLabel retryButton;
     private javax.swing.JLabel taskLabel;
-    private javax.swing.JLabel webClientSetup;
     // End of variables declaration//GEN-END:variables
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
@@ -451,6 +379,9 @@ public class MainPane extends javax.swing.JPanel {
             }
             g2.setColor(Color.GRAY);
             g2.draw(round);
+
+            Rectangle2D rect = new Rectangle(width - 1, height - 1);
+            g2.draw(rect);
             g2.dispose();
         }
 

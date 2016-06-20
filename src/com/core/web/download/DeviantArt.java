@@ -24,15 +24,8 @@ import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.NumberFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -42,32 +35,30 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import static java.lang.Thread.sleep;
-import java.util.Calendar;
-import java.util.Locale;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class DeviantArt extends BasicCore {
 
     private int numOfImages;
     private int numOfPages = 0;
     private int originalNumOfImages;
-    private int tagOcc;
     private boolean isPaused = false;
     private boolean isTerminated = false;
     private boolean isDownloading = false;
     private boolean convertedToUpdate;
     private String finalPath;
     private String link;
-
+    private String artist;
     private String avatarUrl;
-    private String memberSince;
-    private String sexNacionality;
-
+    private final Connection conn;
     private WebClient webClient;
-    private XmlManager xml;
-    private XmlManager language;
-    private XmlManager artists;
+    private final XmlManager xml;
+    private final XmlManager language;
     private ExecutorService executor;
-    private DownloadTaskJPanel taskManager;
+    private final DownloadTaskJPanel taskManager;
     int helper = 0;
 
     public DeviantArt(String url, DownloadTaskJPanel taskManager) {
@@ -88,38 +79,15 @@ public class DeviantArt extends BasicCore {
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
-        artists = new XmlManager();
-
-        try {
-            File artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
-            if (!artistsXml.exists()) {
-                artists.createFile(artistsXml.getAbsolutePath());
-            } else {
-                artists.loadFile(artistsXml);
-            }
-
-            String artist = link.substring(7, link.indexOf("."));
-            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-            finalPath = xml.getContentById("DAoutput") + System.getProperty("file.separator") + artist;
-            File file = new File(finalPath);
-            if (!file.exists()) {
-                file.mkdirs();
-            } else {
-                //System.out.println("folder exists");
-            }
-        } catch (MalformedURLException ex) {
-            System.out.println(ex.toString());
-        } catch (IOException ex) {
-            System.out.println(ex.toString());
-        }
+        conn = UsefulMethods.getDBInstance();
     }
 
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage conn = webClient.getPage(link + "0");
+            HtmlPage page = webClient.getPage(link + "0");
 
-            Document getNumberImages = Jsoup.parse(conn.asXml());
+            Document getNumberImages = Jsoup.parse(page.asXml());
             Elements testURL = getNumberImages.select("body");
 
             if (testURL.toString().contains("The page you were looking for doesn't exist.")) {
@@ -133,10 +101,10 @@ public class DeviantArt extends BasicCore {
                     if (!link.contains("%2F&offset=")) {
                         link += "%2F&offset=";
                     }
-                    
-                    conn = webClient.getPage(link + numOfImages);
 
-                    if (conn.asText().contains("This section has no deviations yet!")) {
+                    page = webClient.getPage(link + numOfImages);
+
+                    if (page.asText().contains("This section has no deviations yet!")) {
                         break;
                     }
 
@@ -147,8 +115,8 @@ public class DeviantArt extends BasicCore {
 
                 numOfImages -= 24;
 
-                conn = webClient.getPage(link + numOfImages);
-                getNumberImages = Jsoup.parse(conn.asXml());
+                page = webClient.getPage(link + numOfImages);
+                getNumberImages = Jsoup.parse(page.asXml());
                 Elements getNumber = getNumberImages.select("div[class~=tt-a tt-fh]");
 
                 numOfImages += getNumber.size();
@@ -163,8 +131,18 @@ public class DeviantArt extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        String artist = link.substring(7, link.indexOf("."));
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+        finalPath = xml.getContentById("DAoutput") + System.getProperty("file.separator") + artist;
+
+        PreparedStatement prepared;
+        boolean wasFound = false;
+        try {
+            prepared = conn.prepareStatement("SELECT * FROM artist WHERE name = ? AND server = ?");
+            prepared.setString(1, artist);
+            prepared.setInt(2, 0);
+            wasFound = prepared.executeQuery().next();
+        } catch (SQLException ex) {
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (Integer.parseInt(xml.getContentById("existed")) == 1) {
             if (finalPath.contains(artist)) {
@@ -176,11 +154,18 @@ public class DeviantArt extends BasicCore {
                 }
             }
 
-            if (artists.checkIfTagExists("name", artist)) {
+            if (wasFound) {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 0);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
                 createArtistTag();
             }
@@ -188,81 +173,94 @@ public class DeviantArt extends BasicCore {
             return true;
         }
 
-        if (artists.checkIfTagExists("name", artist)) {
-            if (Integer.parseInt(xml.getContentById("existed")) == 0) {
-                String[] texts = language.getContentById("skipEnabled").replace("&string", artist).split("&br");
-                JOptionPane.showMessageDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"), JOptionPane.INFORMATION_MESSAGE);
-                return false;
-            }
+        if (wasFound) {
+            try {
+                if (Integer.parseInt(xml.getContentById("existed")) == 0) {
+                    String[] texts = language.getContentById("skipEnabled").replace("&string", artist).split("&br");
+                    JOptionPane.showMessageDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"), JOptionPane.INFORMATION_MESSAGE);
+                    return false;
+                }
 
-            if (!finalPath.contains(artist)) {
-                originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
-                return true;
-            }
+                if (!finalPath.contains(artist)) {
+                    originalNumOfImages = numOfImages;
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 0);
+                    statement.execute();
+                    return true;
 
-            File getImages = new File(finalPath);
-            int older = getImages.listFiles().length;
+                }
 
-            if (older >= numOfImages) {
-                JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", artist));
-                return false;
-            }
+                File getImages = new File(finalPath);
+                if (!getImages.exists()) {
+                    getImages.mkdir();
+                }
+                int older = getImages.listFiles().length;
 
-            String[] texts = language.getContentById("artistExists").replace("&string", artist)
-                    .replace("&num", "" + (numOfImages - older)).split("&br");
-            int result = JOptionPane.showConfirmDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"),
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (older >= numOfImages) {
+                    JOptionPane.showMessageDialog(null, language.getContentById("artistUp2Date").replaceAll("&string", artist));
+                    return false;
+                }
 
-            if (result == JOptionPane.YES_OPTION) {
-                taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
-                new Thread("Changed to Download to Update task") {
-                    @Override
-                    public void run() {
-                        taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
-                    }
-                }.start();
-                convertedToUpdate = true;
-                return false;
-            } else {
-                originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
-                return true;
+                String[] texts = language.getContentById("artistExists").replace("&string", artist)
+                        .replace("&num", "" + (numOfImages - older)).split("&br");
+                int result = JOptionPane.showConfirmDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"),
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+                if (result == JOptionPane.YES_OPTION) {
+                    taskManager.setNewTaskType(DownloadTaskJPanel.UPDATE_TASK);
+                    new Thread("Changed to Download to Update task") {
+                        @Override
+                        public void run() {
+                            taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
+                        }
+                    }.start();
+                    convertedToUpdate = true;
+                    return false;
+                } else {
+                    originalNumOfImages = numOfImages;
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 0);
+                    statement.execute();
+                    return true;
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             createArtistTag();
             return true;
         }
+
+        return false;
     }
 
-    private void createArtistTag() throws IOException {
-        String artist = link.substring(7, link.indexOf("."));
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        originalNumOfImages = numOfImages;
-        artists.addSubordinatedTag("artist", "root", 0);
-        tagOcc = artists.getAllContentsByName("artist").size() - 1;
-        artists.addSubordinatedTag("name", "artist", tagOcc);
-        artists.setContentByName("name", tagOcc, artist);
-        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
-        artists.setContentByName("avatarUrl", tagOcc, avatarUrl);
-        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
-        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
-        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("imageCount", "artist", tagOcc);
-        artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-        artists.saveXml();
+    private void createArtistTag() {
+        try {
+            originalNumOfImages = numOfImages;
+            PreparedStatement prepared = conn.prepareStatement("INSERT INTO artist (`id`, `server`, `name`, `avatar_url`, `first_downloaded`, `last_updated`, `image_count`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
+            prepared.setInt(1, 0);
+            prepared.setString(2, artist);
+            prepared.setString(3, avatarUrl);
+            prepared.setDate(4, new Date(new java.util.Date().getTime()));
+            prepared.setDate(5, new Date(new java.util.Date().getTime()));
+            prepared.setInt(6, numOfImages);
+            prepared.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void download() throws Exception {
-        String artist = link.substring(7, link.indexOf("."));
+        artist = link.substring(7, link.indexOf("."));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        taskManager.author.setText(artist + " | DeviantArt");
 
+        taskManager.author.setText(artist + " | DeviantArt");
         taskManager.infoDisplay.setText(language.getContentById("loginIn"));
         while (!UsefulMethods.isWebClientReady()) {
             sleep(2);
@@ -292,9 +290,6 @@ public class DeviantArt extends BasicCore {
     }
 
     private void downloadAction() {
-        String artist = link.substring(7, link.indexOf("."));
-        final String artistFinal = artist;
-
         if (!isDownloading) {
             new Thread() {
                 @Override
@@ -311,7 +306,6 @@ public class DeviantArt extends BasicCore {
                         int cut = numOfImages - ((numOfPages - 1) * 24);
                         int c = 0;
                         int count = 0;
-                        String before = "";
                         executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
 
                         while (c < numOfImages) {
@@ -321,34 +315,34 @@ public class DeviantArt extends BasicCore {
 
                             HtmlPage conn = webClient.getPage(link + c);
                             Document docLinks = Jsoup.parse(conn.asXml());
-                            Elements getPages = docLinks.select("a[href~=" + artistFinal + ".deviantart.com/art/]");
+                            Elements getPages = docLinks.select("div span span span a[href~=" + artist + ".deviantart.com/art/]");
 
                             for (int i = 0; i < getPages.size(); i++) {
                                 while (isPaused) {
                                     sleep(2);
                                 }
-                                if (count == numOfImages) {
+                                if (count == originalNumOfImages) {
                                     break;
                                 }
 
                                 String temp = getPages.get(i).toString();
                                 temp = temp.substring(temp.indexOf("href"));
                                 temp = temp.substring(6, temp.indexOf("\"", 6));
+                                HtmlPage page = webClient.getPage(temp);
 
-                                if (!before.equals(temp) && !temp.contains("#comments")) {
-                                    before = temp;
-                                    HtmlPage page = webClient.getPage(temp);
-
-                                    Document docImages = Jsoup.parse(page.asXml());
-                                    Elements getLinks = docImages.select("img[data-embed-format~=thumb]");
+                                Document docImages = Jsoup.parse(page.asXml());
+                                Elements getLinks = docImages.select("img[data-embed-format~=thumb]");
+                                if (!getLinks.isEmpty()) {
                                     temp = getLinks.get(1).toString();
 
                                     temp = temp.substring(temp.indexOf("src") + 5);
                                     temp = temp.substring(0, temp.indexOf("\""));
                                     count++;
 
-                                    executor.submit(new ImageExtractor(temp, count));
-
+                                    System.out.println(count + "/" + originalNumOfImages + " | " + temp);
+                                    executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                } else {
+                                    //seila
                                 }
                             }
                             c += 24;
@@ -387,141 +381,8 @@ public class DeviantArt extends BasicCore {
     public void run() {
         try {
             download();
-            artists.saveXml();
         } catch (Exception ex) {
             Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private class ImageExtractor implements Runnable {
-
-        String finalLink;
-        int downloadNumber;
-
-        public ImageExtractor(String finalLink, int downloadNumber) {
-            this.finalLink = finalLink;
-            this.downloadNumber = downloadNumber;
-        }
-
-        private boolean download() {
-            String imageName = null;
-            if (!Boolean.parseBoolean(xml.getContentById("DAadvancedNaming"))) {
-                imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
-            } else if (Integer.parseInt(xml.getContentById("DAnamingOption")) == 0) {
-                imageName = downloadNumber + finalLink.substring(finalLink.lastIndexOf("."));
-            } else if (Integer.parseInt(xml.getContentById("DAnamingOption")) == 1) {
-                imageName = getDate() + finalLink.substring(finalLink.lastIndexOf("."));
-            }
-
-            try {
-                URL imageURL = new URL(finalLink);
-                InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + System.getProperty("file.separator") + imageName);
-                BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
-
-                NumberFormat nf = NumberFormat.getNumberInstance();
-                nf.setMaximumFractionDigits(1);
-                nf.setGroupingUsed(true);
-
-                int bytes;
-                while ((bytes = inputImg.read()) != -1) {
-                    while (isPaused) {
-                        sleep(2);
-                    }
-
-                    if (isTerminated) {
-                        break;
-                    } else {
-                        writeImg.write(bytes);
-                    }
-                }
-
-                writeImg.close();
-                imageFile.close();
-                inputImg.close();
-
-                numOfImages--;
-                if (!isTerminated) {
-                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
-
-                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                    taskManager.progressBar.setString(show);
-                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
-
-                    if (show.equals("100%")) {
-                        taskManager.stopButton.setVisible(false);
-                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
-
-                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                            taskManager.playButton.removeMouseListener(listener);
-                        }
-
-                        artists.saveXml();
-                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
-                    }
-                } else {
-                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
-                    files.delete();
-
-                    files = new File(finalPath);
-                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
-                    artists.saveXml();
-                }
-            } catch (java.net.ConnectException ex) {
-                executor.execute(new ImageExtractor(finalLink, downloadNumber));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (java.net.SocketException ex) {
-                executor.execute(new ImageExtractor(finalLink, downloadNumber));
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            return false;
-        }
-
-        private String getDate() {
-            Calendar date = Calendar.getInstance();
-            String gmt;
-            String hours;
-            String minutes;
-            String seconds;
-            String millis;
-
-            if (((date.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60)) % 24) < 10) {
-                gmt = "GMT -0" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            } else {
-                gmt = "GMT -" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            }
-
-            if (date.get(Calendar.HOUR_OF_DAY) < 10) {
-                hours = "0" + date.get(Calendar.HOUR_OF_DAY);
-            } else {
-                hours = "" + date.get(Calendar.HOUR_OF_DAY);
-            }
-
-            if (date.get(Calendar.MINUTE) < 10) {
-                minutes = "0" + date.get(Calendar.MINUTE);
-            } else {
-                minutes = "" + date.get(Calendar.MINUTE);
-            }
-
-            if (date.get(Calendar.SECOND) < 10) {
-                seconds = "0" + date.get(Calendar.SECOND);
-            } else {
-                seconds = "" + date.get(Calendar.SECOND);
-            }
-
-            millis = "" + date.get(Calendar.MILLISECOND);
-
-            return hours + "h, " + minutes + "min, " + seconds + "sec & " + millis + "mil (" + gmt + ")" + ", at "
-                    + date.getDisplayName(2, 2, Locale.US) + " " + date.get(5) + ", " + date.get(1);
-        }
-
-        @Override
-        public void run() {
-            download();
         }
     }
 }

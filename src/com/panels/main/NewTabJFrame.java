@@ -40,7 +40,6 @@ public class NewTabJFrame extends javax.swing.JFrame {
         buttonGroup1 = new javax.swing.ButtonGroup();
         DAButton = new javax.swing.JToggleButton();
         tumblrButton = new javax.swing.JToggleButton();
-        GHButton = new javax.swing.JToggleButton();
         FAButton = new javax.swing.JToggleButton();
         e621Button = new javax.swing.JToggleButton();
         googleButton = new javax.swing.JToggleButton();
@@ -65,14 +64,6 @@ public class NewTabJFrame extends javax.swing.JFrame {
         tumblrButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tumblrButtonActionPerformed(evt);
-            }
-        });
-
-        buttonGroup1.add(GHButton);
-        GHButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/galleryHentaiIconBig.png"))); // NOI18N
-        GHButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GHButtonActionPerformed(evt);
             }
         });
 
@@ -121,27 +112,27 @@ public class NewTabJFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(confirmLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(DAButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(tumblrButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(FAButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(GHButton)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(e621Button)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(googleButton))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 22, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(DAButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tumblrButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(FAButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(e621Button)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(googleButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(confirmLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(23, 23, 23)
+                        .addComponent(okButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -150,15 +141,14 @@ public class NewTabJFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(taskLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
                     .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(34, 34, 34)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(googleButton)
                     .addComponent(e621Button)
-                    .addComponent(GHButton)
                     .addComponent(FAButton)
                     .addComponent(DAButton)
                     .addComponent(tumblrButton))
-                .addGap(35, 35, 35)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(confirmLabel))
@@ -167,7 +157,6 @@ public class NewTabJFrame extends javax.swing.JFrame {
 
         DAButton.setFocusPainted(false);
         tumblrButton.setFocusPainted(false);
-        GHButton.setFocusPainted(false);
         FAButton.setFocusPainted(false);
         e621Button.setFocusPainted(false);
         googleButton.setFocusPainted(false);
@@ -190,29 +179,22 @@ public class NewTabJFrame extends javax.swing.JFrame {
         confirmLabel.setText(language.getContentById("NTconfirm").replace("&string", "Tumblr"));
     }//GEN-LAST:event_tumblrButtonActionPerformed
 
-    private void GHButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GHButtonActionPerformed
-        status = 3;
-        confirmLabel.setVisible(true);
-        okButton.setEnabled(true);
-        confirmLabel.setText(language.getContentById("NTconfirm").replace("&string", "Gallery Hentai"));
-    }//GEN-LAST:event_GHButtonActionPerformed
-
     private void FAButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FAButtonActionPerformed
-        status = 4;
+        status = 3;
         confirmLabel.setVisible(true);
         okButton.setEnabled(true);
         confirmLabel.setText(language.getContentById("NTconfirm").replace("&string", "FurAffinity"));
     }//GEN-LAST:event_FAButtonActionPerformed
 
     private void e621ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e621ButtonActionPerformed
-        status = 5;
+        status = 4;
         confirmLabel.setVisible(true);
         okButton.setEnabled(true);
         confirmLabel.setText(language.getContentById("NTconfirm").replace("&string", "e621"));
     }//GEN-LAST:event_e621ButtonActionPerformed
 
     private void googleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_googleButtonActionPerformed
-        status = 6;
+        status = 5;
         confirmLabel.setVisible(true);
         okButton.setEnabled(true);
         confirmLabel.setText(language.getContentById("NTconfirm").replace("&string", "Google"));
@@ -225,7 +207,6 @@ public class NewTabJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton DAButton;
     private javax.swing.JToggleButton FAButton;
-    private javax.swing.JToggleButton GHButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel confirmLabel;
     private javax.swing.JToggleButton e621Button;

@@ -54,7 +54,6 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         infoLabel = new javax.swing.JLabel();
         DAButton = new javax.swing.JToggleButton();
         tumblrButton = new javax.swing.JToggleButton();
-        GHButton = new javax.swing.JToggleButton();
         FAButton = new javax.swing.JToggleButton();
         e621Button = new javax.swing.JToggleButton();
         downloadButton = new javax.swing.JToggleButton();
@@ -87,15 +86,6 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         tumblrButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tumblrButtonActionPerformed(evt);
-            }
-        });
-
-        serverGroup.add(GHButton);
-        GHButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/galleryHentaiIconBig.png"))); // NOI18N
-        GHButton.setText("Gallery Hentai");
-        GHButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                GHButtonActionPerformed(evt);
             }
         });
 
@@ -174,13 +164,12 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(35, 35, 35)
+                        .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(DAButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(tumblrButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(GHButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
                             .addComponent(FAButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(e621Button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(e621Button, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -227,24 +216,22 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         .addComponent(okButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
+                                .addGap(13, 13, 13)
                                 .addComponent(DAButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(18, 18, 18)
                                 .addComponent(tumblrButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(GHButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGap(18, 18, 18)
                                 .addComponent(FAButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(e621Button))
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(e621Button)))
                         .addGap(0, 18, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
         DAButton.setFocusPainted(false);
         tumblrButton.setFocusPainted(false);
-        GHButton.setFocusPainted(false);
         FAButton.setFocusPainted(false);
         e621Button.setFocusPainted(false);
         downloadButton.setVisible(false);
@@ -256,27 +243,22 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void DAButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DAButtonActionPerformed
-        status = 1;
+        status = 0;
         setComponents();
     }//GEN-LAST:event_DAButtonActionPerformed
 
     private void tumblrButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tumblrButtonActionPerformed
-        status = 2;
+        status = 1;
         setComponents();
     }//GEN-LAST:event_tumblrButtonActionPerformed
 
-    private void GHButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_GHButtonActionPerformed
-        status = 3;
-        setComponents();
-    }//GEN-LAST:event_GHButtonActionPerformed
-
     private void FAButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_FAButtonActionPerformed
-        status = 4;
+        status = 2;
         setComponents();
     }//GEN-LAST:event_FAButtonActionPerformed
 
     private void e621ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_e621ButtonActionPerformed
-        status = 5;
+        status = 3;
         setComponents();
     }//GEN-LAST:event_e621ButtonActionPerformed
 
@@ -302,10 +284,10 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             public void run() {
                 if (isDownload) {
                     AddTask add = StylizedMainJFrame.ADD_TASK;
-                    add.addTask(urlText.getText(), status - 1, DownloadTaskJPanel.DOWNLOAD_TASK);
+                    add.addTask(urlText.getText(), status, DownloadTaskJPanel.DOWNLOAD_TASK);
                 } else {
                     StylizedMainJFrame.AddTask add = StylizedMainJFrame.ADD_TASK;
-                    add.addTask(url, status - 1, DownloadTaskJPanel.UPDATE_TASK);
+                    add.addTask(url, status, DownloadTaskJPanel.UPDATE_TASK);
                 }
             }
         }.start();
@@ -334,7 +316,6 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton DAButton;
     private javax.swing.JToggleButton FAButton;
-    private javax.swing.JToggleButton GHButton;
     private javax.swing.JToggleButton downloadButton;
     private javax.swing.ButtonGroup downloadUpload;
     private javax.swing.JToggleButton e621Button;
@@ -376,20 +357,13 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                             }
                             break;
                         case 3:
-                            if (urlText.getText().contains("http://g.e-hentai.org/g/")) {
-                                okButton.setEnabled(true);
-                            } else {
-                                okButton.setEnabled(false);
-                            }
-                            break;
-                        case 4:
                             if (urlText.getText().contains("http://www.furaffinity.net/gallery/")) {
                                 okButton.setEnabled(true);
                             } else {
                                 okButton.setEnabled(false);
                             }
                             break;
-                        case 5:
+                        case 4:
                             if (urlText.getText().contains("https://e621.net/post/index/")) {
                                 okButton.setEnabled(true);
                             } else {
@@ -453,14 +427,6 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         }
                         break;
                     case 3:
-                        artistsXml = new File(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
-                        if (!artistsXml.exists()) {
-                            artists.createFile(artistsXml.getAbsolutePath());
-                        } else {
-                            artists.loadFile(artistsXml);
-                        }
-                        break;
-                    case 4:
                         artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
@@ -468,7 +434,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                             artists.loadFile(artistsXml);
                         }
                         break;
-                    case 5:
+                    case 4:
                         artistsXml = new File(xml.getContentById("E621output") + System.getProperty("file.separator") + "artists-log.xml");
                         if (!artistsXml.exists()) {
                             artists.createFile(artistsXml.getAbsolutePath());
@@ -508,17 +474,9 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                                 url = "http://" + artistsCombo.getSelectedItem().toString().toLowerCase() + ".tumblr.com/archive/";
                                 break;
                             case 3:
-                                XmlManager gh = new XmlManager();
-                                gh.loadFile(xml.getContentById("GHoutput") + System.getProperty("file.separator") + "artists-log.xml");
-
-                                String nameTag = artistsCombo.getSelectedItem().toString();
-                                int tagOcc = gh.getTagIndex("name", nameTag) + 1;
-                                url = gh.getContentByName("galleryUrl", tagOcc);
-                                break;
-                            case 4:
                                 url = "http://www.furaffinity.net/gallery/" + artistsCombo.getSelectedItem().toString().toLowerCase() + "/";
                                 break;
-                            case 5:
+                            case 4:
                                 url = "https://e621.net/post/index/" + artistsCombo.getSelectedItem().toString().toLowerCase() + "/";
                                 break;
                         }

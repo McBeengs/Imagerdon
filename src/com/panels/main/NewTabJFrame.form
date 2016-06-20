@@ -32,32 +32,33 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="taskLabel" min="-2" pref="182" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="infoLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="22" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="DAButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="tumblrButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="FAButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="e621Button" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="googleButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="taskLabel" min="-2" pref="182" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="infoLabel" min="-2" pref="176" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
                   </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="confirmLabel" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="okButton" min="-2" pref="65" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" attributes="0">
-                          <Component id="DAButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tumblrButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="FAButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="GHButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="e621Button" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="googleButton" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="confirmLabel" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
+                      <Component id="okButton" min="-2" pref="65" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -69,16 +70,15 @@
                   <Component id="taskLabel" alignment="3" pref="40" max="32767" attributes="0"/>
                   <Component id="infoLabel" alignment="3" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="googleButton" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="e621Button" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="GHButton" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="FAButton" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="DAButton" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="tumblrButton" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="okButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="confirmLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -119,22 +119,6 @@
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="tumblrButton.setFocusPainted(false);"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JToggleButton" name="GHButton">
-      <Properties>
-        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-          <ComponentRef name="buttonGroup1"/>
-        </Property>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/com/style/icons/galleryHentaiIconBig.png"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="GHButtonActionPerformed"/>
-      </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="GHButton.setFocusPainted(false);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JToggleButton" name="FAButton">

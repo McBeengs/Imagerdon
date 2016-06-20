@@ -72,7 +72,7 @@ public class Option3 extends javax.swing.JPanel {
 
         mainLabel.setFont(new java.awt.Font("Segoe UI Emoji", 0, 24)); // NOI18N
         mainLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        mainLabel.setText(language.getContentByName("mainLabel", 2) + " " + language.getContentById("options"));
+        mainLabel.setText(language.getContentById("deviantArt") + " " + language.getContentById("options"));
 
         usernameLabel.setText(language.getContentById("username"));
 
@@ -332,15 +332,11 @@ public class Option3 extends javax.swing.JPanel {
             HtmlPasswordInput passwordField = form.getInputByName("password");
             HtmlSubmitInput button = form.getInputByName("action");
 
-            String getPass = "";
-            char[] array = passwordTextField.getPassword();
+            String user = pass.decrypt(pass.stringToByte(xml.getContentById("DAuser")), "12345678".getBytes(), "12345678".getBytes());
+            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("DApass")), "12345678".getBytes(), "12345678".getBytes());
 
-            for (int i = 0; i < array.length; i++) {
-                getPass += array[i];
-            }
-
-            usernameField.setValueAttribute(userTextField.getText());
-            passwordField.setValueAttribute(getPass);
+            usernameField.setValueAttribute(user);
+            passwordField.setValueAttribute(passw);
 
             HtmlPage page2 = button.click();
             

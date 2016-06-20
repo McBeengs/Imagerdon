@@ -5,11 +5,9 @@ import com.core.web.download.CustomBatchDownload;
 import com.core.web.download.DeviantArt;
 import com.core.web.download.E621;
 import com.core.web.download.FurAffinity;
-import com.core.web.download.GalleryHentai;
 import com.core.web.download.Tumblr;
 import com.core.web.download.UpdateE621;
 import com.core.web.download.UpdateFurAffinity;
-import com.core.web.download.UpdateGalleryHentai;
 import com.core.web.download.UpdateTumblr;
 import com.panels.main.StylizedMainJFrame.RemoveTask;
 import com.util.UsefulMethods;
@@ -30,9 +28,8 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
     public static final int UPDATE_TASK = -1;
     public static final int DEVIANT_ART = 0;
     public static final int TUMBLR = 1;
-    public static final int GALLERY_HENTAI = 2;
-    public static final int FUR_AFFINITY = 3;
-    public static final int E621 = 4;
+    public static final int FUR_AFFINITY = 2;
+    public static final int E621 = 3;
     private boolean isExecuting = false;
     private boolean isTerminated = false;
     private boolean firstClick = false;
@@ -58,9 +55,6 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 case TUMBLR:
                     extractor = new Tumblr(url, this);
                     break;
-                case GALLERY_HENTAI:
-                    extractor = new GalleryHentai(url, this);
-                    break;
                 case FUR_AFFINITY:
                     extractor = new FurAffinity(url, this);
                     break;
@@ -73,12 +67,9 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 case DEVIANT_ART:
                     //extractor = new DeviantArt(url, this);
                     throw new UnsupportedOperationException("Updating DA isn't supported yet.");
-                    //break;
+                //break;
                 case TUMBLR:
                     extractor = new UpdateTumblr(url, this);
-                    break;
-                case GALLERY_HENTAI:
-                    extractor = new UpdateGalleryHentai(url, this);
                     break;
                 case FUR_AFFINITY:
                     extractor = new UpdateFurAffinity(url, this);
@@ -109,7 +100,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/downloadTask.png")));
         taskLabel.setText(language.getContentById("downloadTitle"));
-        
+
         extractor = new CustomBatchDownload(urls, this);
         initSubComponents(numOfTask);
     }
@@ -265,7 +256,11 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
 
                     String text = language.getContentById("downloading");
                     if (!infoDisplay.getText().contains(text.substring(0, text.indexOf("&")))) {
-                        int missed = Integer.parseInt(infoDisplay.getText().replaceAll("[^0-9]", ""));
+                        String show = infoDisplay.getText().replaceAll("[^0-9]", "");
+                        int missed = 0;
+                        if (!show.equals("")) {
+                            missed = Integer.parseInt(show);
+                        }
                         infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "" + missed));
                     } else {
                         infoDisplay.setText(language.getContentById("downloadCancelled").replace("&num", "0"));
@@ -343,9 +338,6 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                         case TUMBLR:
                             extractor = new Tumblr(url, getContent());
                             break;
-                        case GALLERY_HENTAI:
-                            extractor = new GalleryHentai(url, getContent());
-                            break;
                         case FUR_AFFINITY:
                             extractor = new FurAffinity(url, getContent());
                             break;
@@ -360,9 +352,6 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                             break;
                         case TUMBLR:
                             //extractor = new DeviantArt(url, this);
-                            break;
-                        case GALLERY_HENTAI:
-                            extractor = new UpdateGalleryHentai(url, getContent());
                             break;
                         case FUR_AFFINITY:
                             extractor = new UpdateFurAffinity(url, getContent());
@@ -389,7 +378,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 for (MouseListener listener : playButton.getMouseListeners()) {
                     playButton.removeMouseListener(listener);
                 }
-                
+
                 playButton.addMouseListener(playButtonNormalBehavior());
                 infoDisplay.setText(language.getContentById("connecting"));
                 progressBar.setIndeterminate(true);

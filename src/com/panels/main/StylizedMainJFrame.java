@@ -25,10 +25,13 @@ import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
 import com.panels.options.OptionsJFrame;
 import com.panels.tools.BatchDownloads;
-import com.panels.tools.e621.E621OptimizeArtists;
-import com.panels.tools.furaffinity.FADownloadFavs;
-import com.panels.tools.furaffinity.FAOptimizeArtists;
-import com.panels.tools.furaffinity.FARemoveFavs;
+import com.panels.tools.DAOptimizeArtists;
+import com.panels.tools.E621OptimizeArtists;
+import com.panels.tools.FADownloadFavs;
+import com.panels.tools.FARemoveFavs;
+import com.panels.tools.FAOptimizeArtists;
+import com.panels.tools.TUOptimizeArtists;
+import com.panels.tools.TagsManagerJFrame;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.BasicStroke;
@@ -79,6 +82,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import org.xml.sax.SAXException;
 
 public class StylizedMainJFrame extends javax.swing.JFrame {
@@ -105,6 +109,11 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private JMenu optionsOption;
     private JMenuItem imageBatchDownload;
     private JMenuItem serverBatchDownload;
+    private JMenuItem manageTags;
+    private JMenu deviantArtTools;
+    private JMenuItem optimizedeviantArtArtists;
+    private JMenu tumblrTools;
+    private JMenuItem optimizeTumblrArtists;
     private JMenu furAffinityTools;
     private JMenuItem optimizeFAArtists;
     private JMenuItem downloadFAFavs;
@@ -157,6 +166,11 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         toolsOption = new JMenu();
         imageBatchDownload = new JMenuItem();
         serverBatchDownload = new JMenuItem();
+        manageTags = new JMenuItem();
+        deviantArtTools = new JMenu();
+        optimizedeviantArtArtists = new JMenuItem();
+        tumblrTools = new JMenu();
+        optimizeTumblrArtists = new JMenuItem();
         furAffinityTools = new JMenu();
         optimizeFAArtists = new JMenuItem();
         downloadFAFavs = new JMenuItem();
@@ -170,7 +184,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new Dimension(500, 590));
         setPreferredSize(new Dimension(1142, 530));
-        
+
         UIDefaults defaults = UIManager.getLookAndFeelDefaults();
         defaults.put("Table.alternateRowColor", new Color(240, 240, 240));
 
@@ -266,23 +280,33 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
 
         mainPanel.initialize(showCfg);
         add(mainPanel);
-
+        
         fileOption.setText(language.getContentById("file"));
         menuBar.add(fileOption);
-
         toolsOption.setText(language.getContentById("tools"));
         toolsOption.add(imageBatchDownload);
         toolsOption.add(serverBatchDownload);
-        //Add DeviantArt tools here
+        toolsOption.add(manageTags);
         toolsOption.add(new Separator());
-        //Add Tumblr tools here
+        deviantArtTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconSmall.png")));
+        deviantArtTools.setText(language.getContentById("deviantArt"));
+        optimizedeviantArtArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconSmall.png")));
+        optimizedeviantArtArtists.setText("Optimize artists");
+        deviantArtTools.add(optimizedeviantArtArtists);
+        toolsOption.add(deviantArtTools);
         toolsOption.add(new Separator());
-        //Add GalleryHentai tools here
+        tumblrTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/tumblrIconSmall.png")));
+        tumblrTools.setText(language.getContentById("tumblr"));
+        optimizeTumblrArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/tumblrIconSmall.png")));
+        optimizeTumblrArtists.setText("Optimize artists");
+        tumblrTools.add(optimizeTumblrArtists);
+        toolsOption.add(tumblrTools);
         toolsOption.add(new Separator());
         furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
-        furAffinityTools.setText(language.getContentByName("mainLabel", 5));
+        furAffinityTools.setText(language.getContentById("furAffinity"));
         imageBatchDownload.setText("Download batch of images");
         serverBatchDownload.setText("Download batch of servers");
+        manageTags.setText("Manage tags");
         optimizeFAArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
         optimizeFAArtists.setText("Optimize artists");
         downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
@@ -295,13 +319,12 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         toolsOption.add(furAffinityTools);
         toolsOption.add(new Separator());
         e621Tools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
-        e621Tools.setText(language.getContentByName("mainLabel", 6));
+        e621Tools.setText(language.getContentById("e621"));
         optimizeE621Artists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
         optimizeE621Artists.setText("Optimize artists");
         e621Tools.add(optimizeE621Artists);
         toolsOption.add(e621Tools);
         menuBar.add(toolsOption);
-
         optionsOption.setText(language.getContentById("options"));
         settingsOptions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/settings.png"))); // NOI18N
         settingsOptions.setText(language.getContentById("settings"));
@@ -475,7 +498,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of imageBatchDownload
-        
+
         serverBatchDownload.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -484,16 +507,39 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of serverBatchDownload
+        
+        manageTags.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new TagsManagerJFrame().setVisible(true);
+            }
+        });
+        //end of manageTags
+        
+        optimizedeviantArtArtists.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new DAOptimizeArtists();
+            }
+        });
+        //end of optimizeDAArtists
+        
+         optimizeTumblrArtists.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new TUOptimizeArtists();
+            }
+        });
+        //end of optimizeTUArtists
 
         optimizeFAArtists.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                FAOptimizeArtists fa = new FAOptimizeArtists();
-                fa.setVisible(true);
+                new FAOptimizeArtists();
             }
         });
         //end of optimizeFAArtists
-        
+
         downloadFAFavs.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -510,12 +556,11 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of removeFAFavs
-        
+
         optimizeE621Artists.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                E621OptimizeArtists e = new E621OptimizeArtists();
-                e.setVisible(true);
+                new E621OptimizeArtists();
             }
         });
         //end of optimizeFAArtists
@@ -759,7 +804,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         private TabCloseUI closeUI = new TabCloseUI(this);
 
         public ClosableTabbedPane() {
-            super.addTab("Home", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
+            super.addTab("   Home   ", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/homeTab.png")), new MainPane());
             super.addTab("", new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/addTab.png")), new JLabel(""));
             super.setFocusable(false);
             super.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -834,25 +879,22 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                                         icon = new ImageIcon(getClass().getResource("/com/style/icons/tumblrIconBig.png"));
                                         break;
                                     case 3:
-                                        url = "http://g.e-hentai.org/";
-                                        icon = new ImageIcon(getClass().getResource("/com/style/icons/galleryHentaiIconBig.png"));
-                                        break;
-                                    case 4:
                                         url = "http://www.furaffinity.net/";
                                         icon = new ImageIcon(getClass().getResource("/com/style/icons/FAIconBig.png"));
                                         break;
-                                    case 5:
+                                    case 4:
                                         url = "https://e621.net/";
                                         icon = new ImageIcon(getClass().getResource("/com/style/icons/e621IconBig.png"));
                                         break;
-                                    case 6:
+                                    case 5:
                                         url = "https://www.google.com/";
                                         icon = new ImageIcon(getClass().getResource("/com/style/icons/googleIconBig.png"));
                                         break;
                                 }
 
                                 WebViewPage page = new WebViewPage((ClosableTabbedPane) getComponent(), index, icon, url);
-                                addTab(language.getContentById("newTabTitle") + "     ", icon, page);
+                                page.setBorder(new LineBorder(Color.GRAY));
+                                addTab("   " + language.getContentById("newTabTitle") + "   ", icon, page);
                             }
                         }
                     });
@@ -880,6 +922,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             private TabCloseUI() {
             }
 
+            @SuppressWarnings("LeakingThisInConstructor")
             public TabCloseUI(ClosableTabbedPane pane) {
                 this.tabbedPane = pane;
                 this.tabbedPane.addMouseMotionListener(this);

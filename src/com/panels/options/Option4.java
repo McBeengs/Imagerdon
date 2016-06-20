@@ -54,30 +54,26 @@ public class Option4 extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         mainLabel = new javax.swing.JLabel();
         topSeparator = new javax.swing.JSeparator();
-        usernameLabel = new javax.swing.JLabel();
-        passwordLabel = new javax.swing.JLabel();
         folderLabel = new javax.swing.JLabel();
         folderTextField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         downloadsAlert = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
+        jLabel1 = new javax.swing.JLabel();
+        usernameLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
         String user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
+        passwordLabel = new javax.swing.JLabel();
         passwordTextField = new javax.swing.JPasswordField();
 
         setMinimumSize(new java.awt.Dimension(516, 434));
 
         mainLabel.setFont(new java.awt.Font("Segoe UI Emoji", 0, 24)); // NOI18N
         mainLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        mainLabel.setText(language.getContentByName("mainLabel", 3) + " " + language.getContentById("options"));
-
-        usernameLabel.setText(language.getContentById("username"));
-
-        passwordLabel.setText(language.getContentById("password"));
+        mainLabel.setText(language.getContentById("tumblr") + " " + language.getContentById("options"));
 
         folderLabel.setText(language.getContentById("defaultFolder"));
 
@@ -88,8 +84,6 @@ public class Option4 extends javax.swing.JPanel {
                 folderTextFieldMouseClicked(evt);
             }
         });
-
-        jLabel1.setText(language.getContentById("changeLogin"));
 
         downloadsAlert.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         downloadsAlert.setForeground(new java.awt.Color(51, 109, 243));
@@ -131,12 +125,18 @@ public class Option4 extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText(language.getContentById("changeLogin"));
+
+        usernameLabel.setText(language.getContentById("username"));
+
         userTextField.setText(user);
         userTextField.addCaretListener(new javax.swing.event.CaretListener() {
             public void caretUpdate(javax.swing.event.CaretEvent evt) {
                 userTextFieldCaretUpdate(evt);
             }
         });
+
+        passwordLabel.setText(language.getContentById("password"));
 
         passwordTextField.setText("example");
         passwordTextField.addCaretListener(new javax.swing.event.CaretListener() {
@@ -165,23 +165,25 @@ public class Option4 extends javax.swing.JPanel {
                                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                     .addComponent(downloadsAlert, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGap(21, 21, 21)
-                                    .addComponent(usernameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(10, 10, 10)
-                                    .addComponent(userTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(passwordLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(passwordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(folderLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
-                                    .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                    .addComponent(folderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGap(21, 21, 21)
+                                            .addComponent(usernameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(userTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(passwordLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(passwordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -331,17 +333,13 @@ public class Option4 extends javax.swing.JPanel {
             HtmlButton next = (HtmlButton) page1.getElementsByIdAndOrName("signup_forms_submit").get(0);
             HtmlButton button = form.getFirstByXPath("button");
             
-            String getPass = "";
-            char[] array = passwordTextField.getPassword();
+            String user = pass.decrypt(pass.stringToByte(xml.getContentById("TUuser")), "12345678".getBytes(), "12345678".getBytes());
+            String passw = pass.decrypt(pass.stringToByte(xml.getContentById("TUpass")), "12345678".getBytes(), "12345678".getBytes());
 
-            for (int i = 0; i < array.length; i++) {
-                getPass += array[i];
-            }
-
-            usernameCheck.setValueAttribute(userTextField.getText());
-            usernameField.setValueAttribute(userTextField.getText());
+            usernameCheck.setValueAttribute(user);
+            usernameField.setValueAttribute(passw);
             next.click();
-            passwordField.setValueAttribute(getPass);
+            passwordField.setValueAttribute(passw);
 
             HtmlPage page2 = button.click();
             

@@ -34,9 +34,12 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="languageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="styleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="updates" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="languageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="styleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -50,7 +53,7 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace pref="299" max="32767" attributes="0"/>
+              <EmptySpace pref="245" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -73,7 +76,9 @@
                   <Component id="styleSelector" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="styleAlert" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="288" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="113" max="-2" attributes="0"/>
+              <Component id="updates" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="152" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -164,6 +169,17 @@
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="styleAlert.setVisible(false);&#xa;styleAlert.setIcon(new ImageIcon(getClass().getResource(&quot;/com/style/icons/error.png&quot;)));"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="updates">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Check updates on the start"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="updatesActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="updates.setSelected(Boolean.parseBoolean(xml.getContentById(&quot;update&quot;)));"/>
       </AuxValues>
     </Component>
   </SubComponents>

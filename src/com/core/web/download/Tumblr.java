@@ -18,6 +18,7 @@ package com.core.web.download;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
@@ -25,18 +26,13 @@ import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import static java.lang.Thread.sleep;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -44,6 +40,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Tumblr extends BasicCore {
@@ -52,19 +49,19 @@ public class Tumblr extends BasicCore {
     private boolean isTerminated = false;
     private boolean isDownloading = false;
     private boolean convertedToUpdate = false;
-    private int tagOcc;
     private int numOfImages;
     private int originalNumOfImages;
     private int numOfPages = 0;
     private String finalPath;
     private String link;
+    private String artist;
     private String avatarUrl;
+    private final Connection conn;
     private WebClient webClient;
     private ExecutorService executor;
-    private XmlManager xml;
-    private XmlManager language;
-    private XmlManager artists;
-    private DownloadTaskJPanel taskManager;
+    private final XmlManager xml;
+    private final XmlManager language;
+    private final DownloadTaskJPanel taskManager;
 
     public Tumblr(String url, DownloadTaskJPanel taskManager) {
         link = url;
@@ -77,43 +74,14 @@ public class Tumblr extends BasicCore {
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
-        artists = new XmlManager();
-
-        try {
-            File artistsXml = new File(xml.getContentById("TUoutput") + System.getProperty("file.separator") + "artists-log.xml");
-            if (!artistsXml.exists()) {
-                artists.createFile(artistsXml.getAbsolutePath());
-            } else {
-                artists.loadFile(artistsXml);
-            }
-
-            String artist = link.substring(7, link.indexOf("."));
-            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-            if (Boolean.parseBoolean(xml.getContentById("sub"))) {
-                finalPath = xml.getContentById("TUoutput") + System.getProperty("file.separator") + artist;
-                File file = new File(finalPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-            } else {
-                finalPath = xml.getContentById("TUoutput");
-                File file = new File(finalPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-            }
-        } catch (MalformedURLException ex) {
-            System.out.println(ex.toString());
-        } catch (IOException ex) {
-            System.out.println(ex.toString());
-        }
+        conn = UsefulMethods.getDBInstance();
     }
 
     private boolean getInformationAboutGallery() throws IOException {
         taskManager.infoDisplay.setText(language.getContentById("getImages"));
-        HtmlPage conn = webClient.getPage(link);
+        HtmlPage page = webClient.getPage(link);
 
-        Document getNumberImages = Jsoup.parse(conn.asXml());
+        Document getNumberImages = Jsoup.parse(page.asXml());
         Elements testURL = getNumberImages.select("body");
 
         if (testURL.toString().contains("There's nothing here.")) {
@@ -124,12 +92,12 @@ public class Tumblr extends BasicCore {
             avatarUrl = avatarUrl.substring(0, avatarUrl.lastIndexOf(".") - 2) + "128.png";
 
             while (true) {
-                getNumberImages = Jsoup.parse(conn.asXml());
+                getNumberImages = Jsoup.parse(page.asXml());
                 Elements images = getNumberImages.getElementsByClass("hover"); // 50
                 numOfImages += images.size();
-                HtmlAnchor next = (HtmlAnchor) conn.getElementById("next_page_link");
+                HtmlAnchor next = (HtmlAnchor) page.getElementById("next_page_link");
                 if (next != null) {
-                    conn = next.click();
+                    page = next.click();
                 } else {
                     break;
                 }
@@ -142,8 +110,18 @@ public class Tumblr extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        String artist = link.substring(7, link.indexOf("."));
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+        finalPath = xml.getContentById("TUoutput") + System.getProperty("file.separator") + artist;
+
+        PreparedStatement prepared;
+        boolean wasFound = false;
+        try {
+            prepared = conn.prepareStatement("SELECT * FROM artist WHERE name = ? AND server = ?");
+            prepared.setString(1, artist);
+            prepared.setInt(2, 1);
+            wasFound = prepared.executeQuery().next();
+        } catch (SQLException ex) {
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (Integer.parseInt(xml.getContentById("existed")) == 1) {
             if (finalPath.contains(artist)) {
@@ -155,11 +133,18 @@ public class Tumblr extends BasicCore {
                 }
             }
 
-            if (artists.checkIfTagExists("name", artist)) {
+            if (wasFound) {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 1);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
                 createArtistTag();
             }
@@ -167,7 +152,7 @@ public class Tumblr extends BasicCore {
             return true;
         }
 
-        if (artists.checkIfTagExists("name", artist)) {
+        if (wasFound) {
             if (Integer.parseInt(xml.getContentById("existed")) == 0) {
                 String[] texts = language.getContentById("skipEnabled").replace("&string", artist).split("&br");
                 JOptionPane.showMessageDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"), JOptionPane.INFORMATION_MESSAGE);
@@ -176,13 +161,23 @@ public class Tumblr extends BasicCore {
 
             if (!finalPath.contains(artist)) {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 1);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return true;
             }
 
             File getImages = new File(finalPath);
+            if (!getImages.exists()) {
+                getImages.mkdir();
+            }
             int older = getImages.listFiles().length;
 
             if (older >= numOfImages) {
@@ -207,9 +202,16 @@ public class Tumblr extends BasicCore {
                 return false;
             } else {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 1);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return true;
             }
         } else {
@@ -218,30 +220,28 @@ public class Tumblr extends BasicCore {
         }
     }
 
-    private void createArtistTag() throws IOException {
-        String artist = link.substring(7, link.indexOf("."));
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        originalNumOfImages = numOfImages;
-        artists.addSubordinatedTag("artist", "root", 0);
-        tagOcc = artists.getAllContentsByName("artist").size() - 1;
-        artists.addSubordinatedTag("name", "artist", tagOcc);
-        artists.setContentByName("name", tagOcc, artist);
-        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
-        artists.setContentByName("avatarUrl", tagOcc, avatarUrl);
-        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
-        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
-        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("imageCount", "artist", tagOcc);
-        artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-        artists.saveXml();
+    private void createArtistTag() {
+        try {
+            originalNumOfImages = numOfImages;
+            PreparedStatement prepared = conn.prepareStatement("INSERT INTO artist (`id`, `server`, `name`, `avatar_url`, `first_downloaded`, `last_updated`, `image_count`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
+            prepared.setInt(1, 1);
+            prepared.setString(2, artist);
+            prepared.setString(3, avatarUrl);
+            prepared.setDate(4, new Date(new java.util.Date().getTime()));
+            prepared.setDate(5, new Date(new java.util.Date().getTime()));
+            prepared.setInt(6, numOfImages);
+            prepared.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void download() throws Exception {
-        String artist = link.substring(7, link.indexOf("."));
+        artist = link.substring(7, link.indexOf("."));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        taskManager.author.setText(artist + " | Tumblr");
 
+        taskManager.author.setText(artist + " | Tumblr");
+        taskManager.infoDisplay.setText(language.getContentById("loginIn"));
         while (!UsefulMethods.isWebClientReady()) {
             sleep(2);
         }
@@ -285,7 +285,7 @@ public class Tumblr extends BasicCore {
 
                         int cut = numOfImages - (numOfPages * 50);
                         int count = 0;
-                        HtmlPage conn = webClient.getPage(link);
+                        HtmlPage page = webClient.getPage(link);
                         executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
 
                         for (int c = 0; c < numOfPages; c++) {
@@ -293,7 +293,7 @@ public class Tumblr extends BasicCore {
                                 break;
                             }
 
-                            Document getImages = Jsoup.parse(conn.asXml());
+                            Document getImages = Jsoup.parse(page.asXml());
                             Elements getPages = getImages.getElementsByClass("hover");
 
                             for (int i = 0; i < getPages.size(); i++) {
@@ -312,35 +312,82 @@ public class Tumblr extends BasicCore {
                                 temp = temp.substring(0, temp.indexOf("\""));
 
                                 HtmlPage post = webClient.getPage(temp);
-                                Elements image = Jsoup.parse(post.asXml()).getElementsByClass("bustImage");
-                                if (image.size() > 0) {
-                                    temp = image.get(0).toString();
+                                Elements image = Jsoup.parse(post.asXml()).getElementsByTag("img");
+                                boolean wasFound = false;
 
-                                    if (temp.contains("src")) {
+                                for (Element el : image) {
+                                    if (!el.toString().contains("avatar") && !el.toString().contains("assets.tumblr")
+                                            && !el.toString().contains("px.srvcs")) {
+                                        temp = el.toString();
                                         temp = temp.substring(temp.indexOf("src") + 5);
                                         temp = temp.substring(0, temp.indexOf("\""));
-                                        count++;
+                                        wasFound = true;
 
-                                        executor.execute(new ImageExtractor(temp, count));
-                                    } else {
+                                        executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                        break;
+                                    }
+                                }
+
+                                if (!wasFound) {
+                                    if (post.asXml().contains("class=\"photoset\"")) { //is a image
+                                        DomElement photoset = (DomElement) post.getByXPath("//iframe[@class='photoset']").get(0);
+                                        temp = photoset.asXml();
+                                        temp = temp.substring(temp.indexOf("src") + 5);
+                                        temp = temp.substring(0, temp.indexOf("\""));
+
+                                        HtmlPage hidden = webClient.getPage(temp);
+                                        image = Jsoup.parse(hidden.asXml()).getElementsByTag("img");
+
+                                        for (Element el : image) {
+                                            if (!el.toString().contains("avatar") && !el.toString().contains("assets.tumblr")
+                                                    && !el.toString().contains("px.srvcs")) {
+                                                temp = el.toString();
+                                                temp = temp.substring(temp.indexOf("src") + 5);
+                                                temp = temp.substring(0, temp.indexOf("\""));
+
+                                                executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                            }
+                                        }
+                                    } else { //is everything else
                                         numOfImages--;
                                         taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
                                         taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+
+                                        NumberFormat nf = NumberFormat.getNumberInstance();
+                                        nf.setMaximumFractionDigits(1);
+                                        nf.setGroupingUsed(true);
+
+                                        String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+                                        taskManager.progressBar.setString(show);
+                                        PreparedStatement statement = conn.prepareStatement("UPDATE artist image_count = ? WHERE name = ? AND server = ?");
+                                        statement.setInt(1, numOfImages);
+                                        statement.setString(2, artist);
+                                        statement.setInt(3, 1);
+                                        statement.execute();
+                                        
+                                        if (show.equals("100%")) {
+                                            taskManager.stopButton.setVisible(false);
+                                            taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+
+                                            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                                                taskManager.playButton.removeMouseListener(listener);
+                                            }
+                                            taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+                                        }
                                     }
-                                } else {
-                                    numOfImages--;
-                                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
                                 }
+                                count++;
                             }
 
-                            HtmlAnchor next = (HtmlAnchor) conn.getElementById("next_page_link");
-                            conn = next.click();
+                            HtmlAnchor next = (HtmlAnchor) page.getElementById("next_page_link");
+                            page = next.click();
                         }
                     } catch (FailingHttpStatusCodeException | java.net.UnknownHostException ex) {
                         JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                     } catch (IOException | InterruptedException ex) {
                         Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }.start();
@@ -371,141 +418,8 @@ public class Tumblr extends BasicCore {
     public void run() {
         try {
             download();
-            artists.saveXml();
         } catch (Exception ex) {
             Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private class ImageExtractor implements Runnable {
-
-        String finalLink;
-        int downloadNumber;
-
-        public ImageExtractor(String finalLink, int downloadNumber) {
-            this.finalLink = finalLink;
-            this.downloadNumber = downloadNumber;
-        }
-
-        private boolean download() {
-            String imageName = null;
-            if (!Boolean.parseBoolean(xml.getContentById("TUadvancedNaming"))) {
-                imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
-            } else if (Integer.parseInt(xml.getContentById("TUnamingOption")) == 0) {
-                imageName = downloadNumber + finalLink.substring(finalLink.lastIndexOf("."));
-            } else if (Integer.parseInt(xml.getContentById("TUnamingOption")) == 1) {
-                imageName = getDate() + finalLink.substring(finalLink.lastIndexOf("."));
-            }
-
-            try {
-                URL imageURL = new URL(finalLink);
-                InputStream inputImg = imageURL.openStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + System.getProperty("file.separator") + imageName);
-                BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
-
-                NumberFormat nf = NumberFormat.getNumberInstance();
-                nf.setMaximumFractionDigits(1);
-                nf.setGroupingUsed(true);
-
-                int bytes;
-                while ((bytes = inputImg.read()) != -1) {
-                    while (isPaused) {
-                        sleep(2);
-                    }
-
-                    if (isTerminated) {
-                        break;
-                    } else {
-                        writeImg.write(bytes);
-                    }
-                }
-
-                writeImg.close();
-                imageFile.close();
-                inputImg.close();
-
-                numOfImages--;
-                if (!isTerminated) {
-                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
-
-                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                    taskManager.progressBar.setString(show);
-                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
-
-                    if (show.equals("100%")) {
-                        taskManager.stopButton.setVisible(false);
-                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
-
-                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                            taskManager.playButton.removeMouseListener(listener);
-                        }
-
-                        artists.saveXml();
-                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
-                    }
-                } else {
-                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
-                    files.delete();
-
-                    files = new File(finalPath);
-                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
-                    artists.saveXml();
-                }
-            } catch (java.net.ConnectException ex) {
-                executor.submit(new ImageExtractor(finalLink, downloadNumber));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (java.net.SocketException ex) {
-                executor.submit(new ImageExtractor(finalLink, downloadNumber));
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            return false;
-        }
-
-        private String getDate() {
-            Calendar date = Calendar.getInstance();
-            String gmt;
-            String hours;
-            String minutes;
-            String seconds;
-            String millis;
-
-            if (((date.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60)) % 24) < 10) {
-                gmt = "GMT -0" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            } else {
-                gmt = "GMT -" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            }
-
-            if (date.get(Calendar.HOUR_OF_DAY) < 10) {
-                hours = "0" + date.get(Calendar.HOUR_OF_DAY);
-            } else {
-                hours = "" + date.get(Calendar.HOUR_OF_DAY);
-            }
-
-            if (date.get(Calendar.MINUTE) < 10) {
-                minutes = "0" + date.get(Calendar.MINUTE);
-            } else {
-                minutes = "" + date.get(Calendar.MINUTE);
-            }
-
-            if (date.get(Calendar.SECOND) < 10) {
-                seconds = "0" + date.get(Calendar.SECOND);
-            } else {
-                seconds = "" + date.get(Calendar.SECOND);
-            }
-
-            millis = "" + date.get(Calendar.MILLISECOND);
-
-            return hours + "h, " + minutes + "min, " + seconds + "sec & " + millis + "mil (" + gmt + ")" + ", at "
-                    + date.getDisplayName(2, 2, Locale.US) + " " + date.get(5) + ", " + date.get(1);
-        }
-
-        @Override
-        public void run() {
-            download();
         }
     }
 }

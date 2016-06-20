@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import static java.lang.Thread.sleep;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.NumberFormat;
@@ -39,7 +38,7 @@ import javax.swing.JOptionPane;
 
 public class CustomBatchDownload extends BasicCore {
 
-    private XmlManager language;
+    private final XmlManager language;
     private boolean isPaused = false;
     private boolean isTerminated = false;
     private boolean isDownloading = false;

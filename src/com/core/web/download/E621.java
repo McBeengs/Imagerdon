@@ -16,7 +16,6 @@
  */
 package com.core.web.download;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -25,17 +24,8 @@ import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.NumberFormat;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -44,8 +34,10 @@ import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import static java.lang.Thread.sleep;
-import java.net.HttpURLConnection;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class E621 extends BasicCore {
 
@@ -54,16 +46,16 @@ public class E621 extends BasicCore {
     private boolean isDownloading = false;
     private int numOfImages;
     private int numOfPages = 0;
-    private int tagOcc;
     private int originalNumOfImages;
     private String finalPath;
-    private String link;
+    private final String link;
+    private String artist;
+    private final Connection conn;
     private WebClient webClient;
-    private XmlManager xml;
-    private XmlManager language;
-    private XmlManager artists;
+    private final XmlManager xml;
+    private final XmlManager language;
     private ExecutorService executor;
-    private DownloadTaskJPanel taskManager;
+    private final DownloadTaskJPanel taskManager;
 
     public E621(String url, DownloadTaskJPanel taskManager) {
         link = url;
@@ -71,45 +63,14 @@ public class E621 extends BasicCore {
 
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
-        artists = new XmlManager();
-
-        try {
-            File artistsXml = new File(xml.getContentById("E621output") + "/" + "artists-log.xml");
-            if (!artistsXml.exists()) {
-                artists.createFile(artistsXml.getAbsolutePath());
-            } else {
-                artists.loadFile(artistsXml);
-            }
-
-            String artist = url.substring(url.lastIndexOf("/") + 1);
-            artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-            if (Boolean.parseBoolean(xml.getContentById("sub"))) {
-                finalPath = xml.getContentById("E621output") + "/" + artist;
-                File file = new File(finalPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                } else {
-                    //System.out.println("folder exists");
-                }
-            } else {
-                finalPath = xml.getContentById("E621output");
-                File file = new File(finalPath);
-                if (!file.exists()) {
-                    file.mkdirs();
-                }
-            }
-        } catch (MalformedURLException ex) {
-            System.out.println(ex.toString());
-        } catch (IOException ex) {
-            System.out.println(ex.toString());
-        }
+        conn = UsefulMethods.getDBInstance();
     }
 
     private boolean getInformationAboutGallery() {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage conn = webClient.getPage(link);
-            Document getNumberImages = Jsoup.parse(conn.asXml());
+            HtmlPage page = webClient.getPage(link);
+            Document getNumberImages = Jsoup.parse(page.asXml());
             Elements testURL = getNumberImages.select("body");
 
             if (testURL.toString().contains("No posts matched your search.") == true) {
@@ -117,6 +78,11 @@ public class E621 extends BasicCore {
                 return false;
             } else {
                 Elements getNumber = getNumberImages.select("a[href~=/post/index/]");
+                if (getNumber.isEmpty()) {
+                    page = webClient.getPage(link);
+                    getNumberImages = Jsoup.parse(page.asXml());
+                    getNumber = getNumberImages.select("a[href~=/post/index/]");
+                }
                 String tempMax = getNumber.get(getNumber.size() - 2).toString();
                 int last = tempMax.indexOf("/", 21);
                 String end = tempMax.substring(21, last);
@@ -144,8 +110,18 @@ public class E621 extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        String artist = link.substring(link.lastIndexOf("/") + 1);
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+        finalPath = xml.getContentById("e621output") + System.getProperty("file.separator") + artist;
+
+        PreparedStatement prepared;
+        boolean wasFound = false;
+        try {
+            prepared = conn.prepareStatement("SELECT * FROM artist WHERE name = ? AND server = ?");
+            prepared.setString(1, artist);
+            prepared.setInt(2, 3);
+            wasFound = prepared.executeQuery().next();
+        } catch (SQLException ex) {
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (Integer.parseInt(xml.getContentById("existed")) == 1) {
             if (finalPath.contains(artist)) {
@@ -157,11 +133,18 @@ public class E621 extends BasicCore {
                 }
             }
 
-            if (artists.checkIfTagExists("name", artist)) {
+            if (wasFound) {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 3);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
                 createArtistTag();
             }
@@ -169,7 +152,7 @@ public class E621 extends BasicCore {
             return true;
         }
 
-        if (artists.checkIfTagExists("name", artist)) {
+        if (wasFound) {
             if (Integer.parseInt(xml.getContentById("existed")) == 0) {
                 String[] texts = language.getContentById("skipEnabled").replace("&string", artist).split("&br");
                 JOptionPane.showMessageDialog(null, texts[0] + "\n" + texts[1], language.getContentById("genericInfoTitle"), JOptionPane.INFORMATION_MESSAGE);
@@ -178,9 +161,16 @@ public class E621 extends BasicCore {
 
             if (!finalPath.contains(artist)) {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-                artists.saveXml();
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 3);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return true;
             }
 
@@ -203,8 +193,16 @@ public class E621 extends BasicCore {
                 return false;
             } else {
                 originalNumOfImages = numOfImages;
-                tagOcc = artists.getTagIndex("name", artist);
-                artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
+                try {
+                    PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ?, image_count = ? WHERE name = ? AND server = ?");
+                    statement.setDate(1, new Date(new java.util.Date().getTime()));
+                    statement.setInt(2, numOfImages);
+                    statement.setString(3, artist);
+                    statement.setInt(4, 3);
+                    statement.execute();
+                } catch (SQLException ex) {
+                    Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 return true;
             }
         } else {
@@ -213,29 +211,27 @@ public class E621 extends BasicCore {
         }
     }
 
-    private void createArtistTag() throws IOException {
-        String artist = link.substring(link.lastIndexOf("/") + 1);
-        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        artists.addSubordinatedTag("artist", "root", 0);
-        tagOcc = artists.getAllContentsByName("artist").size() - 1;
-        artists.addSubordinatedTag("name", "artist", tagOcc);
-        artists.setContentByName("name", tagOcc, artist);
-        artists.addSubordinatedTag("avatarUrl", "artist", tagOcc);
-        artists.setContentByName("avatarUrl", tagOcc, "null");
-        artists.addSubordinatedTag("firstDownloaded", "artist", tagOcc);
-        artists.setContentByName("firstDownloaded", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("lastUpdated", "artist", tagOcc);
-        artists.setContentByName("lastUpdated", tagOcc, UsefulMethods.getSimpleDateFormat());
-        artists.addSubordinatedTag("imageCount", "artist", tagOcc);
-        artists.setContentByName("imageCount", tagOcc, "" + numOfImages);
-        artists.saveXml();
+    private void createArtistTag() {
+        try {
+            originalNumOfImages = numOfImages;
+            PreparedStatement prepared = conn.prepareStatement("INSERT INTO artist (`id`, `server`, `name`, `avatar_url`, `first_downloaded`, `last_updated`, `image_count`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
+            prepared.setInt(1, 3);
+            prepared.setString(2, artist);
+            prepared.setString(3, "null");
+            prepared.setDate(4, new Date(new java.util.Date().getTime()));
+            prepared.setDate(5, new Date(new java.util.Date().getTime()));
+            prepared.setInt(6, numOfImages);
+            prepared.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void download() throws Exception {
-        String artist = link.substring(link.lastIndexOf("/") + 1);
+        artist = link.substring(link.lastIndexOf("/") + 1);
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+        
         taskManager.author.setText(artist + " | e621");
-
         taskManager.infoDisplay.setText(language.getContentById("loginIn"));
         while (!UsefulMethods.isWebClientReady()) {
             sleep(2);
@@ -303,7 +299,11 @@ public class E621 extends BasicCore {
                                     }
                                 }
 
-                                temp = getLinks.get(i).toString();
+                                if (getLinks.size() != i) {
+                                    temp = getLinks.get(i).toString();
+                                } else {
+                                    break;
+                                }
                                 int end = temp.indexOf("\"", 35);
                                 String placeholder = temp.substring(31, end);
                                 temp = "https://e621.net" + placeholder;
@@ -312,10 +312,19 @@ public class E621 extends BasicCore {
                                 Elements getPages = docImages.select("a[href~=https://static1.e621.net/]");
                                 String tempImagesArray = getPages.toString();
                                 end = tempImagesArray.indexOf("\"", 11);
-                                temp = tempImagesArray.substring(9, end);
+                                try {
+                                    temp = tempImagesArray.substring(9, end);
+                                } catch (java.lang.StringIndexOutOfBoundsException ex) {
+                                    conn = webClient.getPage(temp);
+                                    docImages = Jsoup.parse(conn.asXml());
+                                    getPages = docImages.select("a[href~=https://static1.e621.net/]");
+                                    tempImagesArray = getPages.toString();
+                                    end = tempImagesArray.indexOf("\"", 11);
+                                    temp = tempImagesArray.substring(9, end);
+                                }
                                 count++;
 
-                                executor.execute(new E621.ImageExtractor(temp, count));
+                                executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
                             }
                         }
 
@@ -357,142 +366,6 @@ public class E621 extends BasicCore {
             download();
         } catch (Exception ex) {
             Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private class ImageExtractor implements Runnable {
-
-        String finalLink;
-        int downloadNumber;
-
-        public ImageExtractor(String finalLink, int downloadNumber) {
-            this.finalLink = finalLink;
-            this.downloadNumber = downloadNumber;
-        }
-
-        private boolean download() {
-            String imageName = null;
-            if (!Boolean.parseBoolean(xml.getContentById("E621advancedNaming"))) {
-                imageName = finalLink.substring(finalLink.lastIndexOf("/"), finalLink.length());
-            } else if (Integer.parseInt(xml.getContentById("E621namingOption")) == 0) {
-                imageName = downloadNumber + finalLink.substring(finalLink.lastIndexOf("."));
-            } else if (Integer.parseInt(xml.getContentById("E621namingOption")) == 1) {
-                imageName = getDate() + finalLink.substring(finalLink.lastIndexOf("."));
-            }
-
-            try {
-                URL imageURL = new URL(finalLink);
-                //They think they're smart blocking the access to bots with error 404...
-                //the next 2 lines solves this problem
-                HttpURLConnection conn = (HttpURLConnection) imageURL.openConnection();
-                conn.addRequestProperty("User-Agent", "Mozilla/4.76");
-                InputStream inputImg = conn.getInputStream();
-                OutputStream imageFile = new FileOutputStream(finalPath + "/" + imageName);
-                BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
-
-                NumberFormat nf = NumberFormat.getNumberInstance();
-                nf.setMaximumFractionDigits(1);
-                nf.setGroupingUsed(true);
-
-                int bytes;
-                while ((bytes = inputImg.read()) != -1) {
-                    while (isPaused) {
-                        sleep(2);
-                    }
-
-                    if (isTerminated) {
-                        break;
-                    } else {
-                        writeImg.write(bytes);
-                    }
-                }
-
-                writeImg.close();
-                imageFile.close();
-                inputImg.close();
-
-                numOfImages--;
-                if (!isTerminated) {
-                    taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                    taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
-
-                    String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                    taskManager.progressBar.setString(show);
-                    artists.setContentByName("imageCount", tagOcc, "" + (originalNumOfImages - numOfImages));
-
-                    if (show.equals("100%")) {
-                        taskManager.stopButton.setVisible(false);
-                        taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
-
-                        for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                            taskManager.playButton.removeMouseListener(listener);
-                        }
-
-                        artists.saveXml();
-                        taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
-                    }
-                } else {
-                    File files = new File(finalPath + System.getProperty("file.separator") + imageName);
-                    files.delete();
-
-                    files = new File(finalPath);
-                    artists.setContentByName("imageCount", tagOcc, "" + files.list().length);
-                    artists.saveXml();
-                }
-            } catch (java.net.ConnectException ex) {
-                executor.submit(new ImageExtractor(finalLink, downloadNumber));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (java.net.SocketException ex) {
-                executor.submit(new ImageExtractor(finalLink, downloadNumber));
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            return false;
-        }
-
-        private String getDate() {
-            Calendar date = Calendar.getInstance();
-            String gmt;
-            String hours;
-            String minutes;
-            String seconds;
-            String millis;
-
-            if (((date.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60)) % 24) < 10) {
-                gmt = "GMT -0" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            } else {
-                gmt = "GMT -" + ((date.get(Calendar.ZONE_OFFSET) * -1 / (1000 * 60 * 60)) % 24) + "h";
-            }
-
-            if (date.get(Calendar.HOUR_OF_DAY) < 10) {
-                hours = "0" + date.get(Calendar.HOUR_OF_DAY);
-            } else {
-                hours = "" + date.get(Calendar.HOUR_OF_DAY);
-            }
-
-            if (date.get(Calendar.MINUTE) < 10) {
-                minutes = "0" + date.get(Calendar.MINUTE);
-            } else {
-                minutes = "" + date.get(Calendar.MINUTE);
-            }
-
-            if (date.get(Calendar.SECOND) < 10) {
-                seconds = "0" + date.get(Calendar.SECOND);
-            } else {
-                seconds = "" + date.get(Calendar.SECOND);
-            }
-
-            millis = "" + date.get(Calendar.MILLISECOND);
-
-            return hours + "h, " + minutes + "min, " + seconds + "sec & " + millis + "mil (" + gmt + ")" + ", at "
-                    + date.getDisplayName(2, 2, Locale.US) + " " + date.get(5) + ", " + date.get(1);
-        }
-
-        @Override
-        public void run() {
-            download();
         }
     }
 }
