@@ -110,7 +110,12 @@ public class Tumblr extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        finalPath = xml.getContentById("TUoutput") + System.getProperty("file.separator") + artist;
+        finalPath = xml.getContentById("TUoutput") + File.separator + artist;
+        
+        File getDir = new File(finalPath);
+        if (!getDir.exists()) {
+            getDir.mkdirs();
+        }
 
         PreparedStatement prepared;
         boolean wasFound = false;
@@ -175,9 +180,6 @@ public class Tumblr extends BasicCore {
             }
 
             File getImages = new File(finalPath);
-            if (!getImages.exists()) {
-                getImages.mkdir();
-            }
             int older = getImages.listFiles().length;
 
             if (older >= numOfImages) {
@@ -195,7 +197,7 @@ public class Tumblr extends BasicCore {
                 new Thread("Changed to Download to Update task") {
                     @Override
                     public void run() {
-                        //taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
+                        taskManager.setNewExtractor(new UpdateTumblr(link, taskManager));
                     }
                 }.start();
                 convertedToUpdate = true;
@@ -324,6 +326,7 @@ public class Tumblr extends BasicCore {
                                         wasFound = true;
 
                                         executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                        numOfImages--;
                                         break;
                                     }
                                 }
@@ -345,7 +348,8 @@ public class Tumblr extends BasicCore {
                                                 temp = temp.substring(temp.indexOf("src") + 5);
                                                 temp = temp.substring(0, temp.indexOf("\""));
 
-                                                executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                                executor.execute(new ImageExtractor(1, artist, temp, numOfImages, count, taskManager, finalPath));
+                                                numOfImages--;
                                             }
                                         }
                                     } else { //is everything else
@@ -359,12 +363,12 @@ public class Tumblr extends BasicCore {
 
                                         String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                                         taskManager.progressBar.setString(show);
-                                        PreparedStatement statement = conn.prepareStatement("UPDATE artist image_count = ? WHERE name = ? AND server = ?");
+                                        PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
                                         statement.setInt(1, numOfImages);
                                         statement.setString(2, artist);
                                         statement.setInt(3, 1);
                                         statement.execute();
-                                        
+
                                         if (show.equals("100%")) {
                                             taskManager.stopButton.setVisible(false);
                                             taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
@@ -411,6 +415,16 @@ public class Tumblr extends BasicCore {
 
         if (executor != null) {
             executor.shutdownNow();
+        }
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
+            statement.setInt(1, originalNumOfImages - numOfImages);
+            statement.setString(2, artist);
+            statement.setInt(3, 1);
+            statement.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(Tumblr.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

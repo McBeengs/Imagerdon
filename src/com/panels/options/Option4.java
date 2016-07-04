@@ -7,7 +7,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.util.crypto.PasswordManager;
 import com.util.UsefulMethods;
@@ -337,7 +336,7 @@ public class Option4 extends javax.swing.JPanel {
             String passw = pass.decrypt(pass.stringToByte(xml.getContentById("TUpass")), "12345678".getBytes(), "12345678".getBytes());
 
             usernameCheck.setValueAttribute(user);
-            usernameField.setValueAttribute(passw);
+            usernameField.setValueAttribute(user);
             next.click();
             passwordField.setValueAttribute(passw);
 

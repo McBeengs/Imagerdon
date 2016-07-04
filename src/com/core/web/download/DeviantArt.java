@@ -34,7 +34,6 @@ import javax.swing.JOptionPane;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import static java.lang.Thread.sleep;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -43,7 +42,6 @@ import java.sql.SQLException;
 public class DeviantArt extends BasicCore {
 
     private int numOfImages;
-    private int numOfPages = 0;
     private int originalNumOfImages;
     private boolean isPaused = false;
     private boolean isTerminated = false;
@@ -120,7 +118,6 @@ public class DeviantArt extends BasicCore {
                 Elements getNumber = getNumberImages.select("div[class~=tt-a tt-fh]");
 
                 numOfImages += getNumber.size();
-                numOfPages = numOfImages / 24 + 1;
             }
         } catch (java.net.UnknownHostException ex) {
             JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
@@ -131,7 +128,12 @@ public class DeviantArt extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        finalPath = xml.getContentById("DAoutput") + System.getProperty("file.separator") + artist;
+        finalPath = xml.getContentById("DAoutput") + File.separator + artist;
+
+        File getDir = new File(finalPath);
+        if (!getDir.exists()) {
+            getDir.mkdirs();
+        }
 
         PreparedStatement prepared;
         boolean wasFound = false;
@@ -194,9 +196,6 @@ public class DeviantArt extends BasicCore {
                 }
 
                 File getImages = new File(finalPath);
-                if (!getImages.exists()) {
-                    getImages.mkdir();
-                }
                 int older = getImages.listFiles().length;
 
                 if (older >= numOfImages) {
@@ -214,7 +213,7 @@ public class DeviantArt extends BasicCore {
                     new Thread("Changed to Download to Update task") {
                         @Override
                         public void run() {
-                            taskManager.setNewExtractor(new UpdateFurAffinity(link, taskManager));
+                            taskManager.setNewExtractor(new UpdateDeviantArt(link, taskManager));
                         }
                     }.start();
                     convertedToUpdate = true;
@@ -303,26 +302,22 @@ public class DeviantArt extends BasicCore {
                         taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
                         isDownloading = true;
 
-                        int cut = numOfImages - ((numOfPages - 1) * 24);
                         int c = 0;
                         int count = 0;
                         executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
 
-                        while (c < numOfImages) {
+                        while (c < originalNumOfImages) {
                             if (isTerminated) {
                                 break;
                             }
 
                             HtmlPage conn = webClient.getPage(link + c);
                             Document docLinks = Jsoup.parse(conn.asXml());
-                            Elements getPages = docLinks.select("div span span span a[href~=" + artist + ".deviantart.com/art/]");
+                            Elements getPages = docLinks.select("div span span span a[href~=" + artist.toLowerCase() + ".deviantart.com/art/]");
 
                             for (int i = 0; i < getPages.size(); i++) {
                                 while (isPaused) {
                                     sleep(2);
-                                }
-                                if (count == originalNumOfImages) {
-                                    break;
                                 }
 
                                 String temp = getPages.get(i).toString();
@@ -339,11 +334,9 @@ public class DeviantArt extends BasicCore {
                                     temp = temp.substring(0, temp.indexOf("\""));
                                     count++;
 
-                                    System.out.println(count + "/" + originalNumOfImages + " | " + temp);
                                     executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
-                                } else {
-                                    //seila
                                 }
+                                numOfImages--;
                             }
                             c += 24;
                         }
@@ -375,6 +368,17 @@ public class DeviantArt extends BasicCore {
         if (executor != null) {
             executor.shutdownNow();
         }
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
+            statement.setInt(1, originalNumOfImages - numOfImages);
+            statement.setString(2, artist);
+            statement.setInt(3, 0);
+            statement.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(DeviantArt.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     @Override

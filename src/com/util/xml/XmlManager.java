@@ -123,12 +123,12 @@ public class XmlManager {
 
         content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n\n</root>";
     }
-    
+
     /**
      * Loads an already existing file, clears his content and automatically sets
      * this instance to work with it.
      *
-     * @param file the file that will be cleared and 
+     * @param file the file that will be cleared and
      * @exception IOException if an external problem is impeding the correct
      * loading of the file
      */
@@ -137,7 +137,7 @@ public class XmlManager {
 
         content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n\n</root>";
     }
-    
+
     public void setContent(String content) {
         this.content = content;
     }
@@ -170,8 +170,8 @@ public class XmlManager {
      * {@code </yum>}
      * </pre></blockquote>
      *
-     * After created, use the method {@code setContentByName()} to add content to
-     * the tag.
+     * After created, use the method {@code setContentByName()} to add content
+     * to the tag.
      *
      * @param tagName the tag name that will be creaded
      * @param rootTagName the tag that will receive the new one
@@ -270,8 +270,8 @@ public class XmlManager {
 
     /**
      * Searchs both the tag provided and his content in this instance and
-     * returns the exact node number it is. If it doesn't exist, this
-     * method will return {@code -1} instead.
+     * returns the exact node number it is. If it doesn't exist, this method
+     * will return {@code -1} instead.
      *
      * @param tagName the tag that will be searched
      * @param tagContent the content inside the tag
@@ -312,8 +312,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag name in this instance and returns all contents founded
-     * within elements of the same name
+     * Searchs an specific tag name in this instance and returns all contents
+     * founded within elements of the same name
      *
      * @param tagName the tag that you want to obtain the values
      * @return the values founded
@@ -366,8 +366,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag ID in this instance and returns the content of the first
-     * perfect match founded
+     * Searchs an specific tag ID in this instance and returns the content of
+     * the first perfect match founded
      *
      * @param id the tag ID that you want to obtain the value
      * @return the value founded
@@ -389,7 +389,8 @@ public class XmlManager {
 
     /**
      * Searchs an specific tag in this instance with an attribute provided
-     * ({@code <string foo="value"></string>}) and returns the value founded inside the tag
+     * ({@code <string foo="value">text</string>}) and returns the value founded
+     * inside the tag
      *
      * @param tagName the tag that you want to obtain the values
      * @param item the tag index
@@ -456,8 +457,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag name in this instance and sets his content with the value
-     * provided
+     * Searchs an specific tag name in this instance and sets his content with
+     * the value provided
      *
      * @param tagName the tag that you want to set the value
      * @param item the occurence of the tag
@@ -491,8 +492,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag ID in this instance and sets his content with the value
-     * provided
+     * Searchs an specific tag ID in this instance and sets his content with the
+     * value provided
      *
      * @param id the tag ID that you want to set the value
      * @param value the new content of the tag
@@ -516,8 +517,9 @@ public class XmlManager {
 
     /**
      * Searchs an specific tag in this instance with an attribute provided
-     * ({@code <string foo="value"></string>}) and sets sets his content with the value
-     * provided
+     * ({@code <string foo="value"></string>}) and sets sets his content with
+     * the value provided
+     *
      * @param tagName the tag that you want to set the values
      * @param item the tag index
      * @param attrName the tag attribute
@@ -555,8 +557,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag name in this instance and removes it from his father,
-     * erasing it from the node
+     * Searchs an specific tag name in this instance and removes it from his
+     * father, erasing it from the node
      *
      * @param tagName the tag that you want to delete
      * @param item the occurence of the tag
@@ -587,8 +589,8 @@ public class XmlManager {
     }
 
     /**
-     * Searchs an specific tag ID in this instance and removes it from his father,
-     * erasing it from the node
+     * Searchs an specific tag ID in this instance and removes it from his
+     * father, erasing it from the node
      *
      * @param id the tag ID that you want to delete
      */
@@ -657,11 +659,11 @@ public class XmlManager {
 
     /**
      * Saves the XML content of this instance on the file / path that was
-     * indicated back on the instance loading. It automatically formats the content
-     * before saving
+     * indicated back on the instance loading. It automatically formats the
+     * content before saving
      *
-     * @throws java.io.IOException if an external problem is impeding the correct
-     * saving of the file
+     * @throws java.io.IOException if an external problem is impeding the
+     * correct saving of the file
      */
     public void saveXml() throws IOException {
         formatXml();
@@ -677,8 +679,8 @@ public class XmlManager {
     /**
      * Returns the XML content of this instance without formatting, indenting or
      * checking for errors in parsing. It can be use for debugging purposes as
-     * how changes are being handled by the API, however, it can be
-     * formatted with {@code formatXml()} before the call of this method
+     * how changes are being handled by the API, however, it can be formatted
+     * with {@code formatXml()} before the call of this method
      *
      * @return the content
      */

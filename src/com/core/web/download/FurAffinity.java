@@ -20,7 +20,6 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
-import com.panels.main.StylizedMainJFrame;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
@@ -53,7 +52,7 @@ public class FurAffinity extends BasicCore {
     private int originalNumOfImages;
     private int numOfPages = 0;
     private String finalPath;
-    private final String link;
+    private String link;
     private String artist;
     private String avatarUrl;
     private final Connection conn;
@@ -112,7 +111,22 @@ public class FurAffinity extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        finalPath = xml.getContentById("FAoutput") + System.getProperty("file.separator") + artist;
+        finalPath = xml.getContentById("FAoutput") + File.separator + artist;
+        
+        File getDir = new File(finalPath);
+        if (!getDir.exists()) {
+            getDir.mkdirs();
+        }
+
+        try {
+            HtmlPage page = webClient.getPage("http://www.furaffinity.net/user/" + artist.toLowerCase());
+            Document parsed = Jsoup.parse(page.getBody().asXml());
+            avatarUrl = "http:" + parsed.select("img.avatar").get(0).attr("src");
+        } catch (java.lang.IndexOutOfBoundsException ex) {
+            avatarUrl = "null";
+        } catch (FailingHttpStatusCodeException | java.lang.NullPointerException ex) {
+            JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
+        }
 
         PreparedStatement prepared;
         boolean wasFound = false;
@@ -174,9 +188,6 @@ public class FurAffinity extends BasicCore {
                 }
 
                 File getImages = new File(finalPath);
-                if (!getImages.exists()) {
-                    getImages.mkdir();
-                }
                 int older = getImages.listFiles().length;
 
                 if (older >= numOfImages) {
@@ -237,6 +248,9 @@ public class FurAffinity extends BasicCore {
     }
 
     private void download() throws Exception {
+        if (!link.endsWith("/")) {
+            link += "/";
+        }
         artist = link.substring(35, link.lastIndexOf("/"));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
 
@@ -260,11 +274,6 @@ public class FurAffinity extends BasicCore {
                     downloadAction();
                 }
             });
-
-            if (StylizedMainJFrame.AUTO_START) {
-                downloadAction();
-                taskManager.setExecutingLayout();
-            }
 
         } else if (!convertedToUpdate) {
             taskManager.progressBar.setIndeterminate(false);
@@ -332,7 +341,7 @@ public class FurAffinity extends BasicCore {
                                     if (isTerminated) {
                                         break;
                                     } else {
-                                        executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                        executor.execute(new ImageExtractor(2, artist, temp, numOfImages, count, taskManager, finalPath));
                                     }
                                 } else {
                                     numOfImages--;
@@ -345,7 +354,7 @@ public class FurAffinity extends BasicCore {
 
                                     String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                                     taskManager.progressBar.setString(show);
-                                    conn.createStatement().execute("UPDATE fur_affinity SET image_count = " + (originalNumOfImages - numOfImages) + " WHERE name = '" + artist + "'");
+                                    conn.createStatement().execute("UPDATE artist SET image_count = " + (originalNumOfImages - numOfImages) + " WHERE name = '" + artist + "' AND server = 2");
 
                                     if (show.equals("100%")) {
                                         taskManager.stopButton.setVisible(false);
@@ -388,6 +397,17 @@ public class FurAffinity extends BasicCore {
         if (executor != null) {
             executor.shutdownNow();
         }
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
+            statement.setInt(1, originalNumOfImages - numOfImages);
+            statement.setString(2, artist);
+            statement.setInt(3, 2);
+            statement.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(FurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     @Override

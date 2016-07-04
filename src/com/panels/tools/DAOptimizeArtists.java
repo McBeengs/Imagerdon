@@ -147,7 +147,7 @@ public class DAOptimizeArtists {
                     statement.setString(3, parsed.select("img.avatar.float-left").get(0).attr("src"));
                     statement.setDate(4, new Date(new java.util.Date().getTime()));
                     statement.setDate(5, new Date(new java.util.Date().getTime()));
-                    File[] getImageCount = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator")
+                    File[] getImageCount = new File(xml.getContentById("DAoutput") + File.separator
                             + artist).listFiles();
                     statement.setInt(6, getImageCount.length);
 

@@ -225,7 +225,7 @@ public class WebViewPage extends JPanel {
                                 title = title.substring(0, 18);
                             }
 
-                            tabbedPane.setTitleAt(tabIndex,"   " + title + "   ");
+                            tabbedPane.setTitleAt(tabIndex, "   " + title + "   ");
 
                             //set listener to catch eventual right clicks
                             EventListener hrefListener = new EventListener() {
@@ -389,7 +389,6 @@ public class WebViewPage extends JPanel {
         });
     }
 
-    @SuppressWarnings("deprecation")
     private PopupWindow createPopupWindow() {
         final Iterator<Window> windows = Window.impl_getWindows();
 
@@ -408,8 +407,16 @@ public class WebViewPage extends JPanel {
                             ContextMenuContent cmc = (ContextMenuContent) ((Parent) bridge).getChildrenUnmodifiable().get(0);
 
                             VBox itemsContainer = cmc.getItemsContainer();
-                            String[] typos = new String[]{"Reload page", "Stop loading", "Go Back", "Go Forward", "Open Link", "Open Link in New Window",
-                                "Copy Link to Clipboard", "Open Image in New Window", "Copy Image to Clipboard"};
+                            String[] typos = new String[]{
+                                language.getContentById("reloadPage"),
+                                language.getContentById("stopLoading"),
+                                language.getContentById("goBack"),
+                                language.getContentById("goForward"),
+                                language.getContentById("openLink"),
+                                language.getContentById("openLinkNT"),
+                                language.getContentById("copyLinkCB"),
+                                language.getContentById("openImage"),
+                                language.getContentById("copyImageCB")};
                             List<MenuItemContainer> remove = new ArrayList<>();
 
                             for (Node n : itemsContainer.getChildren()) {
@@ -437,7 +444,7 @@ public class WebViewPage extends JPanel {
                                     cmc.getItemsContainer().getChildren().add(cmc.new MenuItemContainer(reloadPage));
 
                                     text = currentUrl.getText();
-                                    String[] outcomes = new String[]{".deviantart.com/gallery/", ".tumblr.com", "http://g.e-hentai.org/g/",
+                                    String[] outcomes = new String[]{".deviantart.com/gallery/", ".tumblr.com",
                                         "http://www.furaffinity.net/gallery/", "https://e621.net/post/index/"};
 
                                     for (int i = 0; i < outcomes.length; i++) {
@@ -446,7 +453,7 @@ public class WebViewPage extends JPanel {
                                                 if (!text.endsWith("?catpath=/")) {
                                                     text += "?catpath=/";
                                                 }
-                                            } else if (i == 3) {
+                                            } else if (i == 2) {
                                                 String title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
                                                 if (title.endsWith("| Tumblr")) {
                                                     break;
@@ -464,18 +471,11 @@ public class WebViewPage extends JPanel {
                                                     show = language.getContentById("saveGallery").replace("&string", "Tumblr");
                                                     break;
                                                 case 2:
-                                                    String title = browser.getEngine().getDocument().getElementsByTagName("title").item(0).getTextContent();
-                                                    if (title.length() > 10) {
-                                                        title = title.substring(0, 10);
-                                                    }
-                                                    show = language.getContentById("saveGallery").replace("&string", title);
-                                                    break;
-                                                case 3:
                                                     String artist2 = text.substring(35, text.lastIndexOf("/"));
                                                     artist2 = artist2.substring(0, 1).toUpperCase() + artist2.substring(1);
                                                     show = language.getContentById("saveGallery").replace("&string", artist2);
                                                     break;
-                                                case 4:
+                                                case 3:
                                                     String artist3 = text.substring(text.lastIndexOf("/") + 1);
                                                     artist3 = artist3.substring(0, 1).toUpperCase() + artist3.substring(1);
                                                     show = language.getContentById("saveGallery").replace("&string", artist3);
@@ -533,8 +533,9 @@ public class WebViewPage extends JPanel {
                                     openLink.setOnAction(new EventHandler<ActionEvent>() {
                                         @Override
                                         public void handle(ActionEvent t) {
-                                            tabbedPane.addTab("   New Tab   ", icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
-                                                    tabbedPane.getTabCount() - 2, icon, setNewPageUrl()));
+                                            tabbedPane.addTab("   " + language.getContentById("newTabTitle") + "   ",
+                                                    icon, new WebViewPage((ClosableTabbedPane) tabbedPane,
+                                                            tabbedPane.getTabCount() - 2, icon, setNewPageUrl()));
                                         }
                                     });
 

@@ -16,6 +16,7 @@
  */
 package com.panels.main;
 
+import com.panels.modal.NewTabJFrame;
 import aurelienribon.slidinglayout.SLAnimator;
 import aurelienribon.slidinglayout.SLConfig;
 import aurelienribon.slidinglayout.SLKeyframe;
@@ -23,6 +24,7 @@ import aurelienribon.slidinglayout.SLPanel;
 import aurelienribon.slidinglayout.SLSide;
 import com.core.web.explorer.panes.MainPane;
 import com.core.web.explorer.panes.WebViewPage;
+import com.panels.modal.SetupContainer;
 import com.panels.options.OptionsJFrame;
 import com.panels.tools.BatchDownloads;
 import com.panels.tools.DAOptimizeArtists;
@@ -49,6 +51,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -58,6 +62,7 @@ import java.awt.event.WindowEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,11 +97,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private SLPanel tasksPanel;
     private SLPanel scrollPane;
     private SLPanel blankCanvas;
-    private SLPanel overtaskNotifier;
-    private SLPanel overtaskNotifierPanel;
     private SLConfig showCfg;
     private SLConfig hideCfg;
-    private SLConfig notificationCfg;
     private JPanel mainButtonsPanel;
     private JPanel searchPane;
     private JLabel hideTasksButton;
@@ -132,7 +134,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
     private ArrayList<Object> stack;
     public static RemoveTask REMOVE_TASK;
     public static AddTask ADD_TASK;
-    public static boolean AUTO_START;
     public static TasksStack GET_STACK;
 
     public StylizedMainJFrame() {
@@ -152,7 +153,6 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         scrollPane = new SLPanel();
         tasksPanel = new SLPanel();
         blankCanvas = new SLPanel();
-        overtaskNotifierPanel = new SLPanel();
         hideTasksButton = new JLabel();
         quickTaskButton = new JButton();
         artistsTasksButton = new JButton();
@@ -262,25 +262,9 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 .place(0, 0, blankCanvas)
                 .endGrid();
 
-        overtaskNotifier = new OvertaskNotifierJPanel("", "");
-        overtaskNotifierPanel.setLayout(new GridBagLayout());
-        overtaskNotifierPanel.add(overtaskNotifier);
-
-        notificationCfg = new SLConfig(mainPanel)
-                .row(1f).col(530).col(1f)
-                .beginGrid(0, 0)
-                .row(1f).row(60).col(1f)
-                .place(0, 0, tasksPanel)
-                .place(1, 0, overtaskNotifierPanel)
-                .endGrid()
-                .beginGrid(0, 1)
-                .row(1f).col(1f)
-                .place(0, 0, blankCanvas)
-                .endGrid();
-
         mainPanel.initialize(showCfg);
         add(mainPanel);
-        
+
         fileOption.setText(language.getContentById("file"));
         menuBar.add(fileOption);
         toolsOption.setText(language.getContentById("tools"));
@@ -291,28 +275,28 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         deviantArtTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconSmall.png")));
         deviantArtTools.setText(language.getContentById("deviantArt"));
         optimizedeviantArtArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconSmall.png")));
-        optimizedeviantArtArtists.setText("Optimize artists");
+        optimizedeviantArtArtists.setText(language.getContentById("optimize"));
         deviantArtTools.add(optimizedeviantArtArtists);
         toolsOption.add(deviantArtTools);
         toolsOption.add(new Separator());
         tumblrTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/tumblrIconSmall.png")));
         tumblrTools.setText(language.getContentById("tumblr"));
         optimizeTumblrArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/tumblrIconSmall.png")));
-        optimizeTumblrArtists.setText("Optimize artists");
+        optimizeTumblrArtists.setText(language.getContentById("optimize"));
         tumblrTools.add(optimizeTumblrArtists);
         toolsOption.add(tumblrTools);
         toolsOption.add(new Separator());
         furAffinityTools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
         furAffinityTools.setText(language.getContentById("furAffinity"));
-        imageBatchDownload.setText("Download batch of images");
-        serverBatchDownload.setText("Download batch of servers");
-        manageTags.setText("Manage tags");
+        imageBatchDownload.setText(language.getContentById("batchImages"));
+        serverBatchDownload.setText(language.getContentById("batchServers"));
+        manageTags.setText(language.getContentById("manageTags"));
         optimizeFAArtists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
-        optimizeFAArtists.setText("Optimize artists");
+        optimizeFAArtists.setText(language.getContentById("optimize"));
         downloadFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
         downloadFAFavs.setText(language.getContentById("downloadFavs"));
         removeFAFavs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/FAIconSmall.png")));
-        removeFAFavs.setText("Remove all favs");
+        removeFAFavs.setText(language.getContentById("removeFavs"));
         furAffinityTools.add(optimizeFAArtists);
         furAffinityTools.add(downloadFAFavs);
         furAffinityTools.add(removeFAFavs);
@@ -321,7 +305,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         e621Tools.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
         e621Tools.setText(language.getContentById("e621"));
         optimizeE621Artists.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconSmall.png")));
-        optimizeE621Artists.setText("Optimize artists");
+        optimizeE621Artists.setText(language.getContentById("optimize"));
         e621Tools.add(optimizeE621Artists);
         toolsOption.add(e621Tools);
         menuBar.add(toolsOption);
@@ -351,8 +335,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
 
         searchText.setText(language.getContentById("searchPlaceholder"));
         searchText.setBorder(null);
-        searchText.setFocusable(false);
-        searchText.setOpaque(false);
+//        searchText.setFocusable(false);
+//        searchText.setOpaque(false);
 
         javax.swing.GroupLayout searchPaneLayout = new javax.swing.GroupLayout(searchPane);
         searchPane.setLayout(searchPaneLayout);
@@ -456,18 +440,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
         searchButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                PopupMenu popup = new PopupMenu();
-
-                String text = language.getContentById("searchOnServers").replace("&string", searchText.getText());
-                popup.addItem(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/notVisible.png")), text, new MouseAdapter() {
-                    @Override
-                    public void mousePressed(MouseEvent evt) {
-                        System.out.println("yes");
-                    }
-                });
-
-                int maxSize = popup.getComponent().getGraphics().getFontMetrics().stringWidth(text);
-                popup.show(searchPane, searchPane.getWidth() - maxSize - 70, searchPane.getHeight() - 1);
+                System.out.println("searchButton clicked");
             }
 
             @Override
@@ -486,6 +459,15 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 searchText.setText("");
+            }
+        });
+
+        searchText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == 10 && !searchText.getText().isEmpty()) {
+                    System.out.println("searchText enter");
+                }
             }
         });
         //end of searchText
@@ -507,7 +489,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of serverBatchDownload
-        
+
         manageTags.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -515,7 +497,7 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of manageTags
-        
+
         optimizedeviantArtArtists.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -523,8 +505,8 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
             }
         });
         //end of optimizeDAArtists
-        
-         optimizeTumblrArtists.addActionListener(new java.awt.event.ActionListener() {
+
+        optimizeTumblrArtists.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 new TUOptimizeArtists();
@@ -591,6 +573,20 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                             JOptionPane.QUESTION_MESSAGE);
 
                     if (result == JOptionPane.YES_OPTION) {
+                        JOptionPane pane = new JOptionPane(language.getContentById("endingTasks"));
+                        pane.setVisible(true);
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                for (int i = 0; i < numOfThreads; i++) {
+                                    DownloadTaskJPanel temp = (DownloadTaskJPanel) scrollPane.getComponent(i);
+                                    if (!temp.isTerminated()) {
+                                        temp.getExtractor().terminate();
+                                    }
+                                }
+                            }
+                        }.start();
+                        pane.setVisible(false);
                         System.exit(0);
                     }
                 } else {
@@ -636,9 +632,22 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
 
     public static void main(String args[]) {
         Locale.setDefault(Locale.US);
+        String separator = File.separator;
+
+        File getConfig = new File(UsefulMethods.getClassPath(StylizedMainJFrame.class) + separator + "config");
+        if (!getConfig.exists()) {
+            getConfig.mkdir();
+        }
+
+        File getOptions = new File(UsefulMethods.getClassPath(StylizedMainJFrame.class) + "config" + separator + "options.xml");
+        if (!getOptions.exists()) {
+            final XmlManager style = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+            new SetupContainer(style).setVisible(true);
+            return;
+        }
+
         XmlManager style = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         String set = style.getContentByName("style", 0);
-        set = set.substring(0, set.indexOf(","));
 
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -661,32 +670,12 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
 
     public class AddTask {
 
-        public void setAutoStart(boolean bln) {
-            AUTO_START = bln;
-        }
-
         public void rearrangeTasks() {
             adjustTasks();
         }
 
         public void addTask(String url, int server, int type) {
-            int c = 0;
-            if (scrollPane.getComponentCount() > 0) {
-                for (int i = 0; i < numOfThreads; i++) {
-                    DownloadTaskJPanel task = (DownloadTaskJPanel) scrollPane.getComponent(i);
-                    task.setNewTaskNumber(i + 1);
-
-                    if (!task.isTerminated()) {
-                        c++;
-                    }
-                    if (c == 10) { // number of simult tasks
-                        c = -1;
-                        break;
-                    }
-                }
-            }
-
-            if (c >= 0) {
+            if (scrollPane.getComponentCount() >= 0 && scrollPane.getComponentCount() <= 10) { // new limit
                 numOfThreads++;
                 scrollPane.add(new DownloadTaskJPanel(url, numOfThreads, server, type));
                 adjustTasks();
@@ -699,37 +688,25 @@ public class StylizedMainJFrame extends javax.swing.JFrame {
                 stack.add(Arrays.asList(store));
 
                 if (!isTasksPanelHidden) {
-                    // FurAffinity name... It must get from all servers
-                    String artist = url.substring(35, url.lastIndexOf("/"));
-                    artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+                    String artist = null;
+                    if (url.contains("deviantart.com")) {
 
-                    if (artist.length() > 15) {
-                        artist = artist.substring(0, 12) + "...";
+                    } else if (url.contains("tumblr.com")) {
+
+                    } else if (url.contains("furaffinity.net")) {
+                        artist = url.substring(35, url.lastIndexOf("/"));
+                        artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
+
+                        if (artist.length() > 15) {
+                            artist = artist.substring(0, 12) + "...";
+                        }
+                    } else {
+
                     }
 
-                    overtaskNotifier = new OvertaskNotifierJPanel("Added task \"" + artist + "\" to waiting stack",
-                            (stack.size() - 1) + " others are also awaiting");
-                    overtaskNotifier.setOpaque(true);
-                    overtaskNotifierPanel.removeAll();
-                    overtaskNotifierPanel.add(overtaskNotifier);
-
-                    mainPanel.createTransition().push(new SLKeyframe(notificationCfg, 0.3f)
-                            .setStartSideForNewCmps(SLSide.BOTTOM).setCallback(new SLKeyframe.Callback() {
-                        @Override
-                        public void done() {
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        sleep(5000);
-                                        mainPanel.createTransition().push(new SLKeyframe(showCfg, 0.3f).setEndSideForOldCmps(SLSide.BOTTOM)).play();
-                                    } catch (InterruptedException ex) {
-                                        Logger.getLogger(StylizedMainJFrame.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                }
-                            }.start();
-                        }
-                    })).play();
+                    String show = language.getContentById("waitingStack").replace("&string", artist)
+                            .replace("&num", "" + (stack.size() - 1));
+                    UsefulMethods.makeBalloon(tasksCanvas, show, Color.blue);
                 }
             }
         }

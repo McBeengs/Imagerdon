@@ -220,7 +220,6 @@ public class FADownloadFavs extends javax.swing.JFrame {
         new Thread() {
             @Override
             public void run() {
-                StylizedMainJFrame.ADD_TASK.setAutoStart(true);
 
                 for (int i = 0; i < artistsLinks.size(); i++) {
                     StylizedMainJFrame.ADD_TASK.addTask(artistsLinks.get(0), DownloadTaskJPanel.FUR_AFFINITY, DownloadTaskJPanel.DOWNLOAD_TASK);
@@ -231,16 +230,6 @@ public class FADownloadFavs extends javax.swing.JFrame {
                         Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
-                while (StylizedMainJFrame.GET_STACK.getStackSize() > 0) {
-                    try {
-                        sleep(2);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(FADownloadFavs.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
-                StylizedMainJFrame.ADD_TASK.setAutoStart(false);
             }
         }.start();
 

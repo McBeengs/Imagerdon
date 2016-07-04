@@ -6,6 +6,7 @@ import com.core.web.download.DeviantArt;
 import com.core.web.download.E621;
 import com.core.web.download.FurAffinity;
 import com.core.web.download.Tumblr;
+import com.core.web.download.UpdateDeviantArt;
 import com.core.web.download.UpdateE621;
 import com.core.web.download.UpdateFurAffinity;
 import com.core.web.download.UpdateTumblr;
@@ -65,9 +66,8 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         } else {
             switch (typeOfServer) {
                 case DEVIANT_ART:
-                    //extractor = new DeviantArt(url, this);
-                    throw new UnsupportedOperationException("Updating DA isn't supported yet.");
-                //break;
+                    extractor = new UpdateDeviantArt(url, this);
+                    break;
                 case TUMBLR:
                     extractor = new UpdateTumblr(url, this);
                     break;
@@ -117,6 +117,7 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
         taskIcon = new javax.swing.JLabel();
         stopButton = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         setLayout(null);
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
@@ -348,10 +349,10 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
                 } else {
                     switch (typeOfServer) {
                         case DEVIANT_ART:
-                            //extractor = new DeviantArt(url, this);
+                            extractor = new UpdateDeviantArt(url, getContent());
                             break;
                         case TUMBLR:
-                            //extractor = new DeviantArt(url, this);
+                            extractor = new UpdateTumblr(url, getContent());
                             break;
                         case FUR_AFFINITY:
                             extractor = new UpdateFurAffinity(url, getContent());
@@ -442,6 +443,10 @@ public final class DownloadTaskJPanel extends javax.swing.JPanel {
             taskIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png")));
             taskLabel.setText(language.getContentById("updateTitle"));
         }
+    }
+
+    public BasicCore getExtractor() {
+        return extractor;
     }
 
     public void setNewExtractor(BasicCore extractor) {

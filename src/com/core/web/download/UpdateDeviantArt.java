@@ -16,7 +16,6 @@
  */
 package com.core.web.download;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.panels.main.DownloadTaskJPanel;
@@ -27,7 +26,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -41,9 +39,10 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.util.concurrent.TimeUnit;
 
-public class UpdateFurAffinity extends BasicCore {
+public class UpdateDeviantArt extends BasicCore {
 
     private boolean isPaused = false;
     private boolean isTerminated = false;
@@ -52,7 +51,7 @@ public class UpdateFurAffinity extends BasicCore {
     private int originalNumOfImages;
     private int numOfPages = 0;
     private String finalPath;
-    private final String link;
+    private String link;
     private String artist;
     private final Connection conn;
     private WebClient webClient;
@@ -61,7 +60,7 @@ public class UpdateFurAffinity extends BasicCore {
     private final XmlManager language;
     private final DownloadTaskJPanel taskManager;
 
-    public UpdateFurAffinity(String url, DownloadTaskJPanel taskManager) {
+    public UpdateDeviantArt(String url, DownloadTaskJPanel taskManager) {
         link = url;
         this.taskManager = taskManager;
 
@@ -76,35 +75,42 @@ public class UpdateFurAffinity extends BasicCore {
     private boolean getInformationAboutGallery() throws IOException {
         try {
             taskManager.infoDisplay.setText(language.getContentById("getImages"));
-            HtmlPage page = webClient.getPage(link);
+            HtmlPage page = webClient.getPage(link + "0");
 
             Document getNumberImages = Jsoup.parse(page.asXml());
             Elements testURL = getNumberImages.select("body");
 
-            if (testURL.toString().contains("could not be found.")) {
+            if (testURL.toString().contains("The page you were looking for doesn't exist.")) {
                 JOptionPane.showMessageDialog(null, language.getContentById("errorUrlNonExistent"), language.getContentById("genericErrorTitle"), 0);
                 return false;
             } else {
-                int c = 1;
-                while (1 > 0) {
-                    page = webClient.getPage(link + c + "/");
+                numOfImages = 0;
+                while (true) {
+                    if (!link.contains("%2F&offset=")) {
+                        link += "%2F&offset=";
+                    }
 
-                    if (page.asXml().contains("There are no submissions to list") == true) {
+                    page = webClient.getPage(link + numOfImages);
+
+                    if (page.asText().contains("This section has no deviations yet!")) {
                         break;
                     }
-                    c++;
-                    numOfPages = c - 1;
-                }
 
-                for (int i = 1; i <= numOfPages; i++) {
-                    String currentPage = (link + i + "/");
-                    HtmlPage getLinks = webClient.getPage(currentPage);
-                    Document doc = Jsoup.parse(getLinks.asXml());
-                    Elements get = doc.select("a[href~=/view/]");
-                    numOfImages += get.size();
+                    numOfImages += 24;
+                    numOfPages++;
                 }
+                //by now "numOfImages" is holding the last avaliable page, but we need specify how many
+                //images are on the last page
+
+                numOfImages -= 24;
+
+                page = webClient.getPage(link + numOfImages);
+                getNumberImages = Jsoup.parse(page.asXml());
+                Elements getNumber = getNumberImages.select("div[class~=tt-a tt-fh]");
+
+                numOfImages += getNumber.size();
             }
-        } catch (java.net.UnknownHostException | FailingHttpStatusCodeException ex) {
+        } catch (java.net.UnknownHostException ex) {
             JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
             return false;
         }
@@ -113,15 +119,14 @@ public class UpdateFurAffinity extends BasicCore {
     }
 
     private void download() throws Exception {
-        artist = link.substring(35, link.lastIndexOf("/"));
+        artist = link.substring(7, link.indexOf("."));
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
 
-        taskManager.author.setText(artist + " | FurAfinity");
+        taskManager.author.setText(artist + " | DeviantArt");
         taskManager.infoDisplay.setText(language.getContentById("loginIn"));
         while (!UsefulMethods.isWebClientReady()) {
             sleep(2);
         }
-
         webClient = UsefulMethods.getWebClientInstance();
 
         if (getInformationAboutGallery()) {
@@ -140,10 +145,10 @@ public class UpdateFurAffinity extends BasicCore {
                 PreparedStatement statement = conn.prepareStatement("UPDATE artist SET last_updated = ? WHERE name = ? AND server = ?");
                 statement.setDate(1, new Date(new java.util.Date().getTime()));
                 statement.setString(2, artist);
-                statement.setInt(3, 2);
+                statement.setInt(3, 0);
                 statement.execute();
             } catch (SQLException ex) {
-                Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(UpdateDeviantArt.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             taskManager.playButton.addMouseListener(new MouseAdapter() {
@@ -174,7 +179,7 @@ public class UpdateFurAffinity extends BasicCore {
                 public void run() {
                     try {
                         int count = 0;
-                        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM artist WHERE name = '" + artist + "' AND server = 2");
+                        ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM artist WHERE name = '" + artist + "' AND server = 0");
                         rs.next();
                         int onDisk = rs.getInt("image_count");
 
@@ -189,10 +194,11 @@ public class UpdateFurAffinity extends BasicCore {
                             taskManager.playButton.removeMouseListener(taskManager.playButton.getMouseListeners()[0]);
                             taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                         } else {
-                            int cut = numOfImages - ((numOfPages - 1) * 72);
+                            int cut = numOfImages - (numOfPages * 24);
+                            int c = 0;
                             originalNumOfImages = numOfImages;
                             numOfImages -= onDisk;
-                            finalPath = xml.getContentById("FAoutput") + File.separator + artist
+                            finalPath = xml.getContentById("DAoutput") + File.separator + artist
                                     + File.separator;
 
                             taskManager.progressBar.setIndeterminate(false);
@@ -205,72 +211,48 @@ public class UpdateFurAffinity extends BasicCore {
                             executor = Executors.newFixedThreadPool(Integer.parseInt(xml.getContentById("simult")));
                             executor.awaitTermination(0L, TimeUnit.SECONDS);
 
-                            for (int c = 1; c <= numOfPages; c++) {
+                            while (c < originalNumOfImages) {
                                 if (isTerminated) {
                                     break;
                                 }
 
-                                HtmlPage page = webClient.getPage(link + c + "/");
-                                Document docLinks = Jsoup.parse(page.asXml());
-                                Elements getPages = docLinks.select("a[href~=/view/]");
+                                HtmlPage html = webClient.getPage(link + c);
+                                Document docLinks = Jsoup.parse(html.asXml());
+                                Elements getPages = docLinks.select("div span span span a[href~=" + artist.toLowerCase() + ".deviantart.com/art/]");
 
-                                for (int i = 0; i < 72; i++) {
+                                for (int i = 0; i < getPages.size(); i++) {
                                     while (isPaused) {
                                         sleep(2);
                                     }
 
-                                    if (c == numOfPages) {
-                                        if (i == cut) {
-                                            break;
-                                        }
-                                    }
+                                    String temp = getPages.get(i).toString();
+                                    temp = temp.substring(temp.indexOf("href"));
+                                    temp = temp.substring(6, temp.indexOf("\"", 6));
+                                    HtmlPage page = webClient.getPage(temp);
 
-                                    if (count < (originalNumOfImages - onDisk)) {
-                                        String temp = getPages.get(i).toString();
-                                        int end = temp.indexOf("/", 15);
-                                        temp = "http://www.furaffinity.net" + temp.substring(9, end);
-                                        page = webClient.getPage(temp);
-                                        Document docImages = Jsoup.parse(page.asXml());
-                                        Elements getLinks = docImages.select("a[href~=//d.facdn.net/art/]");
-                                        String tempImagesArray = getLinks.toString();
-                                        end = tempImagesArray.indexOf("\"", 10);
-                                        temp = "http://" + tempImagesArray.substring(11, end);
-
-                                        if (isTerminated) {
-                                            break;
-                                        } else {
+                                    Document docImages = Jsoup.parse(page.asXml());
+                                    Elements getLinks = docImages.select("img[data-embed-format~=thumb]");
+                                    if (!getLinks.isEmpty()) {
+                                        if (count < (originalNumOfImages - onDisk)) {
+                                            temp = getLinks.get(1).toString();
+                                            temp = temp.substring(temp.indexOf("src") + 5);
+                                            temp = temp.substring(0, temp.indexOf("\""));
                                             executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
-                                        }
-                                    } else {
-                                        NumberFormat nf = NumberFormat.getNumberInstance();
-                                        nf.setMaximumFractionDigits(1);
-                                        nf.setGroupingUsed(true);
-
-                                        String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
-                                        taskManager.progressBar.setString(show);
-                                        conn.createStatement().execute("UPDATE artist SET image_count = " + (originalNumOfImages - numOfImages) + " WHERE name = '" + artist + "' AND server = 2");
-
-                                        if (show.equals("100%")) {
-                                            taskManager.stopButton.setVisible(false);
-                                            taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
-
-                                            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
-                                                taskManager.playButton.removeMouseListener(listener);
-                                            }
-                                            taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+                                        } else if (increaseProgress()) {
                                             break;
                                         }
-                                        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
-                                        taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+                                        count++;
+                                    } else if (increaseProgress()) {
+                                        break;
                                     }
                                     numOfImages--;
-                                    count++;
                                 }
+                                c += 24;
                             }
                         }
                     } catch (IOException | StringIndexOutOfBoundsException ex) {
                     } catch (InterruptedException | SQLException ex) {
-                        Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(UpdateDeviantArt.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException ex) {
                         JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                         terminate();
@@ -288,6 +270,30 @@ public class UpdateFurAffinity extends BasicCore {
                 }
             }.start();
         }
+    }
+
+    private boolean increaseProgress() throws SQLException {
+        NumberFormat nf = NumberFormat.getNumberInstance();
+        nf.setMaximumFractionDigits(1);
+        nf.setGroupingUsed(true);
+
+        String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
+        taskManager.progressBar.setString(show);
+        conn.createStatement().execute("UPDATE artist SET image_count = " + (originalNumOfImages - numOfImages) + " WHERE name = '" + artist + "' AND server = 0");
+
+        if (show.equals("100%")) {
+            taskManager.stopButton.setVisible(false);
+            taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
+
+            for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
+                taskManager.playButton.removeMouseListener(listener);
+            }
+            taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
+            return true;
+        }
+        taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
+        taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
+        return false;
     }
 
     @Override
@@ -313,10 +319,10 @@ public class UpdateFurAffinity extends BasicCore {
             PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
             statement.setInt(1, originalNumOfImages - numOfImages);
             statement.setString(2, artist);
-            statement.setInt(3, 2);
+            statement.setInt(3, 0);
             statement.execute();
         } catch (SQLException ex) {
-            Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UpdateDeviantArt.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -325,7 +331,7 @@ public class UpdateFurAffinity extends BasicCore {
         try {
             download();
         } catch (Exception ex) {
-            Logger.getLogger(UpdateFurAffinity.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UpdateDeviantArt.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

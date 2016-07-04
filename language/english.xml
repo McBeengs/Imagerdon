@@ -4,15 +4,22 @@
     Generic strings that can be used on the whole project, independent of the place or function
     -->
     <generic>
-        <string id="appName">Alpha V3</string>
+        <string id="appName">Imagerdon</string>
+        <string id="appVersion">1.0.1</string>
         <string id="cancel">Cancel</string>
         <string id="ok">Ok</string>
         <string id="save">Save</string>
         <string id="exit">Exit</string>
         <string id="start">Start</string>
         <string id="stop">Stop</string>
+        <string id="retry">Retry</string>
         <string id="done">Done</string>
+        <string id="edit">Edit</string>
+        <string id="here">Here</string>
         <string id="thisCaps">This</string>
+        <string id="artist">Artist</string>
+        <string id="data">Data</string>
+        <string id="updating">Updating</string>
         <string id="close">Close</string>
         <string id="file">File</string>
         <string id="tools">Tools</string>
@@ -20,6 +27,15 @@
         <string id="username">Username</string>
         <string id="password">Password</string>
     </generic>
+    
+    <!--
+    Strings that will be displayed accondingly on the JFrame they're designed
+    -->
+    <frameTitles>
+        <string id="updateArtists">Update All Artists</string>
+        <string id="artistsOptions">Artists Options</string>
+        <string id="quickTask">Quick Task</string>
+    </frameTitles>
     
     <!--
     Strings that will be displayed accondingly on the JOptionPane they're designed
@@ -31,10 +47,12 @@
         <string id="cancelConfirm">Are you sure you want to exit without save?</string>
         <string id="saveConfirm">Are you sure you want to save these settings?</string>
         <string id="internetDroppedOut">Connection with the Internet has dropped out.</string>
+        <string id="batchLineError">Error while downloading line nº &num</string>
         <string id="errorUrlNonExistent">The URL provided doesn't exist on the site's database</string>
         <string id="loginFailed">Login failed. Check your account settings on "Options < Settings < &string"</string>
         <string id="artistUp2Date">The artist "&string" is already up to date. No need of an download</string>
         <string id="artistExists">Seems like the artist "&string" already exists on the application database.&br Would you like to just update his images ? He had posted &num new images.</string>
+        <string id="newerVersion">There's a new version of "Imagerdon" (&string). Click &br to download it.</string>
         <string id="skipEnabled">The artist "&string" will be skipped accondingly to the configuration.&br If you want to change this, alter the setting on the "Options" section.</string>
         <string id="cancelDownload">Are you sure you want do cancel the download?</string>
     </jOptionPanes>
@@ -101,9 +119,16 @@
     Strings and buttons that can be found on the main panel
     -->
     <mainPanel>
+        <string id="batchImages">Download batch of images</string>
+        <string id="batchServers">Download batch of servers</string>
+        <string id="manageTags">Manage tags</string>
+        <string id="optimize">Optimize artists</string>
+        <string id="removeFavs">Remove all favs</string>
+        <string id="endingTasks">Ending tasks...</string>
         <string id="addTaskButton">Add Quick Task</string>
+        <string id="waitingStack">Added task "&string" to waiting stack. &num others are also awaiting</string>
         <string id="artistsTasks">Artists Tasks</string>
-        <string id="searchPlaceholder">Functions, artists, etc...</string>
+        <string id="searchPlaceholder">Hope for the best</string>
         <string id="hidingTip">Show tasks panel</string>
         <string id="showingTip">Hide tasks panel</string>
         <string id="serchOnServers">Search "&string" on multiple servers</string>
@@ -118,6 +143,7 @@
         <string id="QTLabel">Quick Task</string>
         <string id="infoText1">Select an server...</string>
         <string id="infoText2">Ok, so what you want to do ?</string>
+        <string id="updateAll">Update all</string>
         <string id="downloadButton">Download</string>
         <string id="updateButton">Update</string>
         <string id="selectArtist">Select an artist:</string>
@@ -132,7 +158,7 @@
     </newTab>
     
     <webBrowser>
-        <mainLabel id="welcomeLabel">Alpha V3 - Welcome</mainLabel>
+        <mainLabel id="welcomeLabel">Welcome</mainLabel>
         <string id="missingJavaFX">Your machine doesn't have the latest JavaFX Runtime. If you&br want to use the built-in browser, please install</string>
         <string id="thisNormal">this</string>
         <string id="newTabTitle">New Tab</string>
@@ -140,18 +166,23 @@
         <string id="artistsOnDisk">Number of artists on disk:</string>
         <string id="imagesPerArtist">Images per artist:</string>
         <string id="checkInternet">Internet connection:</string>
+        <string id="alertVersionNew">There's a newer version of "Imagerdon"</string>
+        <string id="alertVersionOld">The program is up to date :)</string>
         <mainLabel id="errorLabel">Oh damn...</mainLabel>
+        <string id="errorDetails">Error details:</string>
         <string id="errorConnMessage">Seems like something went wrong while loading the page. This could be caused by the internet droppped, an problem with the server being acessed, and eh, whatever... You already know everything that could go wrong. However, an detailed description will be provided at the bottom of this page so you can be sure what happened.</string>
         <string id="cookiesErr1">Fatal error while loading options in storage. File "cookies.obj" is corrupted</string>
         <string id="cookiesErr2">Unfortunately, the cookies will be deleted.</string>
         <string id="uninformedName">[Uninformed Name]</string>
         <string id="reloadPage">Reload Page</string>
+        <string id="stopLoading">Stop Loading</string>
         <string id="saveGallery">Save Gallery "&string"</string>
         <string id="goBack">Go Back</string>
         <string id="goForward">Go Forward</string>
         <string id="openLink">Open Link</string>
         <string id="openLinkNT">Open Link in a New Window</string>
         <string id="copyLinkCB">Copy Link to Clipboard</string>
+        <string id="copyImageCB">Copy Image to Clipboard</string>
         <string id="openImage">Open Image on a New Window</string>
         <random>Lorem ipsun, dolor sit amet.</random>
         <random>I’m not weird, I’m gifted.</random>
@@ -208,4 +239,42 @@
         <string id="doneCheck2">artists removed. Awaiting start.</string>
         <string id="sendingMessage">Sending requests to the main panel...</string>
     </downloadFAFavs>
+    
+    <!--
+    Strings and buttons that can be found when checking an artist info
+    -->
+    <artistInfo>
+        <string id="tabActions">Actions</string>
+        <string id="tabInfo">Info</string>
+        <string id="openFolder">Open Folder</string>
+        <string id="markFav">Mark as favorite</string>
+        <string id="unmarkFav">Remove favorite</string>
+        <string id="deleteGallery">Delete Gallery</string>
+        <string id="openPage">Open Internet Page</string>
+        <string id="randomPic">Random Picture</string>
+        <string id="descTemp">Insert an description...</string>
+        <string id="description">Description</string>
+        <string id="tags">Tag(s)</string>
+        <string id="addTag">Add new tag</string>
+        <string id="noTags">No tags registered</string>
+        <string id="selectTag">Select an tag</string>
+        <string id="eraseTag">Delete tag</string>
+        <string id="deleteArtist">You really want to delete "&string"?</string>
+        <string id="deleteImages">You would like to delete all images too?</string>
+    </artistInfo>
+    
+    <!--
+    Strings and buttons that can be found when checking all artists
+    -->
+    <artistsOptions>
+        <string id="allArtists">All Artists</string>
+        <string id="byFav">By Favorite</string>
+        <string id="byTag">By Tag</string>
+        <string id="noFound">No &string found :(</string>
+        <string id="downloadIcon">Download icon</string>
+        <string id="aWhile">Just a while ago</string>
+        <string id="aDay">A day ago</string>
+        <string id="days">&num days ago</string>
+        <string id="artistDetails">Open artist details</string>
+    </artistsOptions>
 </root>

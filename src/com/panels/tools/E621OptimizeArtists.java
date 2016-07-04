@@ -133,7 +133,7 @@ public class E621OptimizeArtists {
                 statement.setString(3, "null");
                 statement.setDate(4, new Date(new java.util.Date().getTime()));
                 statement.setDate(5, new Date(new java.util.Date().getTime()));
-                File[] getImageCount = new File(xml.getContentById("E621output") + System.getProperty("file.separator")
+                File[] getImageCount = new File(xml.getContentById("E621output") + File.separator
                         + artist).listFiles();
                 statement.setInt(6, getImageCount.length);
 

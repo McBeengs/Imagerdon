@@ -16,6 +16,7 @@
  */
 package com.panels.main;
 
+import com.util.MenuScroller;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
 import java.awt.Color;
@@ -27,6 +28,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
@@ -45,6 +48,8 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +72,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
 public class ArtistsOptionsJFrame extends javax.swing.JFrame {
-
+    
     private Connection conn;
     private final XmlManager xml;
     private final XmlManager language;
@@ -78,17 +83,19 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
     private int selectedIndex = 0;
     private String avatarUrl;
     public static DeleteNotifier NOTIFIER;
-
+    
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public ArtistsOptionsJFrame() {
         NOTIFIER = new DeleteNotifier();
         conn = UsefulMethods.getDBInstance();
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         allArtists = new HashMap<>();
-
+        
         initComponents();
+        setTitle(language.getContentById("artistsOptions") + " - " + language.getContentById("appName"));
         showPanel.setLayout(new GridLayout(0, 1));
-
+        
         ImageIcon[] icons = new ImageIcon[7];
         icons[0] = new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/search.png"));
         icons[1] = new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/deviantArtIconBig.png"));
@@ -97,36 +104,37 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
         icons[4] = new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/e621IconBig.png"));
         icons[5] = new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/favorite.png"));
         icons[6] = new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/list.png"));
-
-        String[] items = new String[]{"All artists", language.getContentById("deviantArt"), language.getContentById("tumblr"),
-            language.getContentById("furAffinity"), language.getContentById("e621"), "By Favorite", "By Tag"};
-
+        
+        String[] items = new String[]{language.getContentById("allArtists"), language.getContentById("deviantArt"), language.getContentById("tumblr"),
+            language.getContentById("furAffinity"), language.getContentById("e621"), language.getContentById("byFav"), language.getContentById("byTag")};
+        
         artistsCombo.setRenderer(new IconComboReader(icons));
         artistsCombo.setModel(new DefaultComboBoxModel<>(items));
-
+        
         tableModel = (DefaultTableModel) artistsTable.getModel();
-
+        
         artistsTable.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 int r = artistsTable.rowAtPoint(e.getPoint());
                 if (r >= 0 && r < artistsTable.getRowCount()) {
                     artistsTable.setRowSelectionInterval(r, r);
                 } else {
                     artistsTable.clearSelection();
                 }
-
+                
                 int rowindex = artistsTable.getSelectedRow();
                 if (rowindex < 0) {
                     return;
                 }
+                selectedIndex = rowindex;
                 if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
                     JPopupMenu popup = createArtistPopup(rowindex);
-
+                    
                     popup.show(e.getComponent(), e.getX(), e.getY());
                 } else if (e.getClickCount() == 2) {
                     try {
-                        selectedIndex = rowindex;
+                        
                         selectArtist(rowindex);
                     } catch (Exception ex) {
                         Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -134,10 +142,23 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                 }
             }
         });
-
+        
+        artistsTable.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == 39) {
+                    ArtistInfoPanel panel = (ArtistInfoPanel) showPanel.getComponent(0);
+                    panel.setTab(1);
+                } else if (e.getKeyCode() == 37) {
+                    ArtistInfoPanel panel = (ArtistInfoPanel) showPanel.getComponent(0);
+                    panel.setTab(0);
+                }
+            }
+        });
+        
         setTable(0);
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -366,13 +387,13 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
             scroller = null;
             return;
         }
-
+        
         artistsCombo.setSelectedIndex(0);
         final String text = searchText.getText();
         menu = new JPopupMenu();
         menu.setFocusable(false);
         scroller = new MenuScroller(menu);
-
+        
         try {
             ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM artist WHERE name LIKE '%" + text + "%'");
             while (rs.next()) {
@@ -393,14 +414,14 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                         }
                     }
                 });
-
+                
                 String painted = "<html>";
                 for (int j = 0; j < db.length(); j++) {
                     if (j + text.length() <= db.length() && db.toLowerCase()
                             .substring(j, j + text.length()).equals(text.toLowerCase())) {
                         painted += "<span style='color: red;'>" + db.substring(j, j + text.length())
                                 + "</span>";
-
+                        
                         if (text.length() < 1) {
                             j += text.length() + 1;
                         } else {
@@ -411,26 +432,72 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     }
                 }
                 painted += "</html>";
-
+                
                 open.setText(painted);
                 menu.add(open);
             }
+            
+            rs = conn.createStatement().executeQuery("SELECT * FROM tag WHERE tag LIKE '%" + text + "%'");
+            while (rs.next()) {
+                final String db = rs.getString("tag");
+                JMenuItem open = new JMenuItem(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        int i;
+                        setTable(6);
+                        for (i = 0; i < tableModel.getRowCount(); i++) {
+                            if (tableModel.getValueAt(i, 0).toString().substring(1).contains(db)) {
+                                break;
+                            }
+                        }
+                        try {
+                            selectArtist(i + 1);
+                        } catch (Exception ex) {
+                            Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                });
+                
+                String painted = "<html>";
+                for (int j = 0; j < db.length(); j++) {
+                    if (j + text.length() <= db.length() && db.toLowerCase()
+                            .substring(j, j + text.length()).equals(text.toLowerCase())) {
+                        painted += "<span style='color: red;'>" + db.substring(j, j + text.length())
+                                + "</span>";
+                        
+                        if (text.length() < 1) {
+                            j += text.length() + 1;
+                        } else {
+                            j += text.length() - 1;
+                        }
+                    } else {
+                        painted += db.substring(j, j + 1);
+                    }
+                }
+                painted += "</html>";
+                
+                open.setText(painted);
+                open.setBackground(new Color(255, 102, 102));
+                open.setOpaque(true);
+                menu.add(open);
+            }
+            
+            rs.close();
         } catch (SQLException ex) {
-
         }
-
+        
         if (menu.getComponentCount() > 0) {
             menu.setVisible(true);
             menu.show(searchText, searchText.getX() - 18, searchText.getY() + 32);
         } else {
-            String show = "No artists found :(";
-
+            String show = language.getContentById("noFound").replace("&string", language.getContentById("artist").toLowerCase());
+            
             if (show.length() < 75) {
                 while (show.length() < 75) {
                     show += " ";
                 }
             }
-
+            
             JMenuItem open = new JMenuItem(show);
             menu.add(open);
             menu.setVisible(true);
@@ -456,30 +523,30 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
     private void artistAvatarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_artistAvatarMouseClicked
         if (evt.getButton() == 3) {
             JPopupMenu popup = new JPopupMenu();
-
+            
             JMenuItem download = new JMenuItem(new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
                     chooser.setAcceptAllFileFilterUsed(false);
-                    chooser.setSelectedFile(new File(System.getProperty("user.home") + System.getProperty("file.separator")
+                    chooser.setSelectedFile(new File(System.getProperty("user.home") + File.separator
                             + avatarUrl));
-
+                    
                     if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                         try {
                             InputStream is = new URL(avatarUrl).openStream();
                             OutputStream imageFile = new FileOutputStream(chooser.getSelectedFile());
                             BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
-
+                            
                             int bytes;
                             while ((bytes = is.read()) != -1) {
                                 writeImg.write(bytes);
                             }
-
+                            
                             writeImg.close();
                             imageFile.close();
                             is.close();
-
+                            
                         } catch (MalformedURLException ex) {
                             Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (IOException ex) {
@@ -488,10 +555,10 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     }
                 }
             });
-
-            download.setText("Download Icon");
+            
+            download.setText(language.getContentById("downloadIcon"));
             popup.add(download);
-
+            
             popup.show(artistAvatar, evt.getX(), evt.getY());
         }
     }//GEN-LAST:event_artistAvatarMouseClicked
@@ -513,23 +580,23 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     break;
             }
         } catch (Exception ex) {
-
+            
         }
     }//GEN-LAST:event_artistsTableKeyPressed
-
+    
     private void setTable(int status) {
         try {
             if (tableModel.getRowCount() > 0) {
                 tableModel.setRowCount(0);
             }
-
+            
             if (allArtists.isEmpty()) {
                 ArrayList<String> da = new ArrayList<>();
                 ArrayList<String> tu = new ArrayList<>();
                 ArrayList<String> fa = new ArrayList<>();
                 ArrayList<String> e621 = new ArrayList<>();
-
-                ResultSet rs = conn.createStatement().executeQuery("SELECT server, name FROM artist");
+                
+                ResultSet rs = conn.createStatement().executeQuery("SELECT server, name FROM artist ORDER BY name");
                 while (rs.next()) {
                     switch (rs.getInt("server")) {
                         case 0:
@@ -546,13 +613,13 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                             break;
                     }
                 }
-
+                rs.close();
                 allArtists.put("DA", da);
                 allArtists.put("TU", tu);
                 allArtists.put("FA", fa);
                 allArtists.put("E621", e621);
             }
-
+            
             ArrayList<String> inside;
             switch (status) {
                 case 0:
@@ -569,6 +636,12 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     for (String s : allArtists.get("E621")) {
                         inside.add(s);
                     }
+                    Collections.sort(inside, new Comparator<String>() {
+                        @Override
+                        public int compare(String o1, String o2) {
+                            return o1.substring(1).compareTo(o2.substring(1));
+                        }
+                    });
                     break;
                 case 1:
                     inside = allArtists.get("DA");
@@ -584,39 +657,39 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     break;
                 case 5:
                     inside = new ArrayList<>();
-                    ResultSet rs = conn.createStatement().executeQuery("SELECT id, server, name FROM artist");
+                    ResultSet rs = conn.createStatement().executeQuery("SELECT id, server, name FROM artist ORDER BY name");
                     while (rs.next()) {
                         ResultSet favs = conn.createStatement().executeQuery("SELECT fav FROM info WHERE artist_id = " + rs.getInt("id"));
-                        while(favs.next()) {
+                        while (favs.next()) {
                             if (favs.getBoolean("fav")) {
                                 inside.add(rs.getInt("server") + rs.getString("name"));
                             }
                         }
                     }
+                    rs.close();
                     break;
                 case 6:
                     inside = new ArrayList<>();
-                    //SELECT artist_id FROM inner_tag WHERE tag_id = " + tags.getInt("id") + ")
-                    ResultSet tags = conn.createStatement().executeQuery("SELECT * FROM tag");
+                    ResultSet tags = conn.createStatement().executeQuery("SELECT * FROM tag ORDER BY tag");
                     while (tags.next()) {
                         inside.add("99999" + tags.getString("tag"));
-                        ResultSet artists = conn.createStatement().executeQuery("SELECT id, server, name FROM artist");
-                        while (artists.next()) {
-                            rs = conn.createStatement().executeQuery("SELECT * FROM inner_tag WHERE tag_id = " + tags.getInt("id"));
+                        ResultSet getId = conn.createStatement().executeQuery("SELECT artist_id FROM inner_tag WHERE tag_id = " + tags.getInt("id") + " ORDER BY artist_id");
+                        while (getId.next()) {
+                            rs = conn.createStatement().executeQuery("SELECT server, name FROM artist WHERE id = " + getId.getInt("artist_id") + " ORDER BY name");
                             while (rs.next()) {
-                                if (rs.getInt("artist_id") == artists.getInt("id") && rs.getInt("tag_id") == tags.getInt("id")) {
-                                    inside.add(artists.getInt("server") + artists.getString("name"));
-                                    break;
-                                }
+                                inside.add(rs.getInt("server") + rs.getString("name"));
                             }
+                            rs.close();
                         }
+                        getId.close();
                     }
+                    tags.close();
                     break;
                 default:
                     inside = new ArrayList<>();
                     break;
             }
-
+            
             artistsTable.getColumnModel().getColumn(0).setCellRenderer(getRenderer());
             if (!inside.isEmpty()) {
                 for (String s : inside) {
@@ -624,16 +697,16 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                 }
                 selectArtist(0);
             } else {
-                tableModel.addRow(new Object[]{"-No data found :("});
+                tableModel.addRow(new Object[]{"-" + language.getContentById("noFound").replace("&string", language.getContentById("data").toLowerCase())});
             }
-
+            
         } catch (SQLException ex) {
             Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     private TableCellRenderer getRenderer() {
         return new DefaultTableCellRenderer() {
             @Override
@@ -641,7 +714,7 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     boolean hasFocus, int row, int column) {
                 String text = value.toString().substring(1);
                 JLabel component = new JLabel(text);
-
+                
                 try {
                     ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM tag");
                     while (rs.next()) {
@@ -650,41 +723,48 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                             component.setBackground(new Color(255, 102, 102));
                             component.setHorizontalAlignment(SwingConstants.CENTER);
                             component.setOpaque(true);
+                            return component;
                         }
                     }
+                    rs.close();
                 } catch (SQLException ex) {
                     Logger.getLogger(ArtistsOptionsJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (StringIndexOutOfBoundsException ex) {
                 }
                 
-                if (isSelected) {
+                if (isSelected && hasFocus) {
                     component.setBackground(new Color(51, 153, 255));
                     component.setText("<html><p style='color: white;'>" + component.getText() + "</p></html>");
+                    component.setOpaque(hasFocus);
+                } else {
+                    component.setBackground(new Color(255, 255, 255));
+                    component.setText("<html><p style='color: black;'>" + component.getText() + "</p></html>");
                     component.setOpaque(hasFocus);
                 }
                 return component;
             }
         };
     }
-
+    
     private void selectArtist(int rowIndex) throws Exception {
         String name = tableModel.getValueAt(rowIndex, 0).toString().substring(1);
-        if (name.equals("No data found :(")) {
+        if (name.equals(language.getContentById("noFound").replace("&string", language.getContentById("data").toLowerCase()))) {
             return;
         }
-
+        
         selectedServer = Integer.parseInt(tableModel.getValueAt(rowIndex, 0).toString().substring(0, 1));
         if (selectedServer >= 7) {
             return;
         }
         final ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM artist WHERE name = '" + name + "' AND server = " + selectedServer);
         rs.next();
-
+        
         if (name.length() > 20) {
             artistNameLabel.setText(name.substring(0, 20) + "...");
         } else {
             artistNameLabel.setText(name);
         }
-
+        
         switch (selectedServer) {
             case 0:
                 serverLabel.setText("DeviantArt");
@@ -699,7 +779,7 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                 serverLabel.setText("e621");
                 break;
         }
-
+        
         artistAvatar.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/spinner.gif")));
         new Thread() {
             @Override
@@ -711,22 +791,23 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                 }
             }
         }.start();
-
+        
         Date today = new Date(new java.util.Date().getTime());
         date1Label.setText(rs.getDate("first_downloaded").toString().replace("-", "/"));
         long days = TimeUnit.MILLISECONDS.toDays(today.getTime() - rs.getDate("last_updated").getTime());
         if (days == 0) {
-            date2Label.setText("Just a while ago");
+            date2Label.setText(language.getContentById("aWhile"));
         } else if (days == 1) {
-            date2Label.setText("A day ago");
+            date2Label.setText(language.getContentById("aDay"));
         } else {
-            date2Label.setText(days + " days ago");
+            date2Label.setText(language.getContentById("days").replace("&num", "" + days));
         }
-
+        
         showPanel.removeAll();
         showPanel.add(new ArtistInfoPanel(name, selectedServer, rs.getInt("id")));
+        rs.close();
     }
-
+    
     private JPopupMenu createArtistPopup(final int rowIndex) {
         JPopupMenu popup = new JPopupMenu();
         JMenuItem open = new JMenuItem(new AbstractAction() {
@@ -739,8 +820,8 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                 }
             }
         });
-
-        open.setText("Open artists details");
+        
+        open.setText(language.getContentById("artistDetails"));
         popup.add(open);
         return popup;
     }
@@ -766,7 +847,7 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private class RoundedCornerBorder extends javax.swing.border.AbstractBorder {
-
+        
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -784,12 +865,12 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
             g2.draw(round);
             g2.dispose();
         }
-
+        
         @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(4, 8, 4, 8);
         }
-
+        
         @Override
         public Insets getBorderInsets(Component c, Insets insets) {
             insets.left = insets.right = 8;
@@ -797,22 +878,22 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
             return insets;
         }
     }
-
+    
     private class IconComboReader extends DefaultListCellRenderer {
-
+        
         private final ImageIcon[] icons;
         private ImageIcon show;
-
+        
         public IconComboReader(ImageIcon[] icons) {
-
+            
             this.icons = icons;
             show = icons[0];
         }
-
+        
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
+            
             switch (index) {
                 case -1:
                     label.setIcon(show);
@@ -842,20 +923,20 @@ public class ArtistsOptionsJFrame extends javax.swing.JFrame {
                     label.setIcon(icons[7]);
                     break;
             }
-
+            
             if (isSelected) {
                 if (index >= 0) {
                     show = icons[index];
                     selectedServer = index;
                 }
             }
-
+            
             return label;
         }
     }
-
+    
     public class DeleteNotifier {
-
+        
         public void fireArtistDeletedEvent(String artist, int server) {
             try {
                 for (int i = tableModel.getRowCount() - 1; i >= 0; i--) {

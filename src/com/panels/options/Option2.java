@@ -2,6 +2,7 @@ package com.panels.options;
 
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
+import java.awt.Color;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -32,10 +33,6 @@ public class Option2 extends javax.swing.JPanel {
 
         initComponents();
 
-        if (downloadsSlider.getValue() > 5) {
-            downloadsAlert.setVisible(true);
-        }
-
         optionsDropdown.setSelectedIndex(Integer.parseInt(xml.getContentById("existed")));
     }
 
@@ -48,7 +45,6 @@ public class Option2 extends javax.swing.JPanel {
         downloadsLabel = new javax.swing.JLabel();
         downloadsSlider = new javax.swing.JSlider();
         downloadsDisplayer = new javax.swing.JLabel();
-        downloadsAlert = new javax.swing.JLabel();
         outputLabel = new javax.swing.JLabel();
         outputDirectory = new javax.swing.JTextField();
         directoriesCB1 = new javax.swing.JCheckBox();
@@ -56,7 +52,9 @@ public class Option2 extends javax.swing.JPanel {
         optionsDropdown = new javax.swing.JComboBox<>();
         topSeparator = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-        alertLazyFix = new javax.swing.JPanel();
+        tasksLabel = new javax.swing.JLabel();
+        tasksSlider = new javax.swing.JSlider();
+        tasksDisplayer = new javax.swing.JLabel();
 
         jInternalFrame1.setVisible(true);
 
@@ -86,10 +84,6 @@ public class Option2 extends javax.swing.JPanel {
         downloadsSlider.setRequestFocusEnabled(false);
         int cur = Integer.parseInt(xml.getContentByName("scroll", 0));
         downloadsSlider.setValue(cur);
-
-        if (cur > 5){
-            downloadsAlert.setVisible(true);
-        }
         downloadsSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 downloadsSliderStateChanged(evt);
@@ -97,12 +91,6 @@ public class Option2 extends javax.swing.JPanel {
         });
 
         downloadsDisplayer.setText("" + downloadsSlider.getValue());
-
-        downloadsAlert.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/info.png")));
-        downloadsAlert.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        downloadsAlert.setVisible(false);
-        downloadsAlert.setForeground(new java.awt.Color(51, 109, 243));
-        downloadsAlert.setText(language.getContentByName("alert", 1));
 
         outputLabel.setText(language.getContentById("output"));
 
@@ -132,16 +120,20 @@ public class Option2 extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout alertLazyFixLayout = new javax.swing.GroupLayout(alertLazyFix);
-        alertLazyFix.setLayout(alertLazyFixLayout);
-        alertLazyFixLayout.setHorizontalGroup(
-            alertLazyFixLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        tasksLabel.setText(language.getContentById("simult"));
+
+        tasksSlider.setMaximum(10);
+        tasksSlider.setMinimum(1);
+        tasksSlider.setValue(Integer.parseInt(xml.getContentByName("scroll", 0))
         );
-        alertLazyFixLayout.setVerticalGroup(
-            alertLazyFixLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 15, Short.MAX_VALUE)
-        );
+        tasksSlider.setRequestFocusEnabled(false);
+        tasksSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tasksSliderStateChanged(evt);
+            }
+        });
+
+        tasksDisplayer.setText("" + downloadsSlider.getValue());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -152,26 +144,6 @@ public class Option2 extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(24, 24, 24)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(outputLabel)
-                                .addGap(18, 18, 18)
-                                .addComponent(outputDirectory))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(directoriesCB1)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(downloadsAlert)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(alertLazyFix, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(downloadsLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(downloadsSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(downloadsDisplayer, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
@@ -181,7 +153,31 @@ public class Option2 extends javax.swing.JPanel {
                                 .addComponent(jLabel4)
                                 .addGap(30, 30, 30)
                                 .addComponent(optionsDropdown, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(24, 24, 24)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(outputLabel)
+                                .addGap(18, 18, 18)
+                                .addComponent(outputDirectory))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(directoriesCB1)
+                                .addGap(138, 138, 138))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(tasksLabel)
+                                    .addComponent(downloadsLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(downloadsSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                                        .addGap(10, 10, 10)
+                                        .addComponent(downloadsDisplayer, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(tasksSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(tasksDisplayer, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -197,10 +193,11 @@ public class Option2 extends javax.swing.JPanel {
                     .addComponent(downloadsSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(downloadsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(alertLazyFix, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(downloadsAlert))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(tasksDisplayer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tasksSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tasksLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(outputDirectory)
                     .addComponent(outputLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -212,7 +209,7 @@ public class Option2 extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(optionsDropdown, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(178, Short.MAX_VALUE))
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
         directoriesCB1.setSelected(Boolean.parseBoolean(xml.getContentById("sub")));
@@ -222,9 +219,7 @@ public class Option2 extends javax.swing.JPanel {
         downloadsDisplayer.setText("" + downloadsSlider.getValue());
 
         if (downloadsSlider.getValue() > 5) {
-            downloadsAlert.setVisible(true);
-        } else {
-            downloadsAlert.setVisible(false);
+            UsefulMethods.makeBalloon(downloadsSlider, "The program must be restarted", Color.yellow);
         }
 
         xml.setContentByName("scroll", 0, "" + downloadsSlider.getValue());
@@ -255,11 +250,13 @@ public class Option2 extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_directoriesCB1MouseClicked
 
+    private void tasksSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tasksSliderStateChanged
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tasksSliderStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel alertLazyFix;
     private javax.swing.JCheckBox directoriesCB1;
-    private javax.swing.JLabel downloadsAlert;
     private javax.swing.JLabel downloadsDisplayer;
     private javax.swing.JLabel downloadsLabel;
     private javax.swing.JSlider downloadsSlider;
@@ -270,6 +267,9 @@ public class Option2 extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> optionsDropdown;
     private javax.swing.JTextField outputDirectory;
     private javax.swing.JLabel outputLabel;
+    private javax.swing.JLabel tasksDisplayer;
+    private javax.swing.JLabel tasksLabel;
+    private javax.swing.JSlider tasksSlider;
     private javax.swing.JSeparator topSeparator;
     // End of variables declaration//GEN-END:variables
 }

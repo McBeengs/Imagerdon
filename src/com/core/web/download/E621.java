@@ -110,7 +110,7 @@ public class E621 extends BasicCore {
     }
 
     private boolean checkArtistExistance() throws IOException {
-        finalPath = xml.getContentById("e621output") + System.getProperty("file.separator") + artist;
+        finalPath = xml.getContentById("E621output") + File.separator + artist;
 
         PreparedStatement prepared;
         boolean wasFound = false;
@@ -175,6 +175,9 @@ public class E621 extends BasicCore {
             }
 
             File getImages = new File(finalPath);
+            if (!getImages.exists()) {
+                getImages.mkdirs();
+            }
             int older = getImages.listFiles().length;
 
             if (older >= numOfImages) {
@@ -230,7 +233,7 @@ public class E621 extends BasicCore {
     private void download() throws Exception {
         artist = link.substring(link.lastIndexOf("/") + 1);
         artist = artist.substring(0, 1).toUpperCase() + artist.substring(1);
-        
+
         taskManager.author.setText(artist + " | e621");
         taskManager.infoDisplay.setText(language.getContentById("loginIn"));
         while (!UsefulMethods.isWebClientReady()) {
@@ -324,7 +327,8 @@ public class E621 extends BasicCore {
                                 }
                                 count++;
 
-                                executor.execute(new ImageExtractor(0, artist, temp, numOfImages, count, taskManager, finalPath));
+                                executor.execute(new ImageExtractor(3, artist, temp, numOfImages, count, taskManager, finalPath));
+                                numOfImages--;
                             }
                         }
 
@@ -357,6 +361,16 @@ public class E621 extends BasicCore {
 
         if (executor != null) {
             executor.shutdownNow();
+        }
+
+        try {
+            PreparedStatement statement = conn.prepareStatement("UPDATE artist SET image_count = ? WHERE name = ? AND server = ?");
+            statement.setInt(1, originalNumOfImages - numOfImages);
+            statement.setString(2, artist);
+            statement.setInt(3, 3);
+            statement.execute();
+        } catch (SQLException ex) {
+            Logger.getLogger(E621.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

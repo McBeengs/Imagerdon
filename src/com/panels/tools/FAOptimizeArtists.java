@@ -146,10 +146,14 @@ public class FAOptimizeArtists {
                     statement = conn.prepareStatement("INSERT INTO artist (`id`, `server`, `name`, `avatar_url`, `first_downloaded`, `last_updated`, `image_count`) VALUES (NULL, ?, ?, ?, ?, ?, ?);");
                     statement.setInt(1, 2);
                     statement.setString(2, artist);
-                    statement.setString(3, "http:" + parsed.select("img.avatar").get(0).attr("src"));
+                    try {
+                        statement.setString(3, "http:" + parsed.select("img.avatar").get(0).attr("src"));
+                    } catch (Exception ex) {
+                        statement.setString(3, "null");
+                    }
                     statement.setDate(4, new Date(new java.util.Date().getTime()));
                     statement.setDate(5, new Date(new java.util.Date().getTime()));
-                    File[] getImageCount = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator")
+                    File[] getImageCount = new File(xml.getContentById("FAoutput") + File.separator
                             + artist).listFiles();
                     statement.setInt(6, getImageCount.length);
 

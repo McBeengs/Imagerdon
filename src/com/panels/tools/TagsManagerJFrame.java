@@ -111,7 +111,6 @@ public class TagsManagerJFrame extends javax.swing.JFrame {
                 } catch (SQLException ex) {
                     Logger.getLogger(TagsManagerJFrame.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    System.err.println("erro?");
                 }
             }
         });

@@ -79,7 +79,7 @@ public class ErrorPane extends javax.swing.JPanel {
 
         jLabel2.setFont(new java.awt.Font("Segoe UI Emoji", 1, 14)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel2.setText("Error details: ");
+        jLabel2.setText(language.getContentById("errorDetails"));
 
         errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         errorLabel.setText("jLabel1");
@@ -112,15 +112,14 @@ public class ErrorPane extends javax.swing.JPanel {
                         .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(errorMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(taskLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(taskLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
+                            .addComponent(taskLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                                .addGap(18, 18, 18)
+                                .addComponent(taskLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addGap(45, 45, 45))
         );
         layout.setVerticalGroup(
@@ -153,7 +152,7 @@ public class ErrorPane extends javax.swing.JPanel {
     }//GEN-LAST:event_taskLabel1MouseExited
 
     private void taskLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_taskLabel1MouseClicked
-        tabbedPane.setTitleAt(tabIndex, "New tab     ");
+        tabbedPane.setTitleAt(tabIndex, language.getContentById("newTabTitle") + "     ");
         tabbedPane.setIconAt(tabIndex, icon);
         tabbedPane.setComponentAt(tabIndex, new WebViewPage((StylizedMainJFrame.ClosableTabbedPane) tabbedPane, tabIndex, icon, url));
     }//GEN-LAST:event_taskLabel1MouseClicked

@@ -32,15 +32,12 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ImageExtractor implements Runnable {
 
     private String artistName;
     private String link;
     private String imageName;
-    private String dbName;
     private int server;
     private int downloadNum;
     private int numOfImages;
@@ -65,23 +62,15 @@ public class ImageExtractor implements Runnable {
         switch (server) {
             case 0:
                 s = "DA";
-                dbName = "deviant_art";
                 break;
             case 1:
                 s = "TU";
-                dbName = "tumblr";
                 break;
             case 2:
-                s = "GH";
-                dbName = "gallery_hentai";
+                s = "FA";
                 break;
             case 3:
-                s = "FA";
-                dbName = "fur_affinity";
-                break;
-            case 4:
                 s = "E621";
-                dbName = "e621";
                 break;
             default:
                 throw new IndexOutOfBoundsException();
@@ -104,7 +93,7 @@ public class ImageExtractor implements Runnable {
             HttpURLConnection http = (HttpURLConnection) imageURL.openConnection();
             http.addRequestProperty("User-Agent", "Mozilla/4.76");
             InputStream inputImg = http.getInputStream();
-            OutputStream imageFile = new FileOutputStream(savePath + System.getProperty("file.separator") + imageName);
+            OutputStream imageFile = new FileOutputStream(savePath + File.separator + imageName);
             BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
 
             NumberFormat nf = NumberFormat.getNumberInstance();
@@ -136,7 +125,7 @@ public class ImageExtractor implements Runnable {
                 taskManager.progressBar.setString(show);
 
                 Connection conn = UsefulMethods.getDBInstance();
-                conn.createStatement().execute("UPDATE " + dbName + " SET image_count = " + numOfImages + " WHERE name = " + artistName);
+                conn.createStatement().execute("UPDATE artist SET image_count = " + numOfImages + " WHERE name = '" + artistName + "' AND server = " + server);
 
                 if (show.equals("100%")) {
                     taskManager.stopButton.setVisible(false);
@@ -149,12 +138,12 @@ public class ImageExtractor implements Runnable {
                     taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                 }
             } else {
-                File files = new File(savePath + System.getProperty("file.separator") + imageName);
+                File files = new File(savePath + File.separator + imageName);
                 files.delete();
 
                 files = new File(savePath);
                 Connection conn = UsefulMethods.getDBInstance();
-                conn.createStatement().execute("UPDATE " + dbName + " SET image_count = " + files.list().length + " WHERE name = " + artistName);
+                conn.createStatement().execute("UPDATE artist SET image_count = " + files.list().length + " WHERE name = '" + artistName + "' AND server = " + server);
             }
         } catch (java.net.ConnectException ex) {
             new ImageExtractor(server, artistName, link, numOfImages, downloadNum, taskManager, savePath);

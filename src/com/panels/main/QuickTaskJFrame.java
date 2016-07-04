@@ -1,5 +1,6 @@
 package com.panels.main;
 
+import com.core.web.download.UpdateAllArtists;
 import com.panels.main.StylizedMainJFrame.AddTask;
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;
@@ -11,6 +12,7 @@ import java.io.File;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -36,7 +38,8 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         setTitle(language.getContentById("QTLabel"));
 
         initComponents();
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setTitle(language.getContentById("quickTask") + " - " + language.getContentById("appName"));
 
         inputPanel.setLayout(new GridBagLayout());
         c = new GridBagConstraints();
@@ -62,9 +65,11 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
         inputPanel = new javax.swing.JPanel();
         jSeparator1 = new javax.swing.JSeparator();
         okButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(610, 325));
+        setResizable(false);
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
         taskLabel.setText(language.getContentById("QTLabel"));
@@ -154,6 +159,15 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png"))); // NOI18N
+        jButton1.setText(language.getContentById("updateAll"));
+        jButton1.setFocusable(false);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -169,7 +183,8 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                             .addComponent(DAButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(tumblrButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(FAButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(e621Button, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(e621Button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -215,18 +230,20 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(okButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(13, 13, 13)
                                 .addComponent(DAButton)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(tumblrButton)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(FAButton)
-                                .addGap(18, 18, 18)
-                                .addComponent(e621Button)))
-                        .addGap(0, 18, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(e621Button)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(0, 15, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -271,11 +288,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_downloadButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
-        isDownload = false;
-        inputPanel.removeAll();
-        inputPanel.add(new UpdateInput(), c);
-        inputPanel.revalidate();
-        inputPanel.repaint();
+        
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -294,6 +307,12 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
 
         this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (JOptionPane.showConfirmDialog(rootPane, "This could take a very long time. Are you sure?") == JOptionPane.YES_OPTION) {
+            new UpdateAllArtists().start();
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void setComponents() {
         infoLabel.setText(language.getContentById("infoText2"));
@@ -321,6 +340,7 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
     private javax.swing.JToggleButton e621Button;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JPanel inputPanel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JButton okButton;
@@ -342,28 +362,28 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
                 @Override
                 public void caretUpdate(CaretEvent e) {
                     switch (status) {
-                        case 1:
+                        case 0:
                             if (urlText.getText().contains(".deviantart.com/gallery/")) {
                                 okButton.setEnabled(true);
                             } else {
                                 okButton.setEnabled(false);
                             }
                             break;
-                        case 2:
+                        case 1:
                             if (urlText.getText().contains(".tumblr.com/")) {
                                 okButton.setEnabled(true);
                             } else {
                                 okButton.setEnabled(false);
                             }
                             break;
-                        case 3:
+                        case 2:
                             if (urlText.getText().contains("http://www.furaffinity.net/gallery/")) {
                                 okButton.setEnabled(true);
                             } else {
                                 okButton.setEnabled(false);
                             }
                             break;
-                        case 4:
+                        case 3:
                             if (urlText.getText().contains("https://e621.net/post/index/")) {
                                 okButton.setEnabled(true);
                             } else {
@@ -408,43 +428,43 @@ public class QuickTaskJFrame extends javax.swing.JFrame {
             XmlManager artists = new XmlManager();
             File artistsXml;
 
-            try {
-                switch (status) {
-                    case 1:
-                        artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
-                        if (!artistsXml.exists()) {
-                            artists.createFile(artistsXml.getAbsolutePath());
-                        } else {
-                            artists.loadFile(artistsXml);
-                        }
-                        break;
-                    case 2:
-                        artistsXml = new File(xml.getContentById("TUoutput") + System.getProperty("file.separator") + "artists-log.xml");
-                        if (!artistsXml.exists()) {
-                            artists.createFile(artistsXml.getAbsolutePath());
-                        } else {
-                            artists.loadFile(artistsXml);
-                        }
-                        break;
-                    case 3:
-                        artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
-                        if (!artistsXml.exists()) {
-                            artists.createFile(artistsXml.getAbsolutePath());
-                        } else {
-                            artists.loadFile(artistsXml);
-                        }
-                        break;
-                    case 4:
-                        artistsXml = new File(xml.getContentById("E621output") + System.getProperty("file.separator") + "artists-log.xml");
-                        if (!artistsXml.exists()) {
-                            artists.createFile(artistsXml.getAbsolutePath());
-                        } else {
-                            artists.loadFile(artistsXml);
-                        }
-                        break;
-                }
-            } catch (java.io.IOException ex) {
-            }
+//            try {
+//                switch (status) {
+//                    case 0:
+//                        artistsXml = new File(xml.getContentById("DAoutput") + System.getProperty("file.separator") + "artists-log.xml");
+//                        if (!artistsXml.exists()) {
+//                            artists.createFile(artistsXml.getAbsolutePath());
+//                        } else {
+//                            artists.loadFile(artistsXml);
+//                        }
+//                        break;
+//                    case 1:
+//                        artistsXml = new File(xml.getContentById("TUoutput") + System.getProperty("file.separator") + "artists-log.xml");
+//                        if (!artistsXml.exists()) {
+//                            artists.createFile(artistsXml.getAbsolutePath());
+//                        } else {
+//                            artists.loadFile(artistsXml);
+//                        }
+//                        break;
+//                    case 2:
+//                        artistsXml = new File(xml.getContentById("FAoutput") + System.getProperty("file.separator") + "artists-log.xml");
+//                        if (!artistsXml.exists()) {
+//                            artists.createFile(artistsXml.getAbsolutePath());
+//                        } else {
+//                            artists.loadFile(artistsXml);
+//                        }
+//                        break;
+//                    case 3:
+//                        artistsXml = new File(xml.getContentById("E621output") + System.getProperty("file.separator") + "artists-log.xml");
+//                        if (!artistsXml.exists()) {
+//                            artists.createFile(artistsXml.getAbsolutePath());
+//                        } else {
+//                            artists.loadFile(artistsXml);
+//                        }
+//                        break;
+//                }
+//            } catch (java.io.IOException ex) {
+//            }
 
             final List<String> list = artists.getAllContentsByName("name");
             int size = list.size();

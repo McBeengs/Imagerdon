@@ -23,6 +23,7 @@ import com.util.xml.XmlManager;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class CustomBatchDownload extends BasicCore {
-
+    
     private final XmlManager language;
     private boolean isPaused = false;
     private boolean isTerminated = false;
@@ -48,26 +49,26 @@ public class CustomBatchDownload extends BasicCore {
     private int numOfImages;
     private int count = 0;
     private final DownloadTaskJPanel taskManager;
-
+    
     public CustomBatchDownload(String[] urls, DownloadTaskJPanel taskManager) {
         links = urls;
         this.taskManager = taskManager;
         language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
     }
-
+    
     private void download() {
         taskManager.infoDisplay.setText(language.getContentById("wentOK"));
         taskManager.playButton.setVisible(true);
         taskManager.progressBar.setIndeterminate(false);
         executor = Executors.newFixedThreadPool(5);
-
+        
         taskManager.playButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 nf.setMaximumFractionDigits(1);
                 nf.setGroupingUsed(true);
-
+                
                 for (final String link : links) {
                     count++;
                     Thread save = new Thread() {
@@ -82,54 +83,55 @@ public class CustomBatchDownload extends BasicCore {
                                 taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + links.length));
                                 isDownloading = true;
                                 numOfImages = links.length;
-
+                                
                                 String imageName = link.substring(link.lastIndexOf("/") + 1);
                                 URL imageURL = new URL(link);
                                 InputStream inputImg = imageURL.openStream();
-                                OutputStream imageFile = new FileOutputStream(finalPath + System.getProperty("file.separator") + imageName);
+                                OutputStream imageFile = new FileOutputStream(finalPath + File.separator + imageName);
                                 BufferedOutputStream writeImg = new BufferedOutputStream(imageFile);
-
+                                
                                 int bytes;
                                 while ((bytes = inputImg.read()) != -1) {
                                     while (isPaused) {
                                         sleep(2);
                                     }
-
+                                    
                                     if (isTerminated) {
                                         break;
                                     } else {
                                         writeImg.write(bytes);
                                     }
                                 }
-
+                                
                                 writeImg.close();
                                 imageFile.close();
                                 inputImg.close();
                             } catch (MalformedURLException ex) {
-                                JOptionPane.showMessageDialog(null, "Error while downloading line nº" + count, "Error", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, language.getContentById("batchLineError").replace("&num", "" + count),
+                                        language.getContentById("genericErrorTitle"), JOptionPane.ERROR_MESSAGE);
                             } catch (IOException | InterruptedException ex) {
                                 Logger.getLogger(BatchDownloads.class.getName()).log(Level.SEVERE, null, ex);
                             }
                         }
                     };
-
+                    
                     executor.execute(save);
-
+                    
                     if (!isTerminated) {
                         taskManager.infoDisplay.setText(language.getContentById("downloading").replace("&num", "" + numOfImages));
                         taskManager.progressBar.setValue(taskManager.progressBar.getValue() + 1);
-
+                        
                         String show = nf.format(taskManager.progressBar.getPercentComplete() * 100) + "%";
                         taskManager.progressBar.setString(show);
-
+                        
                         if (show.equals("100%")) {
                             taskManager.stopButton.setVisible(false);
                             taskManager.infoDisplay.setText(language.getContentById("downloadFinished"));
-
+                            
                             for (java.awt.event.MouseListener listener : taskManager.playButton.getMouseListeners()) {
                                 taskManager.playButton.removeMouseListener(listener);
                             }
-
+                            
                             taskManager.playButton.addMouseListener(taskManager.playButtonDownloadFinishedBehavior());
                         }
                     }
@@ -137,27 +139,27 @@ public class CustomBatchDownload extends BasicCore {
             }
         });
     }
-
+    
     @Override
     public void pause() {
         taskManager.infoDisplay.setText(language.getContentById("pause"));
         isPaused = true;
     }
-
+    
     @Override
     public void play() {
         isPaused = false;
     }
-
+    
     @Override
     public void terminate() {
         isTerminated = true;
-
+        
         if (executor != null) {
             executor.shutdownNow();
         }
     }
-
+    
     @Override
     public void run() {
         try {

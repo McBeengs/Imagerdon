@@ -27,6 +27,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,10 +50,10 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
 
     private Connection conn;
     private final XmlManager xml;
+    private final XmlManager language;
     private final String artist;
     private final int server;
     private final int artistId;
-    private String description;
     private boolean isFaved;
 
     public ArtistInfoPanel(String artist, int server, final int artistId) {
@@ -59,7 +61,11 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         this.server = server;
         this.artistId = artistId;
         xml = UsefulMethods.loadManager(UsefulMethods.OPTIONS);
+        language = UsefulMethods.loadManager(UsefulMethods.LANGUAGE);
         initComponents();
+
+        jTabbedPane1.setTitleAt(0, language.getContentById("tabActions"));
+        jTabbedPane1.setTitleAt(1, language.getContentById("tabInfo"));
 
         tagTable.getColumnModel().getColumn(0).setCellRenderer(new TableRenderer());
 
@@ -73,10 +79,10 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
 
                     final ArrayList<String> tags = new ArrayList<>();
                     ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM tag");
-                    tags.add("------ Select an tag -");
+                    tags.add("99999- " + language.getContentById("selectTag") + " -");
                     while (rs.next()) {
                         int id = rs.getInt("id");
-                        String helper = "";
+                        String helper;
                         if (id < 10) {
                             helper = "0000" + id;
                         } else if (id > 9) {
@@ -88,7 +94,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                         } else {
                             helper = "" + id;
                         }
-                        tags.add(helper +rs.getString("tag"));
+                        tags.add(helper + rs.getString("tag"));
                     }
                     rs.close();
 
@@ -99,7 +105,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                             choose[i] = tags.get(i).substring(5);
                         }
 
-                        Object res = JOptionPane.showInputDialog(null, "Select an tag or create new ones using", "", JOptionPane.INFORMATION_MESSAGE, null, choose, null);
+                        Object res = JOptionPane.showInputDialog(null, language.getContentById("selectTag"), "", JOptionPane.INFORMATION_MESSAGE, null, choose, null);
                         if (res != null) {
                             int i;
                             for (i = 0; i < tags.size(); i++) {
@@ -118,16 +124,17 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                         }
 
                     } else if (row > 0 && e.getButton() == 3) {
-                        JPopupMenu menu = new JPopupMenu("Delete tag");
+                        final String show = language.getContentById("eraseTag");
+                        JPopupMenu menu = new JPopupMenu(show);
                         JMenuItem item = new JMenuItem(new AbstractAction() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                if (JOptionPane.showConfirmDialog(null, "Delete tag \"" + tag + "\"?") == JOptionPane.YES_OPTION) {
+                                if (JOptionPane.showConfirmDialog(null, show + " \"" + tag + "\"?") == JOptionPane.YES_OPTION) {
                                     int i;
                                     for (i = 0; i < tags.size(); i++) {
                                         if (tags.get(i).contains(model.getValueAt(row, 0).toString())) {
                                             String s = tags.get(i);
-                                            i = Integer.parseInt(s.substring(0, 1));
+                                            i = Integer.parseInt(s.substring(0, 5));
                                             break;
                                         }
                                     }
@@ -140,7 +147,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                                 }
                             }
                         });
-                        item.setText("Delete tag \"" + tag + "\"");
+                        item.setText(show + " \"" + tag + "\"");
                         menu.add(item);
                         menu.show(e.getComponent(), e.getX(), e.getY());
                     }
@@ -168,6 +175,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         deleteButton = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         infoSubapanel = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
@@ -177,7 +185,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         tagTable = new javax.swing.JTable();
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("Mark as favorite");
+        jLabel3.setText(language.getContentById("markFav"));
 
         favButton.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         favButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/favorite.png"))); // NOI18N
@@ -209,7 +217,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         });
 
         jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel6.setText("Open folder");
+        jLabel6.setText(language.getContentById("openFolder"));
 
         updateButton.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         updateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/update.png"))); // NOI18N
@@ -226,7 +234,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         });
 
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel8.setText("Update gallery");
+        jLabel8.setText(language.getContentById("updateTitle"));
 
         deleteButton.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/delete.png"))); // NOI18N
@@ -243,7 +251,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         });
 
         jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel10.setText("Delete gallery");
+        jLabel10.setText(language.getContentById("deleteGallery"));
 
         jLabel2.setText("Random picture");
         jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -258,36 +266,53 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             }
         });
 
+        jLabel4.setText(language.getContentById("openPage"));
+        jLabel4.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel4MouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                jLabel4MouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                jLabel4MouseExited(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(80, Short.MAX_VALUE)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(updateButton)
-                            .addComponent(folderButton))
-                        .addGap(27, 27, 27)))
-                .addGap(18, 18, 18)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                            .addComponent(favButton)
-                            .addGap(27, 27, 27)))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addComponent(deleteButton)
-                            .addGap(27, 27, 27))))
-                .addContainerGap(74, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel2)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 70, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(updateButton)
+                                    .addComponent(folderButton))
+                                .addGap(27, 27, 27)))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                    .addComponent(favButton)
+                                    .addGap(27, 27, 27)))
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(jPanel2Layout.createSequentialGroup()
+                                    .addComponent(deleteButton)
+                                    .addGap(27, 27, 27))))
+                        .addGap(0, 64, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -314,20 +339,22 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel10)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
-                .addComponent(jLabel2)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel4))
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Actions", jPanel2);
 
-        jButton1.setText("Edit");
+        jButton1.setText(language.getContentById("edit"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Description:");
+        jLabel1.setText(language.getContentById("description") + ":");
 
         descriptionText.setEditable(false);
         descriptionText.setColumns(20);
@@ -346,7 +373,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
 
             },
             new String [] {
-                "Tag(s)"
+                ""
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -358,6 +385,10 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             }
         });
         jScrollPane2.setViewportView(tagTable);
+        if (tagTable.getColumnModel().getColumnCount() > 0) {
+            tagTable.getColumnModel().getColumn(0).setHeaderValue(language.getContentById("tags")
+            );
+        }
 
         javax.swing.GroupLayout infoSubapanelLayout = new javax.swing.GroupLayout(infoSubapanel);
         infoSubapanel.setLayout(infoSubapanelLayout);
@@ -368,9 +399,9 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                 .addGroup(infoSubapanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
                     .addGroup(infoSubapanelLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -404,9 +435,8 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (!descriptionText.isEditable()) {
-            jButton1.setText("Save");
+            jButton1.setText(language.getContentById("save"));
         } else {
-            jButton1.setText("Saving...");
             jButton1.setEnabled(false);
             try {
                 PreparedStatement statement = conn.prepareStatement("UPDATE info SET description = ? WHERE artist_id = ?");
@@ -416,7 +446,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             } catch (SQLException ex) {
                 Logger.getLogger(ArtistInfoPanel.class.getName()).log(Level.SEVERE, null, ex);
             }
-            jButton1.setText("Edit");
+            jButton1.setText(language.getContentById("edit"));
             jButton1.setEnabled(true);
         }
 
@@ -434,10 +464,10 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
     private void favButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_favButtonMouseClicked
         if (isFaved) {
             favButton.setEnabled(false);
-            jLabel3.setText("Mark as favorite");
+            jLabel3.setText(language.getContentById("markFav"));
         } else {
             favButton.setEnabled(true);
-            jLabel3.setText("Remove favorite");
+            jLabel3.setText(language.getContentById("unmarkFav"));
         }
 
         isFaved = !isFaved;
@@ -455,16 +485,16 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         String path = null;
         switch (server) {
             case 0:
-                path = xml.getContentById("DAoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("DAoutput") + File.separator;
                 break;
             case 1:
-                path = xml.getContentById("TUoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("TUoutput") + File.separator;
                 break;
             case 2:
-                path = xml.getContentById("FAoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("FAoutput") + File.separator;
                 break;
             case 3:
-                path = xml.getContentById("E621output") + System.getProperty("file.separator");
+                path = xml.getContentById("E621output") + File.separator;
                 break;
         }
 
@@ -490,13 +520,13 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
                 artistUrl = "http://" + artist.toLowerCase() + ".deviantart.com/gallery/?catpath=/";
                 break;
             case 1:
-                artistUrl = "http://" + artist.toLowerCase() + ".tumblr.com/archive";
+                artistUrl = "http://" + artist.toLowerCase() + ".tumblr.com/archive/";
                 break;
             case 2:
-                artistUrl = "http://www.furaffinity.net/user/" + artist.toLowerCase();
+                artistUrl = "http://www.furaffinity.net/gallery/" + artist.toLowerCase() + "/";
                 break;
             case 3:
-                artistUrl = "https://e621.net/post/index/1/" + artist.toLowerCase();
+                artistUrl = "https://e621.net/post/index/1/" + artist.toLowerCase() + "/";
                 break;
         }
         StylizedMainJFrame.ADD_TASK.addTask(artistUrl, server, -1);
@@ -511,34 +541,36 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_updateButtonMouseExited
 
     private void deleteButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_deleteButtonMouseClicked
-        if (JOptionPane.showConfirmDialog(null, "You really want to delete \"" + artist + "\"?", "",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+        if (JOptionPane.showConfirmDialog(null, language.getContentById("deleteArtist").replace("&string", artist),
+                language.getContentById("genericWarningTitle"), JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
             try {
                 conn.createStatement().execute("DELETE FROM artist WHERE id = " + artistId);
                 conn.createStatement().execute("DELETE FROM inner_tag WHERE artist_id = " + artistId);
                 conn.createStatement().execute("DELETE FROM info WHERE artist_id = " + artistId);
 
-                if (JOptionPane.showConfirmDialog(null, "You would like to delete all images too?", "",
+                if (JOptionPane.showConfirmDialog(null, language.getContentById("deleteImages"), "",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                     String path = null;
                     switch (server) {
                         case 0:
-                            path = xml.getContentById("DAoutput") + System.getProperty("file.separator");
+                            path = xml.getContentById("DAoutput") + File.separator;
                             break;
                         case 1:
-                            path = xml.getContentById("TUoutput") + System.getProperty("file.separator");
+                            path = xml.getContentById("TUoutput") + File.separator;
                             break;
                         case 2:
-                            path = xml.getContentById("FAoutput") + System.getProperty("file.separator");
+                            path = xml.getContentById("FAoutput") + File.separator;
                             break;
                         case 3:
-                            path = xml.getContentById("E621output") + System.getProperty("file.separator");
+                            path = xml.getContentById("E621output") + File.separator;
                             break;
                     }
 
                     File[] images = new File(path + artist).listFiles();
-                    for (File f : images) {
-                        f.delete();
+                    if (images != null && images.length > 0) {
+                        for (File f : images) {
+                            f.delete();
+                        }
                     }
                     new File(path + artist).delete();
                 }
@@ -569,16 +601,16 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         String path = null;
         switch (server) {
             case 0:
-                path = xml.getContentById("DAoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("DAoutput") + File.separator;
                 break;
             case 1:
-                path = xml.getContentById("TUoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("TUoutput") + File.separator;
                 break;
             case 2:
-                path = xml.getContentById("FAoutput") + System.getProperty("file.separator");
+                path = xml.getContentById("FAoutput") + File.separator;
                 break;
             case 3:
-                path = xml.getContentById("E621output") + System.getProperty("file.separator");
+                path = xml.getContentById("E621output") + File.separator;
                 break;
         }
 
@@ -586,7 +618,9 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         Random rgn = new Random();
 
         try {
-            Desktop.getDesktop().open(images[rgn.nextInt(images.length)]);
+            if (images.length > 0) {
+                Desktop.getDesktop().open(images[rgn.nextInt(images.length)]);
+            }
         } catch (IOException ex) {
             Logger.getLogger(ArtistInfoPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -597,6 +631,38 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             descriptionText.setText(descriptionText.getText().substring(0, 254));
         }
     }//GEN-LAST:event_descriptionTextKeyPressed
+
+    private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
+        String url = null;
+        switch (server) {
+            case 0:
+                url = "http://" + artist.toLowerCase() + ".deviantart.com/gallery/";
+                break;
+            case 1:
+                url = "http://" + artist.toLowerCase() + ".tumblr.com/";
+                break;
+            case 2:
+                url = "http://www.furaffinity.net/gallery/" + artist.toLowerCase();
+                break;
+            case 3:
+                url = "https://e621.net/post/index/" + artist.toLowerCase();
+                break;
+        }
+
+        try {
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (IOException | URISyntaxException ex) {
+            Logger.getLogger(ArtistInfoPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jLabel4MouseClicked
+
+    private void jLabel4MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseEntered
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_jLabel4MouseEntered
+
+    private void jLabel4MouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseExited
+        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_jLabel4MouseExited
 
     private void setInfo() {
         try {
@@ -609,7 +675,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             conn = UsefulMethods.getDBInstance();
             ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM info WHERE artist_id = " + artistId);
             if (!rs.next()) {
-                conn.createStatement().execute("INSERT INTO info (`artist_id`, `description`, `fav`) VALUES (" + artistId + ", 'Insert an description...', 'false')");
+                conn.createStatement().execute("INSERT INTO info (`artist_id`, `description`, `fav`) VALUES (" + artistId + ", '" + language.getContentById("descTemp") + "', 'false')");
                 rs = conn.createStatement().executeQuery("SELECT * FROM info INNER JOIN artist WHERE artist_id = " + artistId);
                 rs.next();
             }
@@ -618,10 +684,10 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
 
             if (isFaved) {
                 favButton.setEnabled(true);
-                jLabel3.setText("Remove favorite");
+                jLabel3.setText(language.getContentById("unmarkFav"));
             }
 
-            model.addRow(new Object[]{"Add new tag"});
+            model.addRow(new Object[]{language.getContentById("addTag")});
 
             rs = conn.createStatement().executeQuery("SELECT tag_id FROM inner_tag WHERE artist_id = " + artistId);
             while (rs.next()) {
@@ -632,11 +698,15 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
             }
 
             if (model.getRowCount() == 1) {
-                model.addRow(new Object[]{"No tags registered"});
+                model.addRow(new Object[]{language.getContentById("noTags")});
             }
         } catch (SQLException ex) {
             Logger.getLogger(ArtistInfoPanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void setTab(int tab) {
+        jTabbedPane1.setSelectedIndex(tab);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -650,6 +720,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel2;
@@ -666,7 +737,7 @@ public class ArtistInfoPanel extends javax.swing.JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel label = new JLabel(value.toString());
 
-            if (value.toString().equals("Add new tag")) {
+            if (value.toString().equals(language.getContentById("addTag"))) {
                 label.setBackground(new Color(153, 255, 102));
                 label.setText("<html><p style='color: green;'>" + label.getText() + "</p></html>");
                 label.setHorizontalAlignment(JLabel.CENTER);

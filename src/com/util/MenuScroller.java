@@ -14,7 +14,7 @@
  /*
  * {Insert class description here}
  */
-package com.panels.main;
+package com.util;
 
 import java.awt.Color;
 import java.awt.Component;

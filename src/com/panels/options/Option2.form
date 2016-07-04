@@ -45,32 +45,6 @@
           <Component id="jSeparator2" alignment="0" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="outputDirectory" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="directoriesCB1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="downloadsAlert" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="alertLazyFix" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="downloadsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="downloadsSlider" min="-2" pref="121" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="downloadsDisplayer" pref="244" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
@@ -85,6 +59,39 @@
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="24" pref="24" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="outputDirectory" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="directoriesCB1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="138" pref="138" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="tasksLabel" max="-2" attributes="0"/>
+                                  <Component id="downloadsLabel" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="downloadsSlider" pref="237" max="32767" attributes="0"/>
+                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                      <Component id="downloadsDisplayer" min="-2" pref="128" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="tasksSlider" max="32767" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="tasksDisplayer" min="-2" pref="128" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -105,11 +112,12 @@
                   <Component id="downloadsLabel" alignment="1" min="-2" pref="26" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="alertLazyFix" min="-2" max="-2" attributes="0"/>
-                  <Component id="downloadsAlert" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="tasksDisplayer" alignment="0" max="32767" attributes="0"/>
+                  <Component id="tasksSlider" alignment="1" max="32767" attributes="0"/>
+                  <Component id="tasksLabel" alignment="1" min="-2" pref="26" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="48" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="outputDirectory" max="32767" attributes="0"/>
                   <Component id="outputLabel" min="-2" pref="20" max="-2" attributes="0"/>
@@ -123,7 +131,7 @@
                   <Component id="optionsDropdown" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel4" alignment="3" min="-2" pref="17" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="178" max="32767" attributes="0"/>
+              <EmptySpace pref="125" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -160,7 +168,7 @@
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="downloadsSliderStateChanged"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="int cur = Integer.parseInt(xml.getContentByName(&quot;scroll&quot;, 0));&#xa;downloadsSlider.setValue(cur);&#xa;&#xa;if (cur &gt; 5){&#xa;    downloadsAlert.setVisible(true);&#xa;}"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="int cur = Integer.parseInt(xml.getContentByName(&quot;scroll&quot;, 0));&#xa;downloadsSlider.setValue(cur);"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="downloadsDisplayer">
@@ -169,22 +177,6 @@
           <Connection code="&quot;&quot; + downloadsSlider.getValue()" type="code"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="downloadsAlert">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor" postCode="downloadsAlert.setVisible(false);">
-          <Font name="Tahoma" size="12" style="0"/>
-        </Property>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f3" green="6d" red="33" type="rgb"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;alert&quot;, 1)" type="code"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="downloadsAlert.setIcon(new ImageIcon(getClass().getResource(&quot;/com/style/icons/info.png&quot;)));"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="outputLabel">
       <Properties>
@@ -243,20 +235,32 @@
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator2">
     </Component>
-    <Container class="javax.swing.JPanel" name="alertLazyFix">
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="15" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-    </Container>
+    <Component class="javax.swing.JLabel" name="tasksLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="language.getContentById(&quot;simult&quot;)" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSlider" name="tasksSlider">
+      <Properties>
+        <Property name="maximum" type="int" value="10"/>
+        <Property name="minimum" type="int" value="1"/>
+        <Property name="value" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="Integer.parseInt(xml.getContentByName(&quot;scroll&quot;, 0))&#xa;    " type="code"/>
+        </Property>
+        <Property name="requestFocusEnabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="tasksSliderStateChanged"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="tasksDisplayer">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="&quot;&quot; + downloadsSlider.getValue()" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
   </SubComponents>
 </Form>

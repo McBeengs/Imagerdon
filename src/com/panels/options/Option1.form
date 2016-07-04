@@ -34,26 +34,23 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="updates" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="languageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="styleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="languageSelector" pref="48" max="32767" attributes="0"/>
-                          <Component id="styleSelector" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="languageAlert" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="styleAlert" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="updates" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="languageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="styleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="languageSelector" pref="100" max="32767" attributes="0"/>
+                                  <Component id="styleSelector" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace pref="245" max="32767" attributes="0"/>
+              <EmptySpace pref="381" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -68,13 +65,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="languageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="languageSelector" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="languageAlert" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="styleLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="styleSelector" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="styleAlert" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="113" max="-2" attributes="0"/>
               <Component id="updates" min="-2" max="-2" attributes="0"/>
@@ -118,22 +113,6 @@
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JLabel" name="languageAlert">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="12" style="0"/>
-        </Property>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="cc" red="ff" type="rgb"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;alert&quot;, 0)" type="code"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="languageAlert.setVisible(false);&#xa;languageAlert.setIcon(new ImageIcon(getClass().getResource(&quot;/com/style/icons/error.png&quot;)));"/>
-      </AuxValues>
-    </Component>
     <Component class="javax.swing.JLabel" name="styleLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -153,22 +132,6 @@
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-      </AuxValues>
-    </Component>
-    <Component class="javax.swing.JLabel" name="styleAlert">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Tahoma" size="12" style="0"/>
-        </Property>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="cc" red="ff" type="rgb"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="language.getContentByName(&quot;alert&quot;, 0)" type="code"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="styleAlert.setVisible(false);&#xa;styleAlert.setIcon(new ImageIcon(getClass().getResource(&quot;/com/style/icons/error.png&quot;)));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JCheckBox" name="updates">

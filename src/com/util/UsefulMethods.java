@@ -17,11 +17,13 @@
 package com.util;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
+import com.gargoylesoftware.htmlunit.CookieManager;
 import com.gargoylesoftware.htmlunit.IncorrectnessListener;
 import com.gargoylesoftware.htmlunit.InteractivePage;
 import com.gargoylesoftware.htmlunit.ScriptException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HTMLParserListener;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlImage;
@@ -79,6 +81,8 @@ public class UsefulMethods implements Serializable {
     public static final int LANGUAGE = 1;
     private static WebClient webClient;
     private static Connection conn;
+    private static XmlManager xml;
+    private static XmlManager language;
     private static boolean isWebViewReady = false;
 
     public static String getOptions() {
@@ -86,7 +90,6 @@ public class UsefulMethods implements Serializable {
         String os = System.getProperty("os.name").toLowerCase();
         String path;
 
-        //get system path separator
         String separator = System.getProperty("file.separator");
 
         if (os.contains("win")) {
@@ -104,8 +107,8 @@ public class UsefulMethods implements Serializable {
                 + "<root>\n"
                 + "  <optionsPane>\n"
                 + "    <gui>\n"
-                + "      <language>English, 0</language>\n"
-                + "      <style>Metal, 0</style>\n"
+                + "      <language selected=\"0\">English</language>\n"
+                + "      <style selected=\"0\">Metal</style>\n"
                 + "    </gui>\n"
                 + "    <downloads>\n"
                 + "      <scroll id=\"simult\">5</scroll>\n"
@@ -147,19 +150,24 @@ public class UsefulMethods implements Serializable {
 
     @SuppressWarnings("null")
     public static WebClient getWebClientInstance() throws IOException, Exception {
-        File get = new File(getClassPath(UsefulMethods.class) + System.getProperty("file.separator") + "login_cache.obj");
+        File get = new File(getClassPath(UsefulMethods.class) + File.separator + "login_cache.obj");
 
-        if (webClient != null) {
-            return shutUpHtmlUnit(webClient);
-        } else if (get.exists()) {
+        if (get.exists()) {
             FileInputStream fileIn = new FileInputStream(get);
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            webClient = (WebClient) in.readObject();
+            CookieManager manager = (CookieManager) in.readObject();
+            webClient = new WebClient(BrowserVersion.CHROME);
+            webClient.setCookieManager(manager);
+            webClient.getOptions().setCssEnabled(false);
+            webClient.getOptions().setJavaScriptEnabled(false);
+            webClient.getOptions().setAppletEnabled(false);
 
             isWebViewReady = true;
-            return shutUpHtmlUnit(webClient);
+            return new CloneWebClient(shutUpHtmlUnit(webClient)).getClone();
         } else {
+            CookieManager manager = new CookieManager();
             WebClient save = new WebClient(BrowserVersion.CHROME);
+            save.setCookieManager(manager);
             save.getOptions().setCssEnabled(false);
             save.getOptions().setJavaScriptEnabled(false);
             save.getOptions().setAppletEnabled(false);
@@ -170,7 +178,7 @@ public class UsefulMethods implements Serializable {
             HtmlPasswordInput passwordField;
             HtmlSubmitInput button;
             PasswordManager pass = new PasswordManager();
-            XmlManager xml = loadManager(OPTIONS);
+            xml = loadManager(OPTIONS);
             String user;
             String passw;
 
@@ -227,6 +235,8 @@ public class UsefulMethods implements Serializable {
 
             // FurAffinity login
             preLogin = save.getPage("https://www.furaffinity.net/login/");
+            HtmlAnchor oldCaptcha = (HtmlAnchor) preLogin.getElementById("captcha-switch");
+            preLogin = oldCaptcha.click();
             if (preLogin.asXml().contains("If you believe you are seeing this screen in error please press CTRL-F5 to refresh")) {
                 save = null;
                 throw new Exception("FurAffinity");
@@ -271,7 +281,8 @@ public class UsefulMethods implements Serializable {
             if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=1")) {
                 save = null;
                 throw new Exception("FurAffinity");
-            } else if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=2")) {
+            } else if (posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=2")
+                    || posLogin.getUrl().toString().equals("https://www.furaffinity.net/login/?msg=3")) {
                 save = null;
                 throw new Exception("FurAffinity");
             }
@@ -280,14 +291,14 @@ public class UsefulMethods implements Serializable {
             try {
                 FileOutputStream fileOut = new FileOutputStream(get);
                 ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                out.writeObject(save);
+                out.writeObject(manager);
             } catch (IOException ex) {
                 Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             isWebViewReady = true;
             webClient = save;
-            return shutUpHtmlUnit(webClient);
+            return new CloneWebClient(shutUpHtmlUnit(webClient)).getClone();
         }
     }
 
@@ -299,7 +310,7 @@ public class UsefulMethods implements Serializable {
         webClient = null;
         isWebViewReady = false;
 
-        File get = new File(getClassPath(UsefulMethods.class) + System.getProperty("file.separator") + "login_cache.obj");
+        File get = new File(getClassPath(UsefulMethods.class) + File.separator + "login_cache.obj");
         if (get.exists()) {
             get.delete();
         }
@@ -319,7 +330,7 @@ public class UsefulMethods implements Serializable {
                 s.execute("CREATE TABLE IF NOT EXISTS `inner_tag` ( `artist_id` INT NOT NULL , `tag_id` INT NOT NULL );");
                 s.execute("CREATE TABLE IF NOT EXISTS `info` ( `artist_id` INT NOT NULL, `description` TEXT(255), `fav` BOOLEAN NOT NULL );");
                 s.close();
-                
+
                 return conn;
             } catch (ClassNotFoundException | SQLException ex) {
                 Logger.getLogger(UsefulMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -346,19 +357,24 @@ public class UsefulMethods implements Serializable {
     }
 
     public static XmlManager loadManager(int manager) {
+        if (manager == OPTIONS && xml != null) {
+            return xml;
+        } else if (manager == LANGUAGE && language != null) {
+            return language;
+        }
+
         UsefulMethods get = new UsefulMethods();
-        XmlManager xml = new XmlManager();
-        String separator = System.getProperty("file.separator");
+        xml = new XmlManager();
         boolean checkOS = false;
 
-        File getConfig = new File(UsefulMethods.getClassPath(get.getClass()) + separator + "config");
+        File getConfig = new File(UsefulMethods.getClassPath(get.getClass()) + File.separator + "config");
         if (!getConfig.exists()) {
             getConfig.mkdir();
         }
 
-        File getOptions = new File(UsefulMethods.getClassPath(get.getClass()) + "config" + separator + "options.xml");
+        File getOptions = new File(UsefulMethods.getClassPath(get.getClass()) + "config" + File.separator + "options.xml");
         if (!getOptions.exists()) {
-            String content = UsefulMethods.getOptions();
+            String content = getOptions();
 
             if (content != null) {
                 try {
@@ -372,16 +388,16 @@ public class UsefulMethods implements Serializable {
             }
         }
 
-        xml.loadFile(UsefulMethods.getClassPath(get.getClass()) + "config" + separator + "options.xml");
+        xml.loadFile(UsefulMethods.getClassPath(get.getClass()) + "config" + File.separator + "options.xml");
         switch (manager) {
             case OPTIONS:
                 return xml;
             case LANGUAGE:
                 if (!checkOS) {
-                    XmlManager language = new XmlManager();
+                    language = new XmlManager();
                     String temp = xml.getContentByName("language", 0);
-                    temp = temp.substring(0, temp.indexOf(","));
-                    language.loadFile(UsefulMethods.getClassPath(get.getClass()) + separator + "language" + separator + temp.toLowerCase() + ".xml");
+                    language.loadFile(UsefulMethods.getClassPath(get.getClass()) + File.separator + "language"
+                            + File.separator + temp.toLowerCase() + ".xml");
 
                     return language;
                 }
@@ -546,5 +562,18 @@ public class UsefulMethods implements Serializable {
         });
 
         return webClient;
+    }
+
+    private static class CloneWebClient {
+
+        private final WebClient client;
+
+        public CloneWebClient(WebClient client) {
+            this.client = client;
+        }
+
+        public WebClient getClone() {
+            return client;
+        }
     }
 }

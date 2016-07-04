@@ -14,7 +14,7 @@
  /*
  * {Insert class description here}
  */
-package com.panels.main;
+package com.panels.modal;
 
 import com.util.UsefulMethods;
 import com.util.xml.XmlManager;

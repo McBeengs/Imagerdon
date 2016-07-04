@@ -74,7 +74,7 @@ public class MainPane extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
 
         taskLabel.setFont(new java.awt.Font("Eras Bold ITC", 0, 24)); // NOI18N
-        taskLabel.setText(language.getContentById("welcomeLabel"));
+        taskLabel.setText(language.getContentById("appName") + " - " + language.getContentById("welcomeLabel"));
 
         niceMessage.setFont(new java.awt.Font("Verdana", 2, 14)); // NOI18N
         niceMessage.setText("Lorem ipsun, dolor sit amet.");
@@ -110,7 +110,7 @@ public class MainPane extends javax.swing.JPanel {
         TULogin1.setText("Checking version");
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/style/icons/updateTask.png"))); // NOI18N
-        jButton1.setText("Retry");
+        jButton1.setText(language.getContentById("retry"));
         jButton1.setFocusable(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -162,8 +162,9 @@ public class MainPane extends javax.swing.JPanel {
                                         .addComponent(jButton1))
                                     .addGroup(layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(imagesPerArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addContainerGap(18, Short.MAX_VALUE))))
+                                        .addComponent(imagesPerArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE)))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,7 +186,7 @@ public class MainPane extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
-                    .addComponent(imagesPerArtist))
+                    .addComponent(imagesPerArtist, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(45, 45, 45)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -287,31 +288,32 @@ public class MainPane extends javax.swing.JPanel {
                 public void run() {
                     try {
                         Document page = Jsoup.parse(new URL("http://version-check.hol.es/"), 5000);
-                        if (!page.getElementById("newer_version").text().equals("1.0.0")) {
-                            String[] message = new String[]{"There's a new version of \"Imagerdon\" (" + page.getElementById("newer_version").text()
-                                + "). Click ", "here", " to download it."};
+                        if (!page.getElementById("newer_version").text().equals("1.0.1")) {
+                            String get = language.getContentById("newerVersion");
+                            get = get.replace("&string", page.getElementById("newer_version").text());
+                            String[] temp = get.split("&br");
+                            String[] message = new String[]{temp[0], language.getContentById("here").toLowerCase() + temp[1]};
                             String link = page.getElementById("download").toString();
                             link = link.substring(link.indexOf("\"", 20) + 1);
                             link = "http://version-check.hol.es/" + link.substring(0, link.indexOf("\""));
-                            UsefulMethods.makeHyperlinkOptionPane(message, link, 1, JOptionPane.INFORMATION_MESSAGE, "New Version");
+                            UsefulMethods.makeHyperlinkOptionPane(message, link, 1, JOptionPane.INFORMATION_MESSAGE, language.getContentById("genericInfoTitle"));
 
                             TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/error2.png")));
                             TULogin1.setForeground(new java.awt.Color(238, 44, 44));
-                            TULogin1.setText("There's a newer version of \"Imagerdon\"");
+                            TULogin1.setText(language.getContentById("alertVersionNew"));
                         } else {
                             TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
                             TULogin1.setForeground(new java.awt.Color(50, 205, 50));
-                            TULogin1.setText("The program is up to date :)");
+                            TULogin1.setText(language.getContentById("alertVersionOld"));
                         }
                     } catch (IOException ex) {
-                        System.err.println("failed to check version update");
                     }
                 }
             }.start();
         } else {
             TULogin1.setIcon(new ImageIcon(getClass().getResource("/com/style/icons/ok.png")));
             TULogin1.setForeground(new java.awt.Color(50, 205, 50));
-            TULogin1.setText("The program is up to date :)");
+            TULogin1.setText(language.getContentById("alertVersionOld"));
         }
     }
 
@@ -322,7 +324,7 @@ public class MainPane extends javax.swing.JPanel {
                 try {
                     UsefulMethods.getWebClientInstance();
                 } catch (java.net.UnknownHostException ex) {
-                    //internet caiu
+                    JOptionPane.showMessageDialog(null, language.getContentById("internetDroppedOut"), language.getContentById("genericErrorTitle"), JOptionPane.OK_OPTION);
                 } catch (Exception ex) {
                     switch (ex.getMessage()) {
                         case "DeviantArt":
